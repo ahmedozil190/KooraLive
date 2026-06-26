@@ -110,6 +110,57 @@ if ($auth) {
                 if(!in_array(basename($f), $used)) { unlink($f); $count++; }
             }
             header("Location: /admin/index.php?section=news&cleaned=$count"); exit;
+        if (isset($_POST['instant_add'])) {
+            $code = $_POST['html_code'];
+            $targetDay = $_POST['target_day'];
+            $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
+            
+            // تقسيم الكود حسب بلوكات المباريات
+            $blocks = explode('<div class="EventBox">', $code);
+            $addedCount = 0;
+            
+            foreach ($blocks as $block) {
+                if (trim($block) == '' || !strpos($block, 'EventLink')) continue;
+                
+                // استخراج الرابط
+                preg_match('/href="(.*?)"/i', $block, $u);
+                // استخراج الفريق الأول (Right)
+                preg_match('/EventTeam Right.*?alt="(.*?)"/s', $block, $hName);
+                preg_match('/EventTeam Right.*?data-src="(.*?)"/s', $block, $hLogo);
+                // استخراج الفريق الثاني (Left)
+                preg_match('/EventTeam Left.*?alt="(.*?)"/s', $block, $aName);
+                preg_match('/EventTeam Left.*?data-src="(.*?)"/s', $block, $aLogo);
+                // استخراج الوقت
+                preg_match('/id="EventHour">(.*?)<\/div>/s', $block, $evTime);
+                // استخراج القناة، المعلق، والبطولة من التذييل
+                preg_match_all('/<li>(.*?)<\/li>/s', $block, $footerItems);
+                
+                $m = [
+                    'id' => time() . "_" . rand(100,999),
+                    'homeTeam' => isset($hName[1]) ? $hName[1] : 'غير معروف',
+                    'homeLogo' => isset($hLogo[1]) ? $hLogo[1] : '',
+                    'awayTeam' => isset($aName[1]) ? $aName[1] : 'غير معروف',
+                    'awayLogo' => isset($aLogo[1]) ? $aLogo[1] : '',
+                    'league' => isset($footerItems[1][2]) ? $footerItems[1][2] : '--',
+                    'time' => isset($evTime[1]) ? $evTime[1] : '00:00 AM',
+                    'status' => 'upcoming',
+                    'status_text' => 'قادمة',
+                    'day' => $targetDay,
+                    'channel' => isset($footerItems[1][0]) ? $footerItems[1][0] : '--',
+                    'commentator' => isset($footerItems[1][1]) ? $footerItems[1][1] : '--',
+                    'streamUrl' => isset($u[1]) ? $u[1] : '#',
+                    'homeScore' => "0",
+                    'awayScore' => "0"
+                ];
+                
+                $matches[] = $m;
+                $addedCount++;
+                usleep(1000); // تجنب تكرار الـ ID في حال السرعة القصوى
+            }
+            
+            file_put_contents($matchesFile, json_encode($matches, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=current&success=1&count=$addedCount");
+            exit;
         }
     }
 }
@@ -144,6 +195,7 @@ if ($auth) {
             <a href="/admin/index.php?section=main" class="nav-item <?php echo $sec=='main'?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
             <a href="/admin/index.php?section=current" class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
             <a href="/admin/index.php?section=add_m" class="nav-item <?php echo $sec=='add_m'?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
+            <a href="/admin/index.php?section=instant" class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
             <a href="/admin/index.php?section=news" class="nav-item <?php echo ($sec=='news'||$sec=='add_n')?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
         </div>
         <div class="sidebar-footer">
@@ -276,6 +328,35 @@ if ($auth) {
                     <div class="full"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input"></div>
                 </div><div class="modal-foot"><button type="button" class="btn-cancel-sm" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button><button type="submit" name="save_edit" class="btn-primary-sm">حفظ</button></div></form>
             </div></div>
+        <?php elseif($sec == 'instant'): ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">الإضافة الفورية للمباريات</h2>
+            <div class="recent-card" style="padding:30px;">
+                <form method="POST">
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; margin-bottom:10px; font-weight:800; color:var(--text-sub);">اختر اليوم المستهدف:</label>
+                        <div class="day-tabs" style="display:inline-flex;">
+                            <input type="radio" name="target_day" value="yesterday" id="d-y" hidden>
+                            <label for="d-y" class="day-tab-label">الأمس</label>
+                            
+                            <input type="radio" name="target_day" value="today" id="d-td" hidden checked>
+                            <label for="d-td" class="day-tab-label">اليوم</label>
+                            
+                            <input type="radio" name="target_day" value="tomorrow" id="d-tr" hidden>
+                            <label for="d-tr" class="day-tab-label">الغد</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ألصق أكواد المباريات هنا:</label>
+                        <textarea name="html_code" class="form-input" rows="15" placeholder="ألصق الأكواد البرمجية للمباريات هنا..." required style="font-family:monospace; font-size:12px; height:350px;"></textarea>
+                    </div>
+                    <button type="submit" name="instant_add" style="width:100%; padding:16px; background:linear-gradient(90deg, #6366f1, #4f46e5); color:#fff; border:none; border-radius:15px; font-weight:800; font-size:17px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-bolt" style="margin-left:8px;"></i> إضافة كافة المباريات الآن</button>
+                </form>
+            </div>
+            <style>
+                .day-tab-label { padding: 10px 30px; background: var(--bg-input); border-radius: 10px; cursor: pointer; font-weight: 700; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
+                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+                .day-tabs { gap: 10px; background: transparent; border: none; padding: 0; }
+            </style>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
             <form method="POST" style="background:var(--card); padding:30px; border-radius:15px; border:1px solid var(--border);">
