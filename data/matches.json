@@ -1,19 +1,44 @@
 [
-    {"id":1,"homeTeam":"الأهلي","homeLogo":"https://apiv2.allsportsapi.com/logo/585_al-ahly.jpg","awayTeam":"الزمالك","awayLogo":"https://apiv2.allsportsapi.com/logo/2760_zamalek.jpg","time":"انتهت","day":"yesterday","league":"الدوري المصري","channel":"OnTime Sports 1","commentator":"مدحت شلبي","streamUrl":""},
-    {"id":2,"homeTeam":"بيراميدز","homeLogo":"https://apiv2.allsportsapi.com/logo/2761_pyramids.jpg","awayTeam":"الاتحاد السكندري","awayLogo":"https://apiv2.allsportsapi.com/logo/2762_al-ittihad.jpg","time":"انتهت","day":"yesterday","league":"الدوري المصري","channel":"OnTime Sports 2","commentator":"حاتم بطيشة","streamUrl":""},
-    {"id":3,"homeTeam":"انبي","homeLogo":"https://apiv2.allsportsapi.com/logo/2763_enppi.jpg","awayTeam":"المصري","awayLogo":"https://apiv2.allsportsapi.com/logo/2765_al-masry.jpg","time":"انتهت","day":"yesterday","league":"الدوري المصري","channel":"OnTime Sports 1","commentator":"أيمن الكاشف","streamUrl":""},
-    {"id":4,"homeTeam":"سموحة","homeLogo":"https://apiv2.allsportsapi.com/logo/2766_smouha.jpg","awayTeam":"غزل المحلة","awayLogo":"https://apiv2.allsportsapi.com/logo/2767_ghazl-el-mehalla.jpg","time":"انتهت","day":"yesterday","league":"الدوري المصري","channel":"OnTime Sports 2","commentator":"محمد عفيفي","streamUrl":""},
-    {"id":5,"homeTeam":"الجونة","homeLogo":"https://apiv2.allsportsapi.com/logo/2768_el-gouna.jpg","awayTeam":"سيراميكا كليوباترا","awayLogo":"https://apiv2.allsportsapi.com/logo/2769_ceramica-cleopatra.jpg","time":"انتهت","day":"yesterday","league":"الدوري المصري","channel":"OnTime Sports 1","commentator":"محمد الغياتي","streamUrl":""},
-
-    {"id":6,"homeTeam":"مانشستر سيتي","homeLogo":"https://apiv2.allsportsapi.com/logo/80_manchester-city.jpg","awayTeam":"ليفربول","awayLogo":"https://apiv2.allsportsapi.com/logo/84_liverpool.jpg","time":"9:00 PM","day":"today","league":"الدوري الإنجليزي","channel":"beIN Sports 1 Premium","commentator":"عصام الشوالي","streamUrl":"http://ugeen.live:8080/Ugeen_VIP269W1Z/nBQtQh/4526"},
-    {"id":7,"homeTeam":"تشيلسي","homeLogo":"https://apiv2.allsportsapi.com/logo/88_chelsea.jpg","awayTeam":"مانشستر يونايتد","awayLogo":"https://apiv2.allsportsapi.com/logo/102_manchester-united.jpg","time":"7:30 PM","day":"today","league":"الدوري الإنجليزي","channel":"beIN Sports 2 Premium","commentator":"حفيظ دراجي","streamUrl":"http://ugeen.live:8080/Ugeen_VIP269W1Z/nBQtQh/4526"},
-    {"id":8,"homeTeam":"ارسنال","homeLogo":"https://apiv2.allsportsapi.com/logo/141_arsenal-fc.jpg","awayTeam":"توتنهام","awayLogo":"https://apiv2.allsportsapi.com/logo/164_tottenham-hotspur.jpg","time":"6:00 PM","day":"today","league":"الدوري الإنجليزي","channel":"beIN Sports 1 Premium","commentator":"خليل البلوشي","streamUrl":"http://ugeen.live:8080/Ugeen_VIP269W1Z/nBQtQh/4526"},
-    {"id":9,"homeTeam":"بورنموث","homeLogo":"https://apiv2.allsportsapi.com/logo/3071_afc-bournemouth.jpg","awayTeam":"ايفرتون","awayLogo":"https://apiv2.allsportsapi.com/logo/3073_everton.jpg","time":"4:00 PM","day":"today","league":"الدوري الإنجليزي","channel":"beIN Sports EXTRA","commentator":"أحمد الطيب","streamUrl":""},
-    {"id":10,"homeTeam":"فولهام","homeLogo":"https://apiv2.allsportsapi.com/logo/3085_fulham.jpg","awayTeam":"برينتفورد","awayLogo":"https://apiv2.allsportsapi.com/logo/3086_brentford.jpg","time":"10:00 PM","day":"today","league":"الدوري الإنجليزي","channel":"beIN Sports XTRA 2","commentator":"يوسف سيف","streamUrl":""},
-
-    {"id":11,"homeTeam":"ريال مدريد","homeLogo":"https://apiv2.allsportsapi.com/logo/76_real-madrid.jpg","awayTeam":"برشلونة","awayLogo":"https://apiv2.allsportsapi.com/logo/97_barcelona.jpg","time":"9:00 PM","day":"tomorrow","league":"الدوري الإسباني","channel":"beIN Sports 1 HD","commentator":"علي محمد علي","streamUrl":""},
-    {"id":12,"homeTeam":"اتليتكو مدريد","homeLogo":"https://apiv2.allsportsapi.com/logo/73_atletico-de-madrid.jpg","awayTeam":"شبيلية","awayLogo":"https://apiv2.allsportsapi.com/logo/89_sevilla.jpg","time":"10:15 PM","day":"tomorrow","league":"الدوري الإسباني","channel":"beIN Sports 3 HD","commentator":"نوفل باشي","streamUrl":""},
-    {"id":13,"homeTeam":"فالنسيا","homeLogo":"https://apiv2.allsportsapi.com/logo/7272_valencia.jpg","awayTeam":"ريال سوسيداد","awayLogo":"https://apiv2.allsportsapi.com/logo/153_real-sociedad.jpg","time":"8:00 PM","day":"tomorrow","league":"الدوري الإسباني","channel":"beIN Sports 4 HD","commentator":"عامر الخوذيري","streamUrl":""},
-    {"id":14,"homeTeam":"فياريال","homeLogo":"https://apiv2.allsportsapi.com/logo/162_villarreal.jpg","awayTeam":"اتليتك بيلباو","awayLogo":"https://apiv2.allsportsapi.com/logo/7258_athletic-club.jpg","time":"7:15 PM","day":"tomorrow","league":"الدوري الإسباني","channel":"beIN Sports 2 HD","commentator":"حسن العيدروس","streamUrl":""},
-    {"id":15,"homeTeam":"ليفانتي","homeLogo":"https://apiv2.allsportsapi.com/logo/7259_levante.jpg","awayTeam":"ريال بيتيس","awayLogo":"https://apiv2.allsportsapi.com/logo/7261_real-betis.jpg","time":"11:00 PM","day":"tomorrow","league":"الدوري الإسباني","channel":"beIN Sports 5 HD","commentator":"جواد بدة","streamUrl":""}
+  {
+    "id": "1",
+    "homeTeam": "الأهلي",
+    "homeLogo": "https://apiv2.allsportsapi.com/logo/585_al-ahly.jpg",
+    "awayTeam": "الزمالك",
+    "awayLogo": "https://apiv2.allsportsapi.com/logo/2760_zamalek.jpg",
+    "time": "مباشرة الآن",
+    "day": "today",
+    "league": "الدوري المصري",
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "channel": "OnTime Sports 1",
+    "commentator": "مدحت شلبي",
+    "status": "live"
+  },
+  {
+    "id": "2",
+    "homeTeam": "مانشستر سيتي",
+    "homeLogo": "https://apiv2.allsportsapi.com/logo/header_9_manchester-city.jpg",
+    "awayTeam": "ليفربول",
+    "awayLogo": "https://apiv2.allsportsapi.com/logo/header_8_liverpool.jpg",
+    "time": "10:00 PM",
+    "day": "today",
+    "league": "الدوري الإنجليزي",
+    "streamUrl": "",
+    "channel": "beIN Sports 1",
+    "commentator": "عصام الشوالي",
+    "status": "upcoming"
+  },
+  {
+    "id": "3",
+    "homeTeam": "ريال مدريد",
+    "homeLogo": "https://apiv2.allsportsapi.com/logo/header_13_real-madrid.jpg",
+    "awayTeam": "برشلونة",
+    "awayLogo": "https://apiv2.allsportsapi.com/logo/header_10_barcelona.jpg",
+    "time": "انتهت",
+    "day": "today",
+    "league": "الدوري الإسباني",
+    "streamUrl": "",
+    "channel": "beIN Sports HD",
+    "commentator": "خليل البلوشي",
+    "status": "finished"
+  }
 ]
