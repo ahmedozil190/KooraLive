@@ -110,6 +110,7 @@ if ($auth) {
                 if(!in_array(basename($f), $used)) { unlink($f); $count++; }
             }
             header("Location: /admin/index.php?section=news&cleaned=$count"); exit;
+        }
         if (isset($_POST['instant_add'])) {
             $code = $_POST['html_code'];
             $targetDay = $_POST['target_day'];
