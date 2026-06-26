@@ -16,6 +16,14 @@ if ($action === 'get_matches') {
     exit;
 }
 
+// جلب الأخبار
+if ($action === 'get_news') {
+    $newsFile = '../data/news.json';
+    if (file_exists($newsFile)) echo file_get_contents($newsFile);
+    else echo json_encode([]);
+    exit;
+}
+
 // حفظ أو تعديل مباراة
 if ($action === 'save_match') {
     $input = json_decode(file_get_contents('php://input'), true);
