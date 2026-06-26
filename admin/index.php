@@ -22,8 +22,9 @@ if ($auth) {
         $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
         $ms = array_filter($ms, function($v) { return $v['id'] != $_GET['del_m']; });
         file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-        $back = isset($_GET['section']) ? $_GET['section'] : 'main';
-        header("Location: /admin/index.php?section=$back"); exit;
+        $backSec = isset($_GET['section']) ? $_GET['section'] : 'main';
+        $backDay = isset($_GET['day']) ? $_GET['day'] : 'today';
+        header("Location: /admin/index.php?section=$backSec&day=$backDay"); exit;
     }
     if (isset($_GET['del_n'])) {
         $ns = json_decode(@file_get_contents($newsFile), true) ?: [];
@@ -264,7 +265,7 @@ if ($auth) {
                              <td>
                                  <div style="display:flex; gap:8px;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                     <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=main" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                     <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                  </div>
                              </td>
                          </tr>
@@ -273,6 +274,16 @@ if ($auth) {
                     </table>
                 </div>
             </div>
+            <script>
+                // تحديث روابط الحذف في الرئيسي لتشمل اليوم المختار
+                function updateOvDeleteLinks(day) {
+                    document.querySelectorAll('#ov-tbody .btn-del').forEach(a => {
+                        let url = new URL(a.href);
+                        url.searchParams.set('day', day);
+                        a.href = url.toString();
+                    });
+                }
+            </script>
         <?php elseif($sec == 'current'):
             $allM = json_decode(@file_get_contents($matchesFile), true) ?: [];
             $cur_total = count($allM); $cur_live = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'live'; }));
@@ -322,7 +333,7 @@ if ($auth) {
                             <td>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                    <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=current" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                    <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -331,6 +342,15 @@ if ($auth) {
                     </table>
                 </div>
             </div>
+            <script>
+                function updateCurDeleteLinks(day) {
+                    document.querySelectorAll('#cur-tbody .btn-del').forEach(a => {
+                        let url = new URL(a.href);
+                        url.searchParams.set('day', day);
+                        a.href = url.toString();
+                    });
+                }
+            </script>
             <div id="edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</div>
                 <form method="POST" action="/admin/index.php?section=current"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
                     <div><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input"></div>
@@ -461,7 +481,14 @@ if ($auth) {
         let activeDay = 'today';
         function switchDay(el) {
             document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active'); activeDay = el.dataset.day; filterMatches();
+            el.classList.add('active'); 
+            activeDay = el.dataset.day; 
+            
+            // تحديث روابط الحذف فورياً عند التبديل
+            if(typeof updateCurDeleteLinks === 'function') updateCurDeleteLinks(activeDay);
+            if(typeof updateOvDeleteLinks === 'function') updateOvDeleteLinks(activeDay);
+            
+            filterMatches();
         }
         function filterMatches() {
             const search = (document.getElementById('cur-search')?.value || '').toLowerCase();
@@ -538,6 +565,14 @@ if ($auth) {
         window.onload = () => {
             formatLocalDates();
             const url = new URL(window.location.href);
+            
+            // استعادة اليوم المختار من الرابط
+            const urlDay = url.searchParams.get('day');
+            if(urlDay) {
+                const tab = document.querySelector(`.day-tab[data-day="${urlDay}"]`);
+                if(tab) switchDay(tab);
+            }
+
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح ✓', 'success');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة ✓`, 'success');
         };
