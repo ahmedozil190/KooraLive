@@ -5,13 +5,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/585_al-ahly.jpg",
     "awayTeam": "الزمالك",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/2760_zamalek.jpg",
-    "time": "انتهت (2-1)",
+    "time": "انتهت",
     "day": "yesterday",
     "league": "الدوري المصري",
     "streamUrl": "",
     "channel": "OnTime Sports 1",
     "commentator": "مدحت شلبي",
-    "status": "finished"
+    "status": "finished",
+    "homeScore": "2",
+    "awayScore": "1"
   },
   {
     "id": "2",
@@ -19,13 +21,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/2761_pyramids.jpg",
     "awayTeam": "الاتحاد السكندري",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/2762_al-ittihad.jpg",
-    "time": "انتهت (1-0)",
+    "time": "انتهت",
     "day": "yesterday",
     "league": "الدوري المصري",
     "streamUrl": "",
     "channel": "OnTime Sports 2",
     "commentator": "أيمن الكاشف",
-    "status": "finished"
+    "status": "finished",
+    "homeScore": "3",
+    "awayScore": "0"
   },
   {
     "id": "3",
@@ -33,13 +37,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/2763_enppi.jpg",
     "awayTeam": "المصري",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/2765_al-masry.jpg",
-    "time": "انتهت (0-0)",
+    "time": "انتهت",
     "day": "yesterday",
     "league": "الدوري المصري",
     "streamUrl": "",
     "channel": "OnTime Sports 1",
     "commentator": "حاتم بطيشة",
-    "status": "finished"
+    "status": "finished",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "4",
@@ -47,13 +53,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/2766_smouha.jpg",
     "awayTeam": "غزل المحلة",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/2767_ghazl-el-mehalla.jpg",
-    "time": "انتهت (3-2)",
+    "time": "انتهت",
     "day": "yesterday",
     "league": "الدوري المصري",
     "streamUrl": "",
     "channel": "OnTime Sports 3",
     "commentator": "مؤمن حسن",
-    "status": "finished"
+    "status": "finished",
+    "homeScore": "1",
+    "awayScore": "2"
   },
   {
     "id": "5",
@@ -61,13 +69,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/2768_el-gouna.jpg",
     "awayTeam": "سيراميكا كليوباترا",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/2769_ceramica-cleopatra.jpg",
-    "time": "انتهت (1-1)",
+    "time": "انتهت",
     "day": "yesterday",
     "league": "الدوري المصري",
     "streamUrl": "",
     "channel": "OnTime Sports 2",
     "commentator": "طارق الأدور",
-    "status": "finished"
+    "status": "finished",
+    "homeScore": "1",
+    "awayScore": "1"
   },
   {
     "id": "6",
@@ -81,7 +91,9 @@
     "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
     "channel": "beIN Sports 1",
     "commentator": "عصام الشوالي",
-    "status": "live"
+    "status": "live",
+    "homeScore": "2",
+    "awayScore": "1"
   },
   {
     "id": "7",
@@ -95,7 +107,9 @@
     "streamUrl": "",
     "channel": "beIN Sports 2",
     "commentator": "حفيظ دراجي",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "8",
@@ -103,13 +117,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/141_arsenal-fc.jpg",
     "awayTeam": "توتنهام",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/164_tottenham-hotspur.jpg",
-    "time": "08:15 PM",
+    "time": "08:30 PM",
     "day": "today",
     "league": "الدوري الإنجليزي",
     "streamUrl": "",
     "channel": "beIN Sports 1",
     "commentator": "خليل البلوشي",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "9",
@@ -122,8 +138,10 @@
     "league": "الدوري الإنجليزي",
     "streamUrl": "",
     "channel": "beIN Sports 3",
-    "commentator": "خالد الغول",
-    "status": "upcoming"
+    "commentator": "علي محمد علي",
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "10",
@@ -135,9 +153,11 @@
     "day": "today",
     "league": "الدوري الإنجليزي",
     "streamUrl": "",
-    "channel": "beIN Sports 4",
-    "commentator": "علي محمد علي",
-    "status": "upcoming"
+    "channel": "beIN Sports HD",
+    "commentator": "يوسف سيف",
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "11",
@@ -151,21 +171,25 @@
     "streamUrl": "",
     "channel": "beIN Premier",
     "commentator": "فارس عوض",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "12",
-    "homeTeam": "أتليتكوا مدريد",
+    "homeTeam": "اتليتكوا مدريد",
     "homeLogo": "https://apiv2.allsportsapi.com/logo/73_atletico-de-madrid.jpg",
     "awayTeam": "إشبيلية",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/89_sevilla.jpg",
-    "time": "09:30 PM",
+    "time": "09:00 PM",
     "day": "tomorrow",
     "league": "الدوري الإسباني",
     "streamUrl": "",
     "channel": "beIN Sports HD",
     "commentator": "نوفل باشي",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "13",
@@ -179,7 +203,9 @@
     "streamUrl": "",
     "channel": "beIN Sports 2",
     "commentator": "حسن العيدروس",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "14",
@@ -187,13 +213,15 @@
     "homeLogo": "https://apiv2.allsportsapi.com/logo/162_villarreal.jpg",
     "awayTeam": "اتليتك بيلباو",
     "awayLogo": "https://apiv2.allsportsapi.com/logo/7258_athletic-club.jpg",
-    "time": "05:15 PM",
+    "time": "05:00 PM",
     "day": "tomorrow",
     "league": "الدوري الإسباني",
     "streamUrl": "",
     "channel": "beIN Sports 3",
     "commentator": "سوار الذهب",
-    "status": "upcoming"
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   },
   {
     "id": "15",
@@ -206,7 +234,9 @@
     "league": "الدوري الإسباني",
     "streamUrl": "",
     "channel": "beIN Sports HD",
-    "commentator": "محمد بركات",
-    "status": "upcoming"
+    "commentator": "أحمد الطيب",
+    "status": "upcoming",
+    "homeScore": "0",
+    "awayScore": "0"
   }
 ]
