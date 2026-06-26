@@ -153,10 +153,21 @@ if ($auth) {
                     'homeScore' => "0",
                     'awayScore' => "0"
                 ];
+
+                // التحقق من وجود المباراة مسبقاً لمنع التكرار
+                $exists = false;
+                foreach ($matches as $ex) {
+                    if ($ex['homeTeam'] == $m['homeTeam'] && $ex['awayTeam'] == $m['awayTeam'] && $ex['day'] == $m['day']) {
+                        $exists = true;
+                        break;
+                    }
+                }
                 
-                $matches[] = $m;
-                $addedCount++;
-                usleep(1000); // تجنب تكرار الـ ID في حال السرعة القصوى
+                if (!$exists) {
+                    $matches[] = $m;
+                    $addedCount++;
+                }
+                usleep(1000); 
             }
             
             file_put_contents($matchesFile, json_encode($matches, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
