@@ -388,7 +388,7 @@ if ($auth) {
             </style>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
-            <form method="POST" style="background:var(--card); padding:30px; border-radius:15px; border:1px solid var(--border);">
+            <form method="POST" style="background:var(--bg-card); padding:30px; border-radius:15px; border:1px solid var(--border-color);">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                     <div class="form-group"><label>الفريق الأرضي</label><input type="text" name="h" class="form-input" required></div>
                     <div class="form-group"><label>لوجو الأرضي</label><input type="text" name="hl" class="form-input"></div>
@@ -400,22 +400,15 @@ if ($auth) {
                     <div class="form-group"><label>اليوم</label><select name="d" class="form-input"><option value="today">اليوم</option><option value="yesterday">الأمس</option><option value="tomorrow">الغد</option></select></div>
                 </div>
                 <div class="form-group" style="margin-top:10px;"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
-                <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:10px; font-weight:800; font-size:16px; cursor:pointer;">حفظ المباراة</button>
+                <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:10px; font-weight:800; font-size:16px; cursor:pointer;">إضافة المباراة الآن</button>
             </form>
-        <?php elseif($sec == 'news'): ?>
-            <h2 style="font-weight:800; margin-bottom:30px;">إدارة الأخبار</h2>
+        <?php elseif($sec == 'add_n'): ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">إضافة خبر جديد</h2>
             <div class="recent-card" style="margin-bottom:30px;">
-                <div style="padding:20px 25px; border-bottom:1px solid var(--border); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
-                    <i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة خبر جديد
-                </div>
                 <form method="POST" enctype="multipart/form-data" style="padding:25px;">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
-                        <div class="form-group">
-                            <label>العنوان</label>
-                            <input type="text" name="t" class="form-input" placeholder="عنوان الخبر..." required>
-                        </div>
-                        <div class="form-group">
-                            <label>الصورة</label>
+                        <div class="form-group"><label>العنوان</label><input type="text" name="t" class="form-input" placeholder="عنوان الخبر..." required></div>
+                        <div class="form-group"><label>الصورة</label>
                             <div class="image-input-group">
                                 <div id="mini-preview" class="mini-preview"><button type="button" class="mini-remove" onclick="removeImg(event)"><i class="fa-solid fa-xmark"></i></button></div>
                                 <input type="text" name="i" id="img-url-backup" class="form-input" style="flex:1;" placeholder="رابط خارجي...">
@@ -424,34 +417,72 @@ if ($auth) {
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>المحتوى (يدعم [H2] و [H3])</label>
-                        <textarea name="c" class="form-input" rows="6" required style="resize:vertical;"></textarea>
-                    </div>
-                    <button type="submit" name="add_n" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;">نشر الخبر</button>
+                    <div class="form-group"><label>المحتوى (يدعم [H2] و [H3])</label><textarea name="c" class="form-input" rows="8" required style="resize:vertical;"></textarea></div>
+                    <button type="submit" name="add_n" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;">نشر الخبر الآن</button>
                 </form>
             </div>
-            <div class="recent-card">
-                <div style="padding:20px 25px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:17px; font-weight:800;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i> قائمة الأخبار</div>
-                    <form method="POST"><button type="submit" name="clean_imgs" class="btn-purple"><i class="fa-solid fa-broom"></i> تنظيف الذاكرة</button></form>
+        <?php elseif($sec == 'news'):
+            $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
+            usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
+            $limit = 10;
+            $totalNews = count($allNOriginal);
+            $totalPages = ceil($totalNews / $limit);
+            $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+            $start = ($page - 1) * $limit;
+            $displayNews = array_slice($allNOriginal, $start, $limit);
+        ?>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2 style="font-weight:800;">إدارة الأخبار</h2>
+                <div style="display:flex; gap:10px;">
+                    <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
+                        <button type="submit" name="clean_imgs" class="btn-cancel-sm" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-sub);"><i class="fa-solid fa-broom"></i> تنظيف الصور</button>
+                    </form>
+                    <a href="/admin/index.php?section=add_n" class="btn-primary-sm"><i class="fa-solid fa-plus"></i> إضافة خبر</a>
                 </div>
-                <div style="overflow-x:auto;"><table><thead><tr><th>الغلاف</th><th>العنوان</th><th>التاريخ</th><th>التحكم</th></tr></thead><tbody>
-                    <?php 
-                        $latest_news = array_slice(array_reverse($news), 0, 12);
-                        foreach($latest_news as $n): 
-                    ?>
-                    <tr><td><img src="<?php echo htmlspecialchars(isset($n['image'])?$n['image']:''); ?>" style="width:50px; height:50px; object-fit:cover; border-radius:8px;"></td>
-                        <td style="font-weight:700;"><?php echo htmlspecialchars($n['title']); ?></td>
-                        <td class="date-cell" data-time="<?php echo $n['id']; ?>">--</td>
-                        <td>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <button class="btn-edit" onclick="openNewsEdit(this)" data-news='<?php echo htmlspecialchars(json_encode($n), ENT_QUOTES); ?>'><i class="fa-solid fa-pen-to-square"></i></button>
-                                <a href="/admin/index.php?del_n=<?php echo $n['id']; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
-                            </div>
-                        </td></tr><?php endforeach; ?>
-                </tbody></table></div>
             </div>
+            <div class="recent-card">
+                <div class="table-res">
+                    <table class="table">
+                        <thead><tr><th>الخبر</th><th style="width:120px;">العمليات</th></tr></thead>
+                        <tbody>
+                        <?php foreach($displayNews as $n): ?>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:15px;">
+                                        <img src="<?php echo $n['image']; ?>" style="width:70px; height:45px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
+                                        <div>
+                                            <div style="font-weight:800; font-size:14px; color:var(--text-main); margin-bottom:4px;"><?php echo $n['title']; ?></div>
+                                            <div style="font-size:12px; color:var(--text-sub);"><?php echo mb_substr(strip_tags($n['content']), 0, 80, 'utf-8').'...'; ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="btn-edit" onclick="openNewsEdit(this)" data-news='<?php echo htmlspecialchars(json_encode($n), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
+                                        <a href="/admin/index.php?del_n=<?php echo $n['id']; ?>&section=news&p=<?php echo $page; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php if($totalPages > 1): ?>
+            <div style="display:flex; justify-content:center; gap:8px; margin-top:25px;">
+                <?php if($page > 1): ?><a href="/admin/index.php?section=news&p=<?php echo $page-1; ?>" class="p-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
+                <?php for($i=1; $i<=$totalPages; $i++): ?>
+                    <a href="/admin/index.php?section=news&p=<?php echo $i; ?>" class="p-btn <?php echo $i==$page?'active':''; ?>"><?php echo $i; ?></a>
+                <?php endfor; ?>
+                <?php if($page < $totalPages): ?><a href="/admin/index.php?section=news&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
+            </div>
+            <style>
+                .p-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-weight: 700; font-size: 13px; text-decoration: none; transition: 0.3s; }
+                .p-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+                .p-btn:hover:not(.active) { background: var(--bg-input); }
+            </style>
+            <?php endif; ?>
+
             <div id="news-edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head">تعديل الخبر</div>
                 <form method="POST" enctype="multipart/form-data"><input type="hidden" name="edit_news_id" id="en-id"><div class="modal-body">
                     <div class="full"><label>العنوان</label><input type="text" name="n_t" id="en-t" class="form-input" required></div>
@@ -582,7 +613,13 @@ if ($auth) {
             }
 
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
-            if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة ✓`, 'success');
+            if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
+            
+            // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
+            if (url.searchParams.has('success') || url.searchParams.has('cleaned')) {
+                const cleanUrl = url.protocol + "//" + url.host + url.pathname + (url.searchParams.has('section') ? '?section=' + url.searchParams.get('section') : '');
+                window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+            }
         };
     </script>
 <?php endif; ?>
