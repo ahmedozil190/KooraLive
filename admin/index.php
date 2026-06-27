@@ -62,6 +62,7 @@ if ($auth) {
                 'awayLogo' => $aLogo,
                 'league' => $_POST['l'],
                 'time' => $_POST['t'],
+                'commentator' => $_POST['m_c'], // المعلق
                 'status' => $_POST['s'],
                 'status_text' => ($_POST['s'] == 'live' ? 'جارية الآن' : ($_POST['s'] == 'finished' ? 'انتهت' : 'قادمة')),
                 'day' => (isset($_POST['d']) ? $_POST['d'] : 'today'),
@@ -571,41 +572,189 @@ if ($auth) {
             <?php endif; ?>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة (يدوياً)</h2>
-            <form method="POST" style="background:var(--bg-card); padding:30px; border-radius:15px; border:1px solid var(--border-color);">
+            <form method="POST" id="matchForm" style="background:var(--bg-card); padding:30px; border-radius:15px; border:1px solid var(--border-color);">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                     <?php 
                         $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
                         $ls = json_decode(@file_get_contents($leaguesFile), true) ?: [];
                     ?>
+                    
+                    <!-- الفريق الأرضي -->
                     <div class="form-group">
                         <label>الفريق الأرضي (الأول)</label>
-                        <select name="h" class="form-input" required>
-                            <option value="">اختر الفريق...</option>
-                            <?php foreach($cs as $c): ?><option value="<?php echo $c['name']; ?>"><?php echo $c['name']; ?></option><?php endforeach; ?>
-                        </select>
+                        <div class="custom-select-trigger" onclick="openSearchModal('h')">
+                            <span id="h-display">اختر الفريق...</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <input type="hidden" name="h" id="h-input" required>
                     </div>
+
+                    <!-- الفريق الضيف -->
                     <div class="form-group">
                         <label>الفريق الضيف (الثاني)</label>
-                        <select name="a" class="form-input" required>
-                            <option value="">اختر الفريق...</option>
-                            <?php foreach($cs as $c): ?><option value="<?php echo $c['name']; ?>"><?php echo $c['name']; ?></option><?php endforeach; ?>
-                        </select>
+                        <div class="custom-select-trigger" onclick="openSearchModal('a')">
+                            <span id="a-display">اختر الفريق...</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <input type="hidden" name="a" id="a-input" required>
                     </div>
+
+                    <!-- البطولة -->
                     <div class="form-group">
                         <label>البطولة</label>
-                        <select name="l" class="form-input">
-                            <option value="">اختر البطولة...</option>
-                            <?php foreach($ls as $l): ?><option value="<?php echo $l['name']; ?>"><?php echo $l['name']; ?></option><?php endforeach; ?>
-                        </select>
+                        <div class="custom-select-trigger" onclick="openSearchModal('l')">
+                            <span id="l-display">اختر البطولة...</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <input type="hidden" name="l" id="l-input">
                     </div>
+
                     <div class="form-group"><label>الوقت</label><input type="text" name="t" class="form-input" placeholder="09:00 PM"></div>
-                    <div class="form-group"><label>الحالة</label><select name="s" class="form-input"><option value="upcoming">قادمة</option><option value="live">جارية الآن</option><option value="finished">انتهت</option></select></div>
-                    <div class="form-group"><label>اليوم</label><select name="d" class="form-input"><option value="today" selected>اليوم</option><option value="yesterday">الأمس</option><option value="tomorrow">الغد</option></select></div>
+                    <div class="form-group"><label>اسم المعلق</label><input type="text" name="m_c" class="form-input" placeholder="عصام الشوالي"></div>
+                    
+                    <!-- الحالة -->
+                    <div class="form-group">
+                        <label>الحالة</label>
+                        <div class="custom-select-trigger" onclick="openSimpleModal('s')">
+                            <span id="s-display">قادمة</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <input type="hidden" name="s" id="s-input" value="upcoming">
+                    </div>
+
+                    <!-- اليوم -->
+                    <div class="form-group">
+                        <label>اليوم</label>
+                        <div class="custom-select-trigger" onclick="openSimpleModal('d')">
+                            <span id="d-display">اليوم</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <input type="hidden" name="d" id="d-input" value="today">
+                    </div>
+
                     <div class="form-group"><label>القناة</label><input type="text" name="c" class="form-input" placeholder="beIN Sports 1"></div>
-                    <div class="form-group"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
                 </div>
                 <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:20px; font-weight:800; font-size:16px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">إضافة المباراة الآن</button>
             </form>
+
+            <!-- Modal المتقدم للبحث -->
+            <div id="searchModal" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">اختيار</h3>
+                        <div class="modal-close" onclick="closeModals()"><i class="fa-solid fa-times"></i></div>
+                    </div>
+                    <div style="padding:15px;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="modalSearch" placeholder="ابحث هنا..." oninput="filterModalItems()">
+                        </div>
+                        <div id="modalItemsList" class="modal-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .custom-select-trigger { background:var(--bg-card); border:1px solid var(--border-color); padding:12px 15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:0.3s; font-weight:700; color:var(--text-main); }
+                .custom-select-trigger:hover { border-color:#6366f1; background:rgba(99,102,241,0.05); }
+                
+                .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:9999; display:none; align-items:center; justify-content:center; }
+                .modal-content { background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 20px 50px rgba(0,0,0,0.3); animation:fadeInScale 0.3s ease; }
+                @keyframes fadeInScale { from{opacity:0; transform:scale(0.95);} to{opacity:1; transform:scale(1);} }
+                
+                .modal-header { padding:20px; background:var(--bg-body); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
+                .modal-close { width:32px; height:32px; border-radius:50%; background:rgba(255,0,0,0.1); color:#ff4757; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+                
+                .search-box { display:flex; align-items:center; gap:10px; background:var(--bg-body); padding:10px 15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px; }
+                .search-box input { background:transparent; border:none; outline:none; color:var(--text-main); font-weight:700; width:100%; }
+                
+                .modal-list { max-height:350px; overflow-y:auto; padding-right:5px; }
+                .modal-item { display:flex; align-items:center; gap:15px; padding:12px; border-radius:10px; cursor:pointer; transition:0.2s; margin-bottom:5px; }
+                .modal-item:hover { background:rgba(99,102,241,0.1); color:#6366f1; }
+                .modal-item img { width:30px; height:30px; object-fit:contain; }
+                .modal-item span { font-weight:700; }
+            </style>
+
+            <script>
+                let currentModalTarget = '';
+                let clubsData = <?php echo json_encode($cs); ?>;
+                let leaguesData = <?php echo json_encode($ls); ?>;
+                const statusOptions = [{id:'upcoming', name:'قادمة'}, {id:'live', name:'جارية الآن'}, {id:'finished', name:'انتهت'}];
+                const dayOptions = [{id:'today', name:'اليوم'}, {id:'yesterday', name:'الأمس'}, {id:'tomorrow', name:'الغد'}];
+
+                function openSearchModal(target) {
+                    currentModalTarget = target;
+                    const modal = document.getElementById('searchModal');
+                    const title = document.getElementById('modalTitle');
+                    const list = document.getElementById('modalItemsList');
+                    const search = document.getElementById('modalSearch');
+                    
+                    search.value = '';
+                    search.parentElement.style.display = 'flex';
+                    
+                    if(target == 'h' || target == 'a') {
+                        title.innerText = 'اختيار الفريق';
+                        renderList(clubsData);
+                    } else if(target == 'l') {
+                        title.innerText = 'اختيار البطولة';
+                        renderList(leaguesData);
+                    }
+                    modal.style.display = 'flex';
+                }
+
+                function openSimpleModal(target) {
+                    currentModalTarget = target;
+                    const modal = document.getElementById('searchModal');
+                    const title = document.getElementById('modalTitle');
+                    const search = document.getElementById('modalSearch');
+                    
+                    search.parentElement.style.display = 'none';
+                    
+                    if(target == 's') {
+                        title.innerText = 'اختيار الحالة';
+                        renderList(statusOptions);
+                    } else if(target == 'd') {
+                        title.innerText = 'اختيار اليوم';
+                        renderList(dayOptions);
+                    }
+                    modal.style.display = 'flex';
+                }
+
+                function renderList(data) {
+                    const list = document.getElementById('modalItemsList');
+                    list.innerHTML = '';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'modal-item';
+                        let imgHtml = item.logo ? `<img src="${item.logo}">` : '';
+                        div.innerHTML = `${imgHtml}<span>${item.name}</span>`;
+                        div.onclick = () => selectItem(item);
+                        list.appendChild(div);
+                    });
+                }
+
+                function filterModalItems() {
+                    const query = document.getElementById('modalSearch').value.toLowerCase();
+                    const data = (currentModalTarget == 'h' || currentModalTarget == 'a') ? clubsData : leaguesData;
+                    const filtered = data.filter(i => i.name.toLowerCase().includes(query));
+                    renderList(filtered);
+                }
+
+                function selectItem(item) {
+                    document.getElementById(currentModalTarget + '-input').value = (item.id && (currentModalTarget == 's' || currentModalTarget == 'd')) ? item.id : item.name;
+                    document.getElementById(currentModalTarget + '-display').innerText = item.name;
+                    closeModals();
+                }
+
+                function closeModals() {
+                    document.getElementById('searchModal').style.display = 'none';
+                }
+                
+                window.onclick = function(event) {
+                    if (event.target == document.getElementById('searchModal')) closeModals();
+                }
+            </script>
         <?php elseif($sec == 'news'):
             $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
             usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
