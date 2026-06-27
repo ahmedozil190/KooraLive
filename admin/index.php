@@ -52,7 +52,9 @@ if ($auth) {
                 $ext = pathinfo($_FILES['img_file']['name'], PATHINFO_EXTENSION);
                 $newName = time() . '_' . rand(100, 999) . '.' . $ext;
                 if (move_uploaded_file($_FILES['img_file']['tmp_name'], $dir . $newName)) {
-                    $imgPath = '/uploads/' . $newName;
+                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                    $host = $_SERVER['HTTP_HOST'];
+                    $imgPath = "$protocol://$host/uploads/" . $newName;
                 }
             }
             $d = json_decode(@file_get_contents($newsFile), true);
@@ -92,7 +94,9 @@ if ($auth) {
                         $ext = pathinfo($_FILES['n_img_file']['name'], PATHINFO_EXTENSION);
                         $newName = time() . '_' . rand(100, 999) . '.' . $ext;
                         if (move_uploaded_file($_FILES['n_img_file']['tmp_name'], $dir . $newName)) {
-                            $n['image'] = '/uploads/' . $newName;
+                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                            $host = $_SERVER['HTTP_HOST'];
+                            $n['image'] = "$protocol://$host/uploads/" . $newName;
                         }
                     }
                     break;
