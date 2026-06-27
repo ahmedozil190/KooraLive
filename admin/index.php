@@ -662,9 +662,9 @@ if ($auth) {
                     
                     <!-- الفريق الأرضي -->
                     <div class="form-group">
-                        <label>الفريق الأرضي (الأول)</label>
+                        <label>الفريق الأول</label>
                         <div class="custom-select-trigger" onclick="openSearchModal('h')">
-                            <span id="h-display">اختر الفريق...</span>
+                            <span id="h-display">اختر فريق...</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </div>
                         <input type="hidden" name="h" id="h-input" required>
