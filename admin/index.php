@@ -214,7 +214,7 @@ if ($auth) {
             <a href="/admin/index.php?section=current" class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
             <a href="/admin/index.php?section=add_m" class="nav-item <?php echo $sec=='add_m'?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
             <a href="/admin/index.php?section=instant" class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
-            <a href="/admin/index.php?section=news" class="nav-item <?php echo ($sec=='news'||$sec=='add_n')?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
+            <a href="/admin/index.php?section=news" class="nav-item <?php echo $sec=='news'?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
@@ -402,9 +402,22 @@ if ($auth) {
                 <div class="form-group" style="margin-top:10px;"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
                 <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:10px; font-weight:800; font-size:16px; cursor:pointer;">إضافة المباراة الآن</button>
             </form>
-        <?php elseif($sec == 'add_n'): ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">إضافة خبر جديد</h2>
+        <?php elseif($sec == 'news'):
+            $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
+            usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
+            $limit = 10;
+            $totalNews = count($allNOriginal);
+            $totalPages = ceil($totalNews / $limit);
+            $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+            $start = ($page - 1) * $limit;
+            $displayNews = array_slice($allNOriginal, $start, $limit);
+        ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">إدارة الأخبار</h2>
+            <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
             <div class="recent-card" style="margin-bottom:30px;">
+                <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة خبر جديد
+                </div>
                 <form method="POST" enctype="multipart/form-data" style="padding:25px;">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
                         <div class="form-group"><label>العنوان</label><input type="text" name="t" class="form-input" placeholder="عنوان الخبر..." required></div>
@@ -417,28 +430,19 @@ if ($auth) {
                             </div>
                         </div>
                     </div>
-                    <div class="form-group"><label>المحتوى (يدعم [H2] و [H3])</label><textarea name="c" class="form-input" rows="8" required style="resize:vertical;"></textarea></div>
+                    <div class="form-group"><label>المحتوى (يدعم [H2] و [H3])</label><textarea name="c" class="form-input" rows="5" required style="resize:vertical;"></textarea></div>
                     <button type="submit" name="add_n" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;">نشر الخبر الآن</button>
                 </form>
             </div>
-        <?php elseif($sec == 'news'):
-            $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
-            usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
-            $limit = 10;
-            $totalNews = count($allNOriginal);
-            $totalPages = ceil($totalNews / $limit);
-            $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
-            $start = ($page - 1) * $limit;
-            $displayNews = array_slice($allNOriginal, $start, $limit);
-        ?>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="font-weight:800;">إدارة الأخبار</h2>
-                <div style="display:flex; gap:10px;">
-                    <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
-                        <button type="submit" name="clean_imgs" class="btn-cancel-sm" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-sub);"><i class="fa-solid fa-broom"></i> تنظيف الصور</button>
-                    </form>
-                    <a href="/admin/index.php?section=add_n" class="btn-primary-sm"><i class="fa-solid fa-plus"></i> إضافة خبر</a>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-newspaper" style="color:#6366f1; font-size:20px;"></i>
+                    <h3 style="font-weight:800;">قائمة الأخبار</h3>
                 </div>
+                <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
+                    <button type="submit" name="clean_imgs" class="btn-cancel-sm" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-sub);"><i class="fa-solid fa-broom"></i> تنظيف الصور</button>
+                </form>
             </div>
             <div class="recent-card">
                 <div class="table-res">
