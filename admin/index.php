@@ -532,16 +532,9 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-database" style="color:#6366f1;"></i><h3>سجل الأندية والبطولات</h3></div>
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <?php if($tab == 'clubs'): ?>
-                        <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف صور الأندية غير المستخدمة؟')">
-                            <button type="submit" name="clean_imgs" class="btn-purple" style="background:#4f46e5;"><i class="fa-solid fa-broom" style="margin-left:5px;"></i> تنظيف الصور</button>
-                        </form>
-                        <?php endif; ?>
-                        <div class="day-tabs" style="display:flex; background:var(--bg-body); padding:5px; border-radius:12px; border:1px solid var(--border-color); width:230px; margin-bottom:0;">
-                            <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-link <?php echo $tab=='clubs'?'active':''; ?>">الأندية</a>
-                            <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-link <?php echo $tab=='leagues'?'active':''; ?>">البطولات</a>
-                        </div>
+                    <div class="day-tabs" style="display:flex; background:var(--bg-body); padding:5px; border-radius:12px; border:1px solid var(--border-color); width:230px; margin-bottom:0;">
+                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-link <?php echo $tab=='clubs'?'active':''; ?>">الأندية</a>
+                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-link <?php echo $tab=='leagues'?'active':''; ?>">البطولات</a>
                     </div>
                 </div>
                 <style>
@@ -826,8 +819,8 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
-                    <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
-                        <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف الصور</button>
+                    <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف كافة الصور غير المستخدمة في الموقع؟')">
+                        <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف كافة الصور</button>
                     </form>
                 </div>
                 <div class="table-res" style="border-top:1px solid var(--border-color);">
@@ -993,7 +986,7 @@ if ($auth) {
             }
 
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
-            if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الاسم موجود بالفعل!', 'error');
+            if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الفريق موجود بالفعل!', 'error');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
             
             // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
