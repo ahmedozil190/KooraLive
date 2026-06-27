@@ -444,17 +444,17 @@ if ($auth) {
                 </div>
                 <div class="table-res" style="border-top:1px solid var(--border-color);">
                     <table class="table">
-                        <thead><tr><th style="width:100px;">الصورة</th><th>العنوان</th><th style="width:120px;">التاريخ</th><th style="width:120px;">التحكم</th></tr></thead>
+                        <thead><tr><th style="width:120px; text-align:center;">الصورة</th><th style="text-align:right;">العنوان</th><th style="width:180px; text-align:center;">التاريخ</th><th style="width:180px; text-align:center;">التحكم</th></tr></thead>
                         <tbody>
                         <?php foreach($displayNews as $n): ?>
                             <tr>
-                                <td>
-                                    <img src="<?php echo $n['image']; ?>" style="width:70px; height:45px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
+                                <td style="text-align:center;">
+                                    <img src="<?php echo $n['image']; ?>" style="width:80px; height:50px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
                                 </td>
-                                <td style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo $n['title']; ?></td>
-                                <td class="date-cell" data-time="<?php echo $n['id']; ?>" style="font-size:12px; font-weight:700; color:var(--text-sub);">--</td>
+                                <td style="font-weight:800; font-size:14px; color:var(--text-main); text-align:right;"><?php echo $n['title']; ?></td>
+                                <td class="date-cell" data-time="<?php echo $n['id']; ?>" style="font-size:13px; font-weight:700; color:var(--text-sub); text-align:center;">--</td>
                                 <td>
-                                    <div style="display:flex; gap:8px;">
+                                    <div style="display:flex; gap:10px; justify-content:center;">
                                         <button class="btn-edit" onclick="openNewsEdit(this)" data-news='<?php echo htmlspecialchars(json_encode($n), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
                                         <a href="/admin/index.php?del_n=<?php echo $n['id']; ?>&section=news&p=<?php echo $page; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                     </div>
