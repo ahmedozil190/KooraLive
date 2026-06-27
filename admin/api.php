@@ -19,8 +19,27 @@ if ($action === 'get_matches') {
 // جلب الأخبار
 if ($action === 'get_news') {
     $newsFile = '../data/news.json';
-    if (file_exists($newsFile)) echo file_get_contents($newsFile);
-    else echo json_encode([]);
+    if (file_exists($newsFile)) {
+        $news = json_decode(file_get_contents($newsFile), true);
+        
+        // ترتيب الأحدث أولاً
+        usort($news, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
+        
+        // تحويل الروابط النسبية لروابط كاملة للتطبيق
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $baseUrl = "$protocol://$host/";
+        
+        foreach ($news as &$n) {
+            if (isset($n['image']) && strpos($n['image'], '../') === 0) {
+                $n['image'] = str_replace('../', $baseUrl, $n['image']);
+            }
+        }
+        
+        echo json_encode($news, JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([]);
+    }
     exit;
 }
 
