@@ -64,26 +64,30 @@ if ($auth) {
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['add_m'])) {
+            $h = trim($_POST['h']);
+            $a = trim($_POST['a']);
+            $l = trim($_POST['l']);
+            
+            if (empty($h) || empty($a) || empty($l)) {
+                header("Location: /admin/index.php?section=add_m&error=empty"); exit;
+            }
+
             $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
             $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
             
-            $hName = $_POST['h'];
-            $aName = $_POST['a'];
-            
-            // جلب الشعارات تلقائياً
             $hLogo = ""; $aLogo = "";
             foreach($cs as $c) {
-                if($c['name'] == $hName) $hLogo = $c['logo'];
-                if($c['name'] == $aName) $aLogo = $c['logo'];
+                if($c['name'] == $h) $hLogo = $c['logo'];
+                if($c['name'] == $a) $aLogo = $c['logo'];
             }
             
             $ms[] = array(
                 'id' => time(),
-                'homeTeam' => $hName,
-                'awayTeam' => $aName,
+                'homeTeam' => $h,
+                'awayTeam' => $a,
                 'homeLogo' => $hLogo,
                 'awayLogo' => $aLogo,
-                'league' => $_POST['l'],
+                'league' => $l,
                 'time' => $_POST['t'],
                 'commentator' => $_POST['m_c'], // المعلق
                 'status' => $_POST['s'],
@@ -121,6 +125,10 @@ if ($auth) {
             $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
             foreach ($ms as &$m) {
                 if ($m['id'] == $mid) {
+                    if(empty($_POST['edit_h']) || empty($_POST['edit_a']) || empty($_POST['edit_l'])) continue;
+                    $m['homeTeam']    = $_POST['edit_h'];
+                    $m['awayTeam']    = $_POST['edit_a'];
+                    $m['league']      = $_POST['edit_l'];
                     $m['status']      = isset($_POST['edit_status']) ? $_POST['edit_status'] : $m['status'];
                     $m['channel']     = isset($_POST['edit_channel']) ? $_POST['edit_channel'] : (isset($m['channel']) ? $m['channel'] : '');
                     $m['commentator'] = isset($_POST['edit_commentator']) ? $_POST['edit_commentator'] : (isset($m['commentator']) ? $m['commentator'] : '');
@@ -665,6 +673,18 @@ if ($auth) {
                 </div>
                 <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:20px; font-weight:800; font-size:16px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">إضافة المباراة الآن</button>
             </form>
+            <script>
+                document.getElementById('matchForm').onsubmit = function(e) {
+                    const h = document.getElementById('h-input').value;
+                    const a = document.getElementById('a-input').value;
+                    const l = document.getElementById('l-input').value;
+                    if(!h || !a || !l) {
+                        e.preventDefault();
+                        showToast('الرجاء اختيار الفرق والبطولة أولاً', 'error');
+                        return false;
+                    }
+                };
+            </script>
 
             <!-- Modal المتقدم للبحث -->
             <div id="searchModal" class="modal-overlay">
@@ -987,6 +1007,7 @@ if ($auth) {
 
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
             if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الأسم موجود بالفعل!', 'error');
+            if(url.searchParams.has('error') && url.searchParams.get('error') == 'empty') showToast('لا يمكن إضافة بيانات فارغة!', 'error');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
             
             // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
