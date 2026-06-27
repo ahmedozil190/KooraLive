@@ -196,8 +196,8 @@ if ($auth) {
                 <i class="fa-solid fa-gauge-high" style="font-size: 50px; color: #6366f1;"></i>
             </div>
             <h2 style="text-align:center; font-weight:800; margin-bottom:30px;">دخول النظام</h2>
-            <input type="text" name="user" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); color:#fff; border-radius:10px; margin-bottom:15px; box-sizing:border-box;" placeholder="اسم المستخدم" required>
-            <input type="password" name="pass" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--border); color:#fff; border-radius:10px; margin-bottom:25px; box-sizing:border-box;" placeholder="كلمة المرور" required>
+            <input type="text" name="user" style="width:100%; padding:14px; background:var(--bg-main); border:1px solid var(--border-color); color:var(--text-main); border-radius:10px; margin-bottom:15px; box-sizing:border-box;" placeholder="اسم المستخدم" required>
+            <input type="password" name="pass" style="width:100%; padding:14px; background:var(--bg-main); border:1px solid var(--border-color); color:var(--text-main); border-radius:10px; margin-bottom:25px; box-sizing:border-box;" placeholder="كلمة المرور" required>
             <button type="submit" name="login" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer;">دخول</button>
         </form>
     </div>
