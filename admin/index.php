@@ -8,6 +8,8 @@ header("Pragma: no-cache");
 
 $matchesFile = '../data/matches.json';
 $newsFile = '../data/news.json';
+$clubsFile = '../data/clubs.json';
+$leaguesFile = '../data/leagues.json';
 
 if (isset($_POST['login'])) {
     if ($_POST['user'] === 'admin' && $_POST['pass'] === '123456') { 
@@ -39,9 +41,36 @@ if ($auth) {
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['add_m'])) {
-            $d = json_decode(@file_get_contents($matchesFile), true) ?: [];
-            $d[] = array('id'=>time(),'homeTeam'=>$_POST['h'],'awayTeam'=>$_POST['a'],'homeLogo'=>$_POST['hl'],'awayLogo'=>$_POST['al'],'league'=>$_POST['l'],'time'=>$_POST['t'],'status'=>$_POST['s'],'status_text'=>$_POST['st'],'day'=>(isset($_POST['d'])?$_POST['d']:'today'),'channel'=>$_POST['c'],'streamUrl'=>$_POST['u'],'homeScore'=>"0",'awayScore'=>"0");
-            file_put_contents($matchesFile, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
+            $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
+            
+            $hName = $_POST['h'];
+            $aName = $_POST['a'];
+            
+            // جلب الشعارات تلقائياً
+            $hLogo = ""; $aLogo = "";
+            foreach($cs as $c) {
+                if($c['name'] == $hName) $hLogo = $c['logo'];
+                if($c['name'] == $aName) $aLogo = $c['logo'];
+            }
+            
+            $ms[] = array(
+                'id' => time(),
+                'homeTeam' => $hName,
+                'awayTeam' => $aName,
+                'homeLogo' => $hLogo,
+                'awayLogo' => $aLogo,
+                'league' => $_POST['l'],
+                'time' => $_POST['t'],
+                'status' => $_POST['s'],
+                'status_text' => ($_POST['s'] == 'live' ? 'جارية الآن' : ($_POST['s'] == 'finished' ? 'انتهت' : 'قادمة')),
+                'day' => (isset($_POST['d']) ? $_POST['d'] : 'today'),
+                'channel' => $_POST['c'],
+                'streamUrl' => $_POST['u'],
+                'homeScore' => "0",
+                'awayScore' => "0"
+            );
+            file_put_contents($matchesFile, json_encode($ms, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: /admin/index.php?section=add_m&success=1"); exit;
         }
         if (isset($_POST['add_n'])) {
@@ -109,8 +138,10 @@ if ($auth) {
             $files = glob('../uploads/*');
             $ns = json_decode(@file_get_contents($newsFile), true) ?: [];
             $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
+            $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
             $used = [];
             foreach($ns as $n) if(!empty($n['image'])) $used[] = basename($n['image']);
+            foreach($cs as $c) if(!empty($c['logo'])) $used[] = basename($c['logo']);
             foreach($ms as $m) {
                 if(!empty($m['homeLogo'])) $used[] = basename($m['homeLogo']);
                 if(!empty($m['awayLogo'])) $used[] = basename($m['awayLogo']);
@@ -120,6 +151,41 @@ if ($auth) {
                 if(!in_array(basename($f), $used)) { unlink($f); $count++; }
             }
             header("Location: /admin/index.php?section=news&cleaned=$count"); exit;
+        }
+        if (isset($_POST['add_club'])) {
+            $c = json_decode(@file_get_contents($clubsFile), true) ?: [];
+            $logo = $_POST['c_logo_url'];
+            if (isset($_FILES['c_logo_file']) && $_FILES['c_logo_file']['error'] === 0) {
+                $dir = '../uploads/';
+                if (!is_dir($dir)) mkdir($dir, 0777, true);
+                $ext = pathinfo($_FILES['c_logo_file']['name'], PATHINFO_EXTENSION);
+                $newName = 'club_' . time() . '.' . $ext;
+                if (move_uploaded_file($_FILES['c_logo_file']['tmp_name'], $dir . $newName)) {
+                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                    $logo = "$protocol://{$_SERVER['HTTP_HOST']}/uploads/$newName";
+                }
+            }
+            $c[] = ['id'=>time(), 'name'=>$_POST['c_name'], 'logo'=>$logo];
+            file_put_contents($clubsFile, json_encode($c, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs&success=1"); exit;
+        }
+        if (isset($_POST['add_league'])) {
+            $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+            $l[] = ['id'=>time(), 'name'=>$_POST['l_name']];
+            file_put_contents($leaguesFile, json_encode($l, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs&success=1"); exit;
+        }
+        if (isset($_GET['del_club'])) {
+            $c = json_decode(@file_get_contents($clubsFile), true) ?: [];
+            $c = array_filter($c, function($v) { return $v['id'] != $_GET['del_club']; });
+            file_put_contents($clubsFile, json_encode(array_values($c), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs"); exit;
+        }
+        if (isset($_GET['del_league'])) {
+            $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+            $l = array_filter($l, function($v) { return $v['id'] != $_GET['del_league']; });
+            file_put_contents($leaguesFile, json_encode(array_values($l), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs"); exit;
         }
         if (isset($_POST['instant_add'])) {
             $code = $_POST['html_code'];
@@ -216,6 +282,7 @@ if ($auth) {
         <div style="padding-top:20px;">
             <a href="/admin/index.php?section=main" class="nav-item <?php echo $sec=='main'?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
             <a href="/admin/index.php?section=current" class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
+            <a href="/admin/index.php?section=clubs" class="nav-item <?php echo $sec=='clubs'?'active':''; ?>"><i class="fa-solid fa-shield-halved"></i> الأندية والبطولات</a>
             <a href="/admin/index.php?section=add_m" class="nav-item <?php echo $sec=='add_m'?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
             <a href="/admin/index.php?section=instant" class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
             <a href="/admin/index.php?section=news" class="nav-item <?php echo $sec=='news'?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
@@ -390,21 +457,92 @@ if ($auth) {
                 input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
                 .day-tabs { gap: 5px; }
             </style>
+        <?php elseif($sec == 'clubs'): ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">الأندية والبطولات</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
+                <!-- إدارة الأندية -->
+                <div class="recent-card">
+                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i><h3>إضافة نادٍ</h3></div></div>
+                    <form method="POST" enctype="multipart/form-data" style="padding:20px;">
+                        <input type="text" name="c_name" class="form-input" placeholder="اسم النادي..." required style="margin-bottom:15px;">
+                        <div class="image-input-group" style="margin-bottom:15px;">
+                            <input type="text" name="c_logo_url" id="club-url" class="form-input" style="flex:1;" placeholder="رابط الشعار...">
+                            <div class="upload-btn-icon" onclick="document.getElementById('club-img').click()"><i class="fa-solid fa-camera"></i></div>
+                            <input type="file" name="c_logo_file" id="club-img" accept="image/*" hidden onchange="document.getElementById('club-url').value=this.files[0].name">
+                        </div>
+                        <button type="submit" name="add_club" class="btn-primary" style="width:100%; padding:12px;">حفظ النادي</button>
+                    </form>
+                    <div style="padding:0 20px 20px; max-height:400px; overflow-y:auto;">
+                        <?php 
+                            $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
+                            foreach($cs as $c): 
+                        ?>
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <img src="<?php echo $c['logo']; ?>" style="width:30px; height:30px; object-fit:contain;">
+                                <span style="font-weight:700; font-size:14px;"><?php echo $c['name']; ?></span>
+                            </div>
+                            <a href="/admin/index.php?del_club=<?php echo $c['id']; ?>" class="btn-del" style="padding:5px 8px;" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <!-- إدارة البطولات -->
+                <div class="recent-card">
+                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-trophy" style="color:#6366f1;"></i><h3>إضافة بطولة</h3></div></div>
+                    <form method="POST" style="padding:20px;">
+                        <input type="text" name="l_name" class="form-input" placeholder="اسم البطولة..." required style="margin-bottom:15px;">
+                        <button type="submit" name="add_league" class="btn-primary" style="width:100%; padding:12px;">حفظ البطولة</button>
+                    </form>
+                    <div style="padding:0 20px 20px; max-height:400px; overflow-y:auto;">
+                        <?php 
+                            $ls = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+                            foreach($ls as $l): 
+                        ?>
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);">
+                            <span style="font-weight:700; font-size:14px;"><?php echo $l['name']; ?></span>
+                            <a href="/admin/index.php?del_league=<?php echo $l['id']; ?>" class="btn-del" style="padding:5px 8px;" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
         <?php elseif($sec == 'add_m'): ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة (يدوياً)</h2>
             <form method="POST" style="background:var(--bg-card); padding:30px; border-radius:15px; border:1px solid var(--border-color);">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                    <div class="form-group"><label>الفريق الأرضي</label><input type="text" name="h" class="form-input" required></div>
-                    <div class="form-group"><label>لوجو الأرضي</label><input type="text" name="hl" class="form-input"></div>
-                    <div class="form-group"><label>الفريق الضيف</label><input type="text" name="a" class="form-input" required></div>
-                    <div class="form-group"><label>لوجو الضيف</label><input type="text" name="al" class="form-input"></div>
-                    <div class="form-group"><label>البطولة</label><input type="text" name="l" class="form-input"></div>
+                    <?php 
+                        $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
+                        $ls = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+                    ?>
+                    <div class="form-group">
+                        <label>الفريق الأرضي (الأول)</label>
+                        <select name="h" class="form-input" required>
+                            <option value="">اختر الفريق...</option>
+                            <?php foreach($cs as $c): ?><option value="<?php echo $c['name']; ?>"><?php echo $c['name']; ?></option><?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>الفريق الضيف (الثاني)</label>
+                        <select name="a" class="form-input" required>
+                            <option value="">اختر الفريق...</option>
+                            <?php foreach($cs as $c): ?><option value="<?php echo $c['name']; ?>"><?php echo $c['name']; ?></option><?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>البطولة</label>
+                        <select name="l" class="form-input">
+                            <option value="">اختر البطولة...</option>
+                            <?php foreach($ls as $l): ?><option value="<?php echo $l['name']; ?>"><?php echo $l['name']; ?></option><?php endforeach; ?>
+                        </select>
+                    </div>
                     <div class="form-group"><label>الوقت</label><input type="text" name="t" class="form-input" placeholder="09:00 PM"></div>
                     <div class="form-group"><label>الحالة</label><select name="s" class="form-input"><option value="upcoming">قادمة</option><option value="live">جارية الآن</option><option value="finished">انتهت</option></select></div>
-                    <div class="form-group"><label>اليوم</label><select name="d" class="form-input"><option value="today">اليوم</option><option value="yesterday">الأمس</option><option value="tomorrow">الغد</option></select></div>
+                    <div class="form-group"><label>اليوم</label><select name="d" class="form-input"><option value="today" selected>اليوم</option><option value="yesterday">الأمس</option><option value="tomorrow">الغد</option></select></div>
+                    <div class="form-group"><label>القناة</label><input type="text" name="c" class="form-input" placeholder="beIN Sports 1"></div>
+                    <div class="form-group"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
                 </div>
-                <div class="form-group" style="margin-top:10px;"><label>رابط البث</label><input type="text" name="u" class="form-input" placeholder="https://..."></div>
-                <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:10px; font-weight:800; font-size:16px; cursor:pointer;">إضافة المباراة الآن</button>
+                <button type="submit" name="add_m" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:20px; font-weight:800; font-size:16px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">إضافة المباراة الآن</button>
             </form>
         <?php elseif($sec == 'news'):
             $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
