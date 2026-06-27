@@ -575,7 +575,7 @@ if ($auth) {
                 if(tab) switchDay(tab);
             }
 
-            if(url.searchParams.has('success')) showToast('تمت العملية بنجاح ✓', 'success');
+            if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة ✓`, 'success');
         };
     </script>
