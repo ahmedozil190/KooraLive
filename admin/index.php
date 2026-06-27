@@ -177,7 +177,7 @@ if ($auth) {
             }
             
             file_put_contents($matchesFile, json_encode($matches, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=current&success=1&count=$addedCount");
+            header("Location: /admin/index.php?section=instant&success=1&count=$addedCount");
             exit;
         }
     }
@@ -356,33 +356,34 @@ if ($auth) {
                 }
             </script>
         <?php elseif($sec == 'instant'): ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">الإضافة الفورية للمباريات</h2>
-            <div class="recent-card" style="padding:30px;">
+            <h2 style="font-weight:800; margin-bottom:25px;">الإضافة الفورية</h2>
+            <div class="recent-card">
                 <form method="POST">
-                    <div style="margin-bottom:20px;">
-                        <label style="display:block; margin-bottom:10px; font-weight:800; color:var(--text-sub);">اختر اليوم المستهدف:</label>
-                        <div class="day-tabs" style="display:inline-flex;">
+                    <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-bolt" style="color:#6366f1;"></i><h3>إضافة كود المباريات</h3></div>
+                        <div class="day-tabs" style="margin-bottom:0; display:inline-flex; border:none; background:transparent;">
                             <input type="radio" name="target_day" value="yesterday" id="d-y" hidden>
-                            <label for="d-y" class="day-tab-label">الأمس</label>
+                            <label for="d-y" class="day-tab-label">مباريات الأمس</label>
                             
                             <input type="radio" name="target_day" value="today" id="d-td" hidden checked>
-                            <label for="d-td" class="day-tab-label">اليوم</label>
+                            <label for="d-td" class="day-tab-label">مباريات اليوم</label>
                             
                             <input type="radio" name="target_day" value="tomorrow" id="d-tr" hidden>
-                            <label for="d-tr" class="day-tab-label">الغد</label>
+                            <label for="d-tr" class="day-tab-label">مباريات الغد</label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>ألصق أكواد المباريات هنا:</label>
-                        <textarea name="html_code" class="form-input" rows="15" placeholder="ألصق الأكواد البرمجية للمباريات هنا..." required style="font-family:monospace; font-size:12px; height:350px;"></textarea>
+                    <div style="padding:25px;">
+                        <div class="form-group">
+                            <textarea name="html_code" class="form-input" rows="15" placeholder="ألصق الأكواد البرمجية للمباريات هنا..." required style="font-family:monospace; font-size:12px; height:350px;"></textarea>
+                        </div>
+                        <button type="submit" name="instant_add" style="width:100%; padding:16px; background:linear-gradient(90deg, #6366f1, #4f46e5); color:#fff; border:none; border-radius:15px; font-weight:800; font-size:17px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-bolt" style="margin-left:8px;"></i> إضافة كافة المباريات الآن</button>
                     </div>
-                    <button type="submit" name="instant_add" style="width:100%; padding:16px; background:linear-gradient(90deg, #6366f1, #4f46e5); color:#fff; border:none; border-radius:15px; font-weight:800; font-size:17px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-bolt" style="margin-left:8px;"></i> إضافة كافة المباريات الآن</button>
                 </form>
             </div>
             <style>
-                .day-tab-label { padding: 10px 30px; background: var(--bg-input); border-radius: 10px; cursor: pointer; font-weight: 700; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
-                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
-                .day-tabs { gap: 10px; background: transparent; border: none; padding: 0; }
+                .day-tab-label { padding: 8px 16px; background: var(--bg-input); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
+                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+                .day-tabs { gap: 10px; }
             </style>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
