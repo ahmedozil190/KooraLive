@@ -435,19 +435,17 @@ if ($auth) {
                 </form>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fa-solid fa-newspaper" style="color:#6366f1; font-size:20px;"></i>
-                    <h3 style="font-weight:800;">قائمة الأخبار</h3>
-                </div>
+            <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:20px; border-bottom:none;">
+                <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
                 <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
-                    <button type="submit" name="clean_imgs" class="btn-cancel-sm" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-sub);"><i class="fa-solid fa-broom"></i> تنظيف الصور</button>
+                    <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف الصور</button>
                 </form>
             </div>
+            
             <div class="recent-card">
                 <div class="table-res">
                     <table class="table">
-                        <thead><tr><th>الخبر</th><th style="width:120px;">العمليات</th></tr></thead>
+                        <thead><tr><th>الخبر</th><th style="width:120px;">التاريخ</th><th style="width:120px;">التحكم</th></tr></thead>
                         <tbody>
                         <?php foreach($displayNews as $n): ?>
                             <tr>
@@ -460,6 +458,7 @@ if ($auth) {
                                         </div>
                                     </div>
                                 </td>
+                                <td class="date-cell" data-time="<?php echo $n['id']; ?>" style="font-size:12px; font-weight:700; color:var(--text-sub);">--</td>
                                 <td>
                                     <div style="display:flex; gap:8px;">
                                         <button class="btn-edit" onclick="openNewsEdit(this)" data-news='<?php echo htmlspecialchars(json_encode($n), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
