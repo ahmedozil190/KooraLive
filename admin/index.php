@@ -64,11 +64,10 @@ if ($auth) {
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['add_m'])) {
-            $h = trim($_POST['h']);
-            $a = trim($_POST['a']);
-            $l = trim($_POST['l']);
+            $h = trim($_POST['h']); $a = trim($_POST['a']); $l = trim($_POST['l']);
+            $t = trim($_POST['t']); $mc = trim($_POST['m_c']); $ch = trim($_POST['c']); $u = trim($_POST['u']);
             
-            if (empty($h) || empty($a) || empty($l)) {
+            if (empty($h) || empty($a) || empty($l) || empty($t) || empty($mc) || empty($ch) || empty($u)) {
                 header("Location: /admin/index.php?section=add_m&error=empty"); exit;
             }
 
@@ -360,9 +359,31 @@ if ($auth) {
                     <table>
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
-                        <?php foreach(['today','yesterday','tomorrow'] as $dayKey):
-                            $dayM = array_filter($matches, function($m) use ($dayKey) { return (isset($m['day'])?$m['day']:'today') === $dayKey; });
-                            $dayM = array_slice(array_reverse($dayM), 0, 5); 
+                        <?php 
+                        // منطق التصفية الذكي والترتيب (مثل التطبيق)
+                        function sortMatches($list) {
+                            usort($list, function($a, $b) {
+                                $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
+                                $sA = isset($a['status']) ? $score[$a['status']] : 1;
+                                $sB = isset($b['status']) ? $score[$b['status']] : 1;
+                                if ($sA != $sB) return $sA - $sB;
+                                return strtotime(isset($a['time'])?$a['time']:'00:00') - strtotime(isset($b['time'])?$b['time']:'00:00');
+                            });
+                            return $list;
+                        }
+
+                        foreach(['today','yesterday','tomorrow'] as $dayKey):
+                            $dayM = array_filter($matches, function($m) use ($dayKey) {
+                                $mDay = isset($m['day']) ? $m['day'] : 'today';
+                                $mSt = isset($m['status']) ? $m['status'] : '';
+                                if ($dayKey == 'today') {
+                                    return ($mDay == 'today') || ($mDay == 'yesterday' && $mSt != 'finished');
+                                } else if ($dayKey == 'yesterday') {
+                                    return ($mDay == 'yesterday' && $mSt == 'finished');
+                                }
+                                return $mDay == $dayKey;
+                            });
+                            $dayM = sortMatches($dayM);
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
@@ -425,8 +446,32 @@ if ($auth) {
                     <table>
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="cur-tbody">
-                        <?php foreach(['today','yesterday','tomorrow'] as $dayKey):
-                            $dayM = array_values(array_filter($allM, function($m) use ($dayKey) { return (isset($m['day'])?$m['day']:'today') === $dayKey; }));
+                        <?php 
+                        // نفس منطق التصفية الذكي كما في التطبيق
+                        if (!function_exists('sortMatches')) {
+                            function sortMatches($list) {
+                                usort($list, function($a, $b) {
+                                    $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
+                                    $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
+                                    $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
+                                    if ($sA != $sB) return $sA - $sB;
+                                    return strtotime(isset($a['time'])?$a['time']:'00:00') - strtotime(isset($b['time'])?$b['time']:'00:00');
+                                });
+                                return $list;
+                            }
+                        }
+                        foreach(['today','yesterday','tomorrow'] as $dayKey):
+                            $dayM = array_values(array_filter($allM, function($m) use ($dayKey) {
+                                $mDay = isset($m['day']) ? $m['day'] : 'today';
+                                $mSt  = isset($m['status']) ? $m['status'] : '';
+                                if ($dayKey == 'today') {
+                                    return ($mDay == 'today') || ($mDay == 'yesterday' && $mSt != 'finished');
+                                } else if ($dayKey == 'yesterday') {
+                                    return ($mDay == 'yesterday' && $mSt == 'finished');
+                                }
+                                return $mDay == $dayKey;
+                            }));
+                            $dayM = sortMatches($dayM);
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
@@ -678,9 +723,14 @@ if ($auth) {
                     const h = document.getElementById('h-input').value;
                     const a = document.getElementById('a-input').value;
                     const l = document.getElementById('l-input').value;
-                    if(!h || !a || !l) {
+                    const t = this.t.value.trim();
+                    const mc = this.m_c.value.trim();
+                    const ch = this.c.value.trim();
+                    const u = this.u.value.trim();
+                    
+                    if(!h || !a || !l || !t || !mc || !ch || !u) {
                         e.preventDefault();
-                        showToast('الرجاء اختيار الفرق والبطولة أولاً', 'error');
+                        showToast('الرجاء إكمال كافة الخانات المطلوبة', 'error');
                         return false;
                     }
                 };
