@@ -178,26 +178,42 @@ if ($auth) {
         }
         if (isset($_POST['add_club'])) {
             $c = json_decode(@file_get_contents($clubsFile), true) ?: [];
-            $logo = $_POST['c_logo_url'];
-            if (isset($_FILES['c_logo_file']) && $_FILES['c_logo_file']['error'] === 0) {
-                $dir = '../uploads/';
-                if (!is_dir($dir)) mkdir($dir, 0777, true);
-                $ext = pathinfo($_FILES['c_logo_file']['name'], PATHINFO_EXTENSION);
-                $newName = 'club_' . time() . '.' . $ext;
-                if (move_uploaded_file($_FILES['c_logo_file']['tmp_name'], $dir . $newName)) {
-                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-                    $logo = "$protocol://{$_SERVER['HTTP_HOST']}/uploads/$newName";
+            $newNameClean = trim($_POST['c_name']);
+            $exists = false;
+            foreach($c as $ex) { if(trim($ex['name']) == $newNameClean) { $exists = true; break; } }
+            
+            if (!$exists) {
+                $logo = $_POST['c_logo_url'];
+                if (isset($_FILES['c_logo_file']) && $_FILES['c_logo_file']['error'] === 0) {
+                    $dir = '../uploads/';
+                    if (!is_dir($dir)) mkdir($dir, 0777, true);
+                    $ext = pathinfo($_FILES['c_logo_file']['name'], PATHINFO_EXTENSION);
+                    $newName = 'club_' . time() . '.' . $ext;
+                    if (move_uploaded_file($_FILES['c_logo_file']['tmp_name'], $dir . $newName)) {
+                        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                        $logo = "$protocol://{$_SERVER['HTTP_HOST']}/uploads/$newName";
+                    }
                 }
+                $c[] = ['id'=>time(), 'name'=>$newNameClean, 'logo'=>$logo];
+                file_put_contents($clubsFile, json_encode($c, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+                header("Location: /admin/index.php?section=clubs&tab=clubs&success=1"); exit;
+            } else {
+                header("Location: /admin/index.php?section=clubs&tab=clubs&error=exists"); exit;
             }
-            $c[] = ['id'=>time(), 'name'=>$_POST['c_name'], 'logo'=>$logo];
-            file_put_contents($clubsFile, json_encode($c, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs&success=1"); exit;
         }
         if (isset($_POST['add_league'])) {
             $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
-            $l[] = ['id'=>time(), 'name'=>$_POST['l_name'], 'desc'=>$_POST['l_desc']];
-            file_put_contents($leaguesFile, json_encode($l, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs&success=1"); exit;
+            $newNameClean = trim($_POST['l_name']);
+            $exists = false;
+            foreach($l as $ex) { if(trim($ex['name']) == $newNameClean) { $exists = true; break; } }
+
+            if (!$exists) {
+                $l[] = ['id'=>time(), 'name'=>$newNameClean, 'desc'=>$_POST['l_desc']];
+                file_put_contents($leaguesFile, json_encode($l, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+                header("Location: /admin/index.php?section=clubs&tab=leagues&success=1"); exit;
+            } else {
+                header("Location: /admin/index.php?section=clubs&tab=leagues&error=exists"); exit;
+            }
         }
         // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
         if (isset($_POST['instant_add'])) {
@@ -516,9 +532,16 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-database" style="color:#6366f1;"></i><h3>سجل الأندية والبطولات</h3></div>
-                    <div class="day-tabs" style="display:flex; background:var(--bg-body); padding:5px; border-radius:12px; border:1px solid var(--border-color); width:250px;">
-                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-link <?php echo $tab=='clubs'?'active':''; ?>">الأندية</a>
-                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-link <?php echo $tab=='leagues'?'active':''; ?>">البطولات</a>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <?php if($tab == 'clubs'): ?>
+                        <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف صور الأندية غير المستخدمة؟')">
+                            <button type="submit" name="clean_imgs" class="btn-purple" style="background:#4f46e5;"><i class="fa-solid fa-broom" style="margin-left:5px;"></i> تنظيف الصور</button>
+                        </form>
+                        <?php endif; ?>
+                        <div class="day-tabs" style="display:flex; background:var(--bg-body); padding:5px; border-radius:12px; border:1px solid var(--border-color); width:230px; margin-bottom:0;">
+                            <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-link <?php echo $tab=='clubs'?'active':''; ?>">الأندية</a>
+                            <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-link <?php echo $tab=='leagues'?'active':''; ?>">البطولات</a>
+                        </div>
                     </div>
                 </div>
                 <style>
@@ -970,6 +993,7 @@ if ($auth) {
             }
 
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
+            if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الاسم موجود بالفعل!', 'error');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
             
             // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
