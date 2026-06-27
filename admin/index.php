@@ -829,7 +829,6 @@ if ($auth) {
                 <?php if($page < $totalPages): ?><a href="/admin/index.php?section=news&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
             </div>
             <?php endif; ?>
-            <?php endif; ?>
 
             <div id="news-edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head">تعديل الخبر</div>
                 <form method="POST" enctype="multipart/form-data"><input type="hidden" name="edit_news_id" id="en-id"><div class="modal-body">
