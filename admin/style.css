@@ -130,3 +130,10 @@ td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); font-size
     .stat-card h3 { font-size: 24px; }
     .stat-card p { font-size: 11px; }
 }
+
+/* Global Pagination Style */
+.pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 30px; }
+.p-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-weight: 800; font-size: 13px; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.p-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3); }
+.p-btn:hover:not(.active) { background: var(--color-primary); color: #fff; transform: translateY(-2px); }
+.p-info { font-size: 14px; font-weight: 700; color: var(--text-sub); background: var(--bg-input); padding: 8px 15px; border-radius: 10px; border: 1px solid var(--border-color); }

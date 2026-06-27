@@ -178,15 +178,17 @@ if ($auth) {
         }
         if (isset($_GET['del_club'])) {
             $c = json_decode(@file_get_contents($clubsFile), true) ?: [];
-            $c = array_filter($c, function($v) { return $v['id'] != $_GET['del_club']; });
+            $cid = $_GET['del_club'];
+            $c = array_filter($c, function($v) use ($cid) { return strval($v['id']) !== strval($cid); });
             file_put_contents($clubsFile, json_encode(array_values($c), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs"); exit;
+            header("Location: /admin/index.php?section=clubs&tab=clubs"); exit;
         }
         if (isset($_GET['del_league'])) {
             $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
-            $l = array_filter($l, function($v) { return $v['id'] != $_GET['del_league']; });
+            $lid = $_GET['del_league'];
+            $l = array_filter($l, function($v) use ($lid) { return strval($v['id']) !== strval($lid); });
             file_put_contents($leaguesFile, json_encode(array_values($l), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs"); exit;
+            header("Location: /admin/index.php?section=clubs&tab=leagues"); exit;
         }
         if (isset($_POST['instant_add'])) {
             $code = $_POST['html_code'];
@@ -826,11 +828,7 @@ if ($auth) {
                 <?php endfor; ?>
                 <?php if($page < $totalPages): ?><a href="/admin/index.php?section=news&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
             </div>
-            <style>
-                .p-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-weight: 700; font-size: 13px; text-decoration: none; transition: 0.3s; }
-                .p-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-                .p-btn:hover:not(.active) { background: var(--bg-input); }
-            </style>
+            <?php endif; ?>
             <?php endif; ?>
 
             <div id="news-edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head">تعديل الخبر</div>
