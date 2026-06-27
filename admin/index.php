@@ -171,7 +171,7 @@ if ($auth) {
         }
         if (isset($_POST['add_league'])) {
             $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
-            $l[] = ['id'=>time(), 'name'=>$_POST['l_name']];
+            $l[] = ['id'=>time(), 'name'=>$_POST['l_name'], 'desc'=>$_POST['l_desc']];
             file_put_contents($leaguesFile, json_encode($l, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: /admin/index.php?section=clubs&success=1"); exit;
         }
@@ -493,6 +493,7 @@ if ($auth) {
                     <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-trophy" style="color:#6366f1;"></i><h3>إضافة بطولة جديدة</h3></div></div>
                     <form method="POST" style="padding:20px;">
                         <input type="text" name="l_name" class="form-input" placeholder="اسم البطولة..." required style="margin-bottom:15px;">
+                        <input type="text" name="l_desc" class="form-input" placeholder="وصف البطولة (اختياري)..." style="margin-bottom:15px;">
                         <button type="submit" name="add_league" class="btn-primary" style="width:100%; padding:14px; background:#6366f1; border-radius:12px; font-weight:800; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-plus-circle" style="margin-left:8px;"></i> إضافة البطولة</button>
                     </form>
                 </div>
