@@ -374,16 +374,17 @@ if ($auth) {
                     </div>
                     <div style="padding:25px;">
                         <div class="form-group">
-                            <textarea name="html_code" class="form-input" rows="15" placeholder="ألصق الأكواد البرمجية للمباريات هنا..." required style="font-family:monospace; font-size:12px; height:350px;"></textarea>
+                            <textarea name="html_code" class="form-input" rows="15" placeholder="ألصق الأكواد البرمجية للمباريات هنا..." required style="font-family:monospace; font-size:12px; height:350px; resize:vertical;"></textarea>
                         </div>
                         <button type="submit" name="instant_add" style="width:100%; padding:16px; background:linear-gradient(90deg, #6366f1, #4f46e5); color:#fff; border:none; border-radius:15px; font-weight:800; font-size:17px; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-bolt" style="margin-left:8px;"></i> إضافة كافة المباريات الآن</button>
                     </div>
                 </form>
             </div>
             <style>
-                .day-tab-label { padding: 8px 16px; background: var(--bg-input); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
-                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-                .day-tabs { gap: 10px; }
+                .day-tab-label { padding: 10px 20px; background: var(--bg-card); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
+                .day-tab-label:hover { background: var(--bg-input); }
+                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
+                .day-tabs { gap: 8px; }
             </style>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
