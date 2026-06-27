@@ -361,7 +361,7 @@ if ($auth) {
                 <form method="POST">
                     <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                         <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-bolt" style="color:#6366f1;"></i><h3>إضافة كود المباريات</h3></div>
-                        <div class="day-tabs" style="margin-bottom:0; display:inline-flex; border:none; background:transparent;">
+                        <div class="day-tabs">
                             <input type="radio" name="target_day" value="yesterday" id="d-y" hidden>
                             <label for="d-y" class="day-tab-label">مباريات الأمس</label>
                             
@@ -381,10 +381,10 @@ if ($auth) {
                 </form>
             </div>
             <style>
-                .day-tab-label { padding: 10px 20px; background: var(--bg-card); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-sub); transition: 0.3s; border: 1px solid var(--border-color); }
-                .day-tab-label:hover { background: var(--bg-input); }
-                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; border-color: var(--color-primary); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
-                .day-tabs { gap: 8px; }
+                .day-tab-label { padding: 8px 18px; background: transparent; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-sub); transition: 0.3s; border: 1px solid transparent; }
+                .day-tab-label:hover { color: var(--text-main); }
+                input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
+                .day-tabs { gap: 5px; }
             </style>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة</h2>
