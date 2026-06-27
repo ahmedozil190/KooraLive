@@ -503,12 +503,13 @@ if ($auth) {
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-database" style="color:#6366f1;"></i><h3>سجل الأندية والبطولات</h3></div>
                     <div class="day-tabs">
-                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-label" style="text-decoration:none; <?php echo $tab=='clubs'?'background:var(--color-primary); color:#fff; box-shadow:0 4px 15px rgba(99,102, 241, 0.2);':''; ?>">الأندية</a>
-                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-label" style="text-decoration:none; <?php echo $tab=='leagues'?'background:var(--color-primary); color:#fff; box-shadow:0 4px 15px rgba(99,102, 241, 0.2);':''; ?>">البطولات</a>
+                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-label <?php echo $tab=='clubs'?'active':''; ?>" style="text-decoration:none;">الأندية</a>
+                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-label <?php echo $tab=='leagues'?'active':''; ?>" style="text-decoration:none;">البطولات</a>
                     </div>
                 </div>
                 <div class="table-res" style="border-top:1px solid var(--border-color);">
                     <table class="table">
+                        <?php if($totalItems > 0): ?>
                         <thead>
                             <tr>
                                 <?php if($tab == 'clubs'): ?>
@@ -538,9 +539,22 @@ if ($auth) {
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
+                        <?php else: ?>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="text-align:center; padding:50px 0;">
+                                        <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                                        <div style="font-weight:700; color:var(--text-sub);">لا توجد <?php echo $tab=='clubs'?'أندية':'بطولات'; ?> مضافة حالياً</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        <?php endif; ?>
                     </table>
                 </div>
             </div>
+            <style>
+                .day-tab-label.active { background: var(--color-primary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
+            </style>
 
             <!-- أرقام الصفحات للسجل -->
             <?php if($totalPages > 1): ?>
