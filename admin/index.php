@@ -1,6 +1,11 @@
 <?php
 session_start();
 // تصحيح المسارات لتعمل من داخل مجلد admin
+// منع التخزين المؤقت لضمان ظهور أحدث البيانات دائماً
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 $matchesFile = '../data/matches.json';
 $newsFile = '../data/news.json';
 
@@ -292,7 +297,6 @@ if ($auth) {
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
                 <h2 style="font-weight:800;">إدارة المباريات</h2>
-                <input type="text" id="cur-search" placeholder="بحث..." oninput="filterMatches()" class="form-input" style="width:280px; box-shadow:none;">
             </div>
             <div class="stats-grid">
                 <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي</p></div>
