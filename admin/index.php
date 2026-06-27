@@ -25,6 +25,29 @@ $news = json_decode(@file_get_contents($newsFile), true);
 if(!$news) $news = array();
 
 if ($auth) {
+        // --- كود حذف الأندية والبطولات (نقل للأعلى للإصلاح) ---
+        if (isset($_GET['del_club'])) {
+            $cData = json_decode(@file_get_contents($clubsFile), true) ?: [];
+            $targetId = strval($_GET['del_club']);
+            $newC = [];
+            foreach($cData as $item) {
+                if (strval($item['id']) !== $targetId) { $newC[] = $item; }
+            }
+            file_put_contents($clubsFile, json_encode(array_values($newC), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs&tab=clubs&success=deleted"); exit;
+        }
+        if (isset($_GET['del_league'])) {
+            $lData = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+            $targetId = strval($_GET['del_league']);
+            $newL = [];
+            foreach($lData as $item) {
+                if (strval($item['id']) !== $targetId) { $newL[] = $item; }
+            }
+            file_put_contents($leaguesFile, json_encode(array_values($newL), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: /admin/index.php?section=clubs&tab=leagues&success=deleted"); exit;
+        }
+        // --------------------------------------------------
+
     if (isset($_GET['del_m'])) {
         $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
         $ms = array_filter($ms, function($v) { return $v['id'] != $_GET['del_m']; });
@@ -176,20 +199,7 @@ if ($auth) {
             file_put_contents($leaguesFile, json_encode($l, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: /admin/index.php?section=clubs&success=1"); exit;
         }
-        if (isset($_GET['del_club'])) {
-            $c = json_decode(@file_get_contents($clubsFile), true) ?: [];
-            $cid = $_GET['del_club'];
-            $c = array_filter($c, function($v) use ($cid) { return strval($v['id']) !== strval($cid); });
-            file_put_contents($clubsFile, json_encode(array_values($c), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs&tab=clubs"); exit;
-        }
-        if (isset($_GET['del_league'])) {
-            $l = json_decode(@file_get_contents($leaguesFile), true) ?: [];
-            $lid = $_GET['del_league'];
-            $l = array_filter($l, function($v) use ($lid) { return strval($v['id']) !== strval($lid); });
-            file_put_contents($leaguesFile, json_encode(array_values($l), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=clubs&tab=leagues"); exit;
-        }
+        // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
         if (isset($_POST['instant_add'])) {
             $code = $_POST['html_code'];
             $targetDay = $_POST['target_day'];
