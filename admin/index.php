@@ -502,11 +502,16 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-database" style="color:#6366f1;"></i><h3>سجل الأندية والبطولات</h3></div>
-                    <div class="day-tabs">
-                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-label <?php echo $tab=='clubs'?'active':''; ?>" style="text-decoration:none;">الأندية</a>
-                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-label <?php echo $tab=='leagues'?'active':''; ?>" style="text-decoration:none;">البطولات</a>
+                    <div class="day-tabs" style="display:flex; background:var(--bg-body); padding:5px; border-radius:12px; border:1px solid var(--border-color); width:250px;">
+                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-link <?php echo $tab=='clubs'?'active':''; ?>">الأندية</a>
+                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-link <?php echo $tab=='leagues'?'active':''; ?>">البطولات</a>
                     </div>
                 </div>
+                <style>
+                    .day-tab-link { flex:1; text-align:center; padding:8px 15px; border-radius:10px; cursor:pointer; color:var(--text-sub); font-weight:700; transition:0.3s; text-decoration:none; font-size:13px; }
+                    .day-tab-link.active { background:var(--color-primary); color:#fff; box-shadow:0 4px 15px rgba(99, 102, 241, 0.2); }
+                    .day-tab-link:not(.active):hover { background:var(--border-color); color:var(--text-main); }
+                </style>
                 <div class="table-res" style="border-top:1px solid var(--border-color);">
                     <table class="table">
                         <?php if($totalItems > 0): ?>
@@ -552,9 +557,6 @@ if ($auth) {
                     </table>
                 </div>
             </div>
-            <style>
-                .day-tab-label.active { background: var(--color-primary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
-            </style>
 
             <!-- أرقام الصفحات للسجل -->
             <?php if($totalPages > 1): ?>
