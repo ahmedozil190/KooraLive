@@ -292,7 +292,7 @@ if ($auth) {
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
                 <h2 style="font-weight:800;">إدارة المباريات</h2>
-                <input type="text" id="cur-search" placeholder="بحث..." oninput="filterMatches()" style="padding:12px 14px; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:10px; font-family:'Cairo'; font-size:13px; width:280px; outline:none;">
+                <input type="text" id="cur-search" placeholder="بحث..." oninput="filterMatches()" class="form-input" style="width:280px; box-shadow:none;">
             </div>
             <div class="stats-grid">
                 <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي</p></div>
@@ -351,15 +351,6 @@ if ($auth) {
                     });
                 }
             </script>
-            <div id="edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</div>
-                <form method="POST" action="/admin/index.php?section=current"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
-                    <div><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input"></div>
-                    <div><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input"></div>
-                    <div><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">جارية الآن</option><option value="finished">انتهت</option></select></div>
-                    <div><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input"></div>
-                    <div class="full"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input"></div>
-                </div><div class="modal-foot"><button type="button" class="btn-cancel-sm" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button><button type="submit" name="save_edit" class="btn-primary-sm">حفظ</button></div></form>
-            </div></div>
         <?php elseif($sec == 'instant'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">الإضافة الفورية للمباريات</h2>
             <div class="recent-card" style="padding:30px;">
@@ -468,6 +459,17 @@ if ($auth) {
                 </div><div class="modal-foot"><button type="button" class="btn-cancel-sm" onclick="document.getElementById('news-edit-modal').classList.remove('open')">إلغاء</button><button type="submit" name="save_news_edit" class="btn-primary-sm">حفظ</button></div></form>
             </div></div>
         <?php endif; ?>
+        
+        <!-- نافذة تعديل المباراة (عامة) -->
+        <div id="edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</div>
+            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
+                <div><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input"></div>
+                <div><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input"></div>
+                <div><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">جارية الآن</option><option value="finished">انتهت</option></select></div>
+                <div><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input"></div>
+                <div class="full"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input"></div>
+            </div><div class="modal-foot"><button type="button" class="btn-cancel-sm" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button><button type="submit" name="save_edit" class="btn-primary-sm">حفظ</button></div></form>
+        </div></div>
     </main>
     <script>
         const themeBtn = document.getElementById('adm-theme');
