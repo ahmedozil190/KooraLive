@@ -457,12 +457,28 @@ if ($auth) {
                 input[type="radio"]:checked + .day-tab-label { background: var(--color-primary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); }
                 .day-tabs { gap: 5px; }
             </style>
-        <?php elseif($sec == 'clubs'): ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">الأندية والبطولات</h2>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
-                <!-- إدارة الأندية -->
+        <?php elseif($sec == 'clubs'): 
+            $allC = json_decode(@file_get_contents($clubsFile), true) ?: [];
+            $allL = json_decode(@file_get_contents($leaguesFile), true) ?: [];
+            
+            $tab = isset($_GET['tab']) ? $_GET['tab'] : 'clubs';
+            $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+            $limit = 10;
+            
+            $activeList = ($tab == 'clubs') ? $allC : $allL;
+            usort($activeList, function($a, $b) { return $b['id'] - $a['id']; }); // الأحدث أولاً
+            
+            $totalItems = count($activeList);
+            $totalPages = ceil($totalItems / $limit);
+            $start = ($page - 1) * $limit;
+            $displayItems = array_slice($activeList, $start, $limit);
+        ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">إدارة الأندية والبطولات</h2>
+            
+            <!-- قسم الإضافة (منفصل في الأعلى) -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px; margin-bottom:30px;">
                 <div class="recent-card">
-                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i><h3>إضافة نادٍ</h3></div></div>
+                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i><h3>إضافة نادٍ جديد</h3></div></div>
                     <form method="POST" enctype="multipart/form-data" style="padding:20px;">
                         <input type="text" name="c_name" class="form-input" placeholder="اسم النادي..." required style="margin-bottom:15px;">
                         <div class="image-input-group" style="margin-bottom:15px;">
@@ -470,43 +486,72 @@ if ($auth) {
                             <div class="upload-btn-icon" onclick="document.getElementById('club-img').click()"><i class="fa-solid fa-camera"></i></div>
                             <input type="file" name="c_logo_file" id="club-img" accept="image/*" hidden onchange="document.getElementById('club-url').value=this.files[0].name">
                         </div>
-                        <button type="submit" name="add_club" class="btn-primary" style="width:100%; padding:12px;">حفظ النادي</button>
+                        <button type="submit" name="add_club" class="btn-primary" style="width:100%; padding:14px; background:#6366f1; border-radius:12px; font-weight:800; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-plus-circle" style="margin-left:8px;"></i> إضافة النادي</button>
                     </form>
-                    <div style="padding:0 20px 20px; max-height:400px; overflow-y:auto;">
-                        <?php 
-                            $cs = json_decode(@file_get_contents($clubsFile), true) ?: [];
-                            foreach($cs as $c): 
-                        ?>
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <img src="<?php echo $c['logo']; ?>" style="width:30px; height:30px; object-fit:contain;">
-                                <span style="font-weight:700; font-size:14px;"><?php echo $c['name']; ?></span>
-                            </div>
-                            <a href="/admin/index.php?del_club=<?php echo $c['id']; ?>" class="btn-del" style="padding:5px 8px;" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
                 </div>
-                <!-- إدارة البطولات -->
                 <div class="recent-card">
-                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-trophy" style="color:#6366f1;"></i><h3>إضافة بطولة</h3></div></div>
+                    <div class="recent-header"><div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-trophy" style="color:#6366f1;"></i><h3>إضافة بطولة جديدة</h3></div></div>
                     <form method="POST" style="padding:20px;">
                         <input type="text" name="l_name" class="form-input" placeholder="اسم البطولة..." required style="margin-bottom:15px;">
-                        <button type="submit" name="add_league" class="btn-primary" style="width:100%; padding:12px;">حفظ البطولة</button>
+                        <button type="submit" name="add_league" class="btn-primary" style="width:100%; padding:14px; background:#6366f1; border-radius:12px; font-weight:800; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-plus-circle" style="margin-left:8px;"></i> إضافة البطولة</button>
                     </form>
-                    <div style="padding:0 20px 20px; max-height:400px; overflow-y:auto;">
-                        <?php 
-                            $ls = json_decode(@file_get_contents($leaguesFile), true) ?: [];
-                            foreach($ls as $l): 
-                        ?>
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);">
-                            <span style="font-weight:700; font-size:14px;"><?php echo $l['name']; ?></span>
-                            <a href="/admin/index.php?del_league=<?php echo $l['id']; ?>" class="btn-del" style="padding:5px 8px;" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
                 </div>
             </div>
+
+            <!-- سجل الأندية والبطولات -->
+            <div class="recent-card">
+                <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-database" style="color:#6366f1;"></i><h3>سجل الأندية والبطولات</h3></div>
+                    <div class="day-tabs">
+                        <a href="/admin/index.php?section=clubs&tab=clubs" class="day-tab-label" style="text-decoration:none; <?php echo $tab=='clubs'?'background:var(--color-primary); color:#fff; box-shadow:0 4px 15px rgba(99,102, 241, 0.2);':''; ?>">الأندية</a>
+                        <a href="/admin/index.php?section=clubs&tab=leagues" class="day-tab-label" style="text-decoration:none; <?php echo $tab=='leagues'?'background:var(--color-primary); color:#fff; box-shadow:0 4px 15px rgba(99,102, 241, 0.2);':''; ?>">البطولات</a>
+                    </div>
+                </div>
+                <div class="table-res" style="border-top:1px solid var(--border-color);">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <?php if($tab == 'clubs'): ?>
+                                    <th style="width:120px; text-align:center;">الشعار</th>
+                                    <th style="text-align:right;">اسم النادي</th>
+                                <?php else: ?>
+                                    <th style="text-align:right;">اسم البطولة</th>
+                                <?php endif; ?>
+                                <th style="width:120px; text-align:center;">التحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($displayItems as $item): ?>
+                            <tr>
+                                <?php if($tab == 'clubs'): ?>
+                                    <td style="text-align:center;"><img src="<?php echo $item['logo']; ?>" style="width:35px; height:35px; object-fit:contain;"></td>
+                                    <td style="font-weight:800; font-size:14px; text-align:right;"><?php echo $item['name']; ?></td>
+                                    <td style="text-align:center;">
+                                        <a href="/admin/index.php?section=clubs&del_club=<?php echo $item['id']; ?>" class="btn-del" onclick="return confirm('حذف هذا النادي؟')"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+                                <?php else: ?>
+                                    <td style="font-weight:800; font-size:14px; text-align:right;"><?php echo $item['name']; ?></td>
+                                    <td style="text-align:center;">
+                                        <a href="/admin/index.php?section=clubs&del_league=<?php echo $item['id']; ?>" class="btn-del" onclick="return confirm('حذف هذه البطولة؟')"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- أرقام الصفحات للسجل -->
+            <?php if($totalPages > 1): ?>
+            <div style="display:flex; justify-content:center; gap:8px; margin-top:25px;">
+                <?php if($page > 1): ?><a href="/admin/index.php?section=clubs&tab=<?php echo $tab; ?>&p=<?php echo $page-1; ?>" class="p-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
+                <?php for($i=1; $i<=$totalPages; $i++): ?>
+                    <a href="/admin/index.php?section=clubs&tab=<?php echo $tab; ?>&p=<?php echo $i; ?>" class="p-btn <?php echo $i==$page?'active':''; ?>"><?php echo $i; ?></a>
+                <?php endfor; ?>
+                <?php if($page < $totalPages): ?><a href="/admin/index.php?section=clubs&tab=<?php echo $tab; ?>&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
+            </div>
+            <?php endif; ?>
         <?php elseif($sec == 'add_m'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباراة (يدوياً)</h2>
             <form method="POST" style="background:var(--bg-card); padding:30px; border-radius:15px; border:1px solid var(--border-color);">
