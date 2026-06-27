@@ -986,7 +986,7 @@ if ($auth) {
             }
 
             if(url.searchParams.has('success')) showToast('تمت العملية بنجاح', 'success');
-            if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الفريق موجود بالفعل!', 'error');
+            if(url.searchParams.has('error') && url.searchParams.get('error') == 'exists') showToast('هذا الأسم موجود بالفعل!', 'error');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
             
             // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
