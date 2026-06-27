@@ -435,15 +435,14 @@ if ($auth) {
                 </form>
             </div>
 
-            <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:20px; border-bottom:none;">
-                <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
-                <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
-                    <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف الصور</button>
-                </form>
-            </div>
-            
             <div class="recent-card">
-                <div class="table-res">
+                <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
+                    <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف الصور غير المستخدمة؟')">
+                        <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف الصور</button>
+                    </form>
+                </div>
+                <div class="table-res" style="border-top:1px solid var(--border-color);">
                     <table class="table">
                         <thead><tr><th>الخبر</th><th style="width:120px;">التاريخ</th><th style="width:120px;">التحكم</th></tr></thead>
                         <tbody>
