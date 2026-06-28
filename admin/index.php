@@ -1097,14 +1097,27 @@ if ($auth) {
                                 <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                             </div>
                         </div>
-                        <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px;">
-                            <div style="flex:1;">
+                        <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:150px;">
                                 <label>تحديث النتائج (بالدقائق)</label>
-                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" max="1440">
+                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1">
                             </div>
-                            <div style="flex:1;">
-                                <label>ساعة الجلب اليومي (0-23)</label>
-                                <input type="number" id="fetch-hour" class="form-input" value="<?php echo $fetchHour; ?>" min="0" max="23">
+                            <div style="flex:1; min-width:200px;">
+                                <label>وقت الجلب اليومي</label>
+                                <div style="display:flex; gap:5px;">
+                                    <select id="fetch-h-12" class="form-input" style="flex:1;">
+                                        <?php for($i=1; $i<=12; $i++): ?>
+                                            <option value="<?php echo $i; ?>" <?php 
+                                                $h12 = ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour);
+                                                echo $h12 == $i ? 'selected' : ''; 
+                                            ?>><?php echo $i; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                    <select id="fetch-ampm" class="form-input" style="flex:1;">
+                                        <option value="AM" <?php echo $fetchHour < 12 ? 'selected' : ''; ?>>AM</option>
+                                        <option value="PM" <?php echo $fetchHour >= 12 ? 'selected' : ''; ?>>PM</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
@@ -1159,19 +1172,34 @@ if ($auth) {
             }
 
             async function saveApiSettings() {
-                const key = document.getElementById('api-key-input').value.trim();
+                const keyInput = document.getElementById('api-key-input').value.trim();
                 const min = document.getElementById('cache-minutes').value;
-                const hour = document.getElementById('fetch-hour').value;
+                const h12 = parseInt(document.getElementById('fetch-h-12').value);
+                const ampm = document.getElementById('fetch-ampm').value;
                 const auto = document.getElementById('auto-fetch').checked;
-                if (!key) { showToast('أدخل مفتاح الـ API أولاً', 'error'); return; }
+
+                // تحويل الوقت من 12h إلى 24h
+                let hour24 = h12;
+                if (ampm === 'PM' && h12 < 12) hour24 += 12;
+                if (ampm === 'AM' && h12 === 12) hour24 = 0;
+
                 const r = await fetch('/admin/api.php?action=save_api_settings', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({api_key: key, cache_minutes: parseInt(min), fetch_hour: parseInt(hour), auto_fetch: auto})
+                    body: JSON.stringify({
+                        api_key: keyInput, // سيتم تجاهله في السيرفر إذا كان فارغاً
+                        cache_minutes: parseInt(min), 
+                        fetch_hour: hour24, 
+                        auto_fetch: auto
+                    })
                 });
                 const d = await r.json();
-                if (d.success) { showToast('تم حفظ الإعدادات بنجاح ✅', 'success'); setTimeout(()=>location.reload(), 1000); }
-                else showToast('خطأ في الحفظ', 'error');
+                if (d.success) { 
+                    showToast('تم حفظ الإعدادات بنجاح ✅', 'success'); 
+                    setTimeout(()=>location.reload(), 1000); 
+                } else {
+                    showToast('خطأ في الحفظ', 'error');
+                }
             }
 
             async function forceFetch() {
