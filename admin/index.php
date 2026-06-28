@@ -400,7 +400,9 @@ if ($auth) {
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td><?php echo htmlspecialchars($m['homeTeam'] . " vs " . $m['awayTeam']); ?></td>
                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                             <td><?php echo date("h:i A", strtotime($m['time'])); ?></td>
+                             <td style="font-weight:800; color:#6366f1;">
+                                 <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
+                             </td>
                              <td class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars(isset($m['status_text'])?$m['status_text']:'--'); ?></td>
                              <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
@@ -497,8 +499,10 @@ if ($auth) {
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td><?php echo htmlspecialchars($m['homeTeam'] . " vs " . $m['awayTeam']); ?></td>
-                            <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                            <td><?php echo date("h:i A", strtotime($m['time'])); ?></td>
+                             <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
+                             <td style="font-weight:800; color:#6366f1;">
+                                 <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
+                             </td>
                             <td><span class="<?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
@@ -1014,7 +1018,7 @@ if ($auth) {
                                 </div>
                             </td>
                             <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
-                            <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${m.time}</td>
+                            <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
                             <td style="padding:15px;">
                                 <span class="status-badge ${stClass}">${stTxt}</span>
                             </td>
@@ -1425,6 +1429,11 @@ if ($auth) {
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 100);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+        function formatLocalTime(ts) {
+            if(!ts) return '--:--';
+            const d = new Date(ts * 1000);
+            return d.toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit', hour12: true});
         }
         function formatLocalDates() {
             document.querySelectorAll('.date-cell').forEach(cell => {
