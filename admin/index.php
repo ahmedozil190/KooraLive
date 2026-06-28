@@ -1083,10 +1083,12 @@ if ($auth) {
                 <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
-                <!-- إعدادات الاتصال -->
+            <div style="max-width:800px; margin:0 auto;">
                 <div class="recent-card">
-                    <div class="recent-header"><i class="fa-solid fa-key" style="color:#6366f1;"></i><h3 style="margin-right:10px;">إعدادات الاتصال</h3></div>
+                    <div class="recent-header">
+                        <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
+                        <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
+                    </div>
                     <div style="padding:25px;">
                         <div class="form-group">
                             <label>مفتاح API-Football</label>
@@ -1097,15 +1099,16 @@ if ($auth) {
                                 <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                             </div>
                         </div>
+
                         <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
                             <div style="flex:1; min-width:150px;">
                                 <label>تحديث النتائج (بالدقائق)</label>
-                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1">
+                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
                             </div>
                             <div style="flex:1; min-width:200px;">
                                 <label>وقت الجلب اليومي</label>
                                 <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                    <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:center;" 
+                                    <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
                                         value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
                                     <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
                                         <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
@@ -1114,6 +1117,7 @@ if ($auth) {
                                 </div>
                             </div>
                         </div>
+
                         <style>
                             .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
                             .t-opt { padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
@@ -1127,29 +1131,19 @@ if ($auth) {
                                 }
                             });
                         </script>
-                        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+
+                        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
                             <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
                             <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
                         </div>
-                        <button onclick="saveApiSettings()" class="p-btn" style="width:100%; height:45px; background:#6366f1; color:#fff; border-radius:12px;">حفظ الإعدادات</button>
-                    </div>
-                </div>
 
-                <!-- الإجراءات اليدوية المحدثة -->
-                <div class="recent-card">
-                    <div class="recent-header"><i class="fa-solid fa-wand-magic-sparkles" style="color:#10b981;"></i><h3 style="margin-right:10px;">إجراءات يدوية</h3></div>
-                    <div style="padding:25px; display:flex; flex-direction:column; gap:15px;">
-                        <button onclick="forceFetch()" class="p-btn" style="width:100%; height:45px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
-                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
-                        </button>
-                        <div style="background:var(--bg-input); border-radius:12px; padding:18px; border:1px solid var(--border-color); line-height:1.8;">
-                            <p style="font-size:12px; color:var(--text-sub); margin:0;">
-                                <i class="fa-solid fa-circle-info" style="color:#6366f1;"></i>
-                                <strong style="color:var(--text-main);"> كيف يعمل الكاش اليومي:</strong><br>
-                                • يتم جلب نسخة المباريات (البنك) <strong>مرة واحدة يومياً</strong><br>
-                                • تتغير النسخة تلقائياً كل يوم عند الساعة <strong>12:00 بعد منتصف الليل</strong><br>
-                                • هذا يضمن لك استهلاك <strong>1% فقط</strong> من حصة طلباتك اليومية.
-                            </p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                            <button onclick="saveApiSettings()" class="p-btn" style="height:50px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800;">
+                                <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
+                            </button>
+                            <button onclick="forceFetch()" class="p-btn" style="height:50px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
+                                <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
+                            </button>
                         </div>
                     </div>
                 </div>
