@@ -136,6 +136,8 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes) {
                 $f = $apiUpdates[$m['id']];
                 $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
                 $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                $m['time'] = date('H:i', $f['fixture']['timestamp'] ?? time());
+                $m['timestamp'] = $f['fixture']['timestamp'] ?? 0;
                 $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
                 if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
                 elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
