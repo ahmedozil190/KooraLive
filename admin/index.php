@@ -126,22 +126,19 @@ if ($auth) {
             $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
             foreach ($ms as &$m) {
                 if ($m['id'] == $mid) {
-                    if(empty($_POST['edit_h']) || empty($_POST['edit_a']) || empty($_POST['edit_l'])) continue;
-                    $m['homeTeam']    = $_POST['edit_h'];
-                    $m['awayTeam']    = $_POST['edit_a'];
-                    $m['league']      = $_POST['edit_l'];
                     $m['status']      = isset($_POST['edit_status']) ? $_POST['edit_status'] : $m['status'];
                     $m['channel']     = isset($_POST['edit_channel']) ? $_POST['edit_channel'] : (isset($m['channel']) ? $m['channel'] : '');
                     $m['commentator'] = isset($_POST['edit_commentator']) ? $_POST['edit_commentator'] : (isset($m['commentator']) ? $m['commentator'] : '');
                     $m['score']       = isset($_POST['edit_score']) ? $_POST['edit_score'] : (isset($m['score']) ? $m['score'] : 'vs');
                     $m['streamUrl']  = isset($_POST['edit_stream']) ? $_POST['edit_stream'] : (isset($m['streamUrl']) ? $m['streamUrl'] : '');
-                    $statusMap = array('live'=>'جارية الآن','upcoming'=>'قادمة','finished'=>'انتهت');
+                    
+                    $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
                     $m['status_text'] = isset($statusMap[$m['status']]) ? $statusMap[$m['status']] : $m['status'];
                     break;
                 }
             }
             file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=current"); exit;
+            header("Location: /admin/index.php?section=current&success=1"); exit;
         }
         if (isset($_POST['save_news_edit'])) {
             $nid = $_POST['edit_news_id'];
@@ -405,14 +402,27 @@ if ($auth) {
                                 <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لهذا اليوم</div>
                             </td>
                         </tr>
-                        <?php foreach($dayM as $m): $statusClass = (isset($m['status']) && $m['status'] === 'live') ? 'status-live' : ''; ?>
+                        <?php foreach($dayM as $m): 
+                            $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
+                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
+                            $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
+                        ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                             <td><?php echo htmlspecialchars($m['homeTeam'] . " vs " . $m['awayTeam']); ?></td>
-                             <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
+                             <td style="padding:15px 25px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
+                                    <img src="<?php echo $m['homeLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
+                                    <span style="background:var(--bg-body); padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-dim);">VS</span>
+                                    <img src="<?php echo $m['awayLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
+                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                </div>
+                             </td>
+                             <td style="color:var(--text-sub); font-size:13px;"><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars(isset($m['status_text'])?$m['status_text']:'--'); ?></td>
+                             <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -499,20 +509,26 @@ if ($auth) {
                             </td>
                         </tr>
                         <?php foreach($dayM as $m):
-                            $badgeClass = (isset($m['status']) && $m['status'] === 'live') ? 'badge-live' : ((isset($m['status']) && $m['status'] === 'finished') ? 'badge-finished' : 'badge-upcoming');
-                            $badgeText  = 'لم تبدأ بعد';
-                            if(isset($m['status'])) {
-                                if($m['status'] === 'live') $badgeText = 'مباشر الآن';
-                                elseif($m['status'] === 'finished') $badgeText = 'انتهت المباراة';
-                            }
+                            $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
+                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
+                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                            <td><?php echo htmlspecialchars($m['homeTeam'] . " vs " . $m['awayTeam']); ?></td>
+                            <td style="padding:15px 25px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
+                                    <img src="<?php echo $m['homeLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
+                                    <span style="background:var(--bg-body); padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-dim);">VS</span>
+                                    <img src="<?php echo $m['awayLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
+                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                </div>
+                            </td>
                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                            <td><span class="<?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
+                            <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
