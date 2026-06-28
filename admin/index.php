@@ -300,6 +300,15 @@ if ($auth) {
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script>
+        function formatLocalTime(ts) {
+            if(!ts) return '--:--';
+            try {
+                const d = new Date(ts * 1000);
+                return d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true});
+            } catch(e) { return '--:--'; }
+        }
+    </script>
 </head>
 <body>
 <?php if (!$auth): ?>
@@ -1429,11 +1438,6 @@ if ($auth) {
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 100);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3000);
-        }
-        function formatLocalTime(ts) {
-            if(!ts) return '--:--';
-            const d = new Date(ts * 1000);
-            return d.toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit', hour12: true});
         }
         function formatLocalDates() {
             document.querySelectorAll('.date-cell').forEach(cell => {
