@@ -1081,7 +1081,7 @@ if ($auth) {
                 <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;"><?php 
                     $dispMsg = ($fetchHour == 0) ? '12:00 AM' : (($fetchHour > 12) ? ($fetchHour-12).':00 PM' : (($fetchHour==12)?'12:00 PM':$fetchHour.':00 AM'));
                     echo $dispMsg; 
-                ?></h3><p>تحديث البنك القادم</p></div>
+                ?></h3><p>تحديث المباريات القادم</p></div>
                 <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:16px;">...</h3><p>آخر تحديث حي</p></div>
                 <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
             </div>
@@ -1104,11 +1104,11 @@ if ($auth) {
 
                     <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
-                            <label>تحديث النتائج (بالدقائق)</label>
+                            <label>تحديث النتائج - بالدقائق</label>
                             <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
                         </div>
                         <div style="flex:1; min-width:200px;">
-                            <label>وقت الجلب اليومي</label>
+                            <label>وقت تحديث المباريات اليومي</label>
                             <div style="display:flex; gap:10px; align-items:center; width:100%;">
                                 <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
                                     value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
@@ -1120,20 +1120,20 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px; align-items: flex-end;">
                         <!-- جلب تلقائي -->
                         <div>
-                            <label style="display:block; margin-bottom:10px; font-weight:800;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
-                            <div class="time-toggle" id="auto-fetch-toggle" style="display:flex; width:100%;">
-                                <div class="t-opt <?php echo $autoF ? 'active' : ''; ?>" data-val="1" style="flex:1; text-align:center;">تفعيل</div>
-                                <div class="t-opt <?php echo !$autoF ? 'active' : ''; ?>" data-val="0" style="flex:1; text-align:center;">تعطيل</div>
+                            <label>تفعيل النظام التلقائي</label>
+                            <div class="time-toggle" id="auto-fetch-toggle" style="display:flex; width:100%; height:48px; box-sizing:border-box; align-items:center;">
+                                <div class="t-opt <?php echo $autoF ? 'active' : ''; ?>" data-val="1" style="flex:1; text-align:center; height:38px; display:flex; align-items:center; justify-content:center;">تفعيل</div>
+                                <div class="t-opt <?php echo !$autoF ? 'active' : ''; ?>" data-val="0" style="flex:1; text-align:center; height:38px; display:flex; align-items:center; justify-content:center;">تعطيل</div>
                             </div>
                         </div>
                         <!-- جلب يدوي -->
                         <div>
-                            <label style="display:block; margin-bottom:10px; font-weight:800;">طلب تحديث المباريات</label>
-                            <button onclick="forceFetch()" class="p-btn" style="width:100%; height:45px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> جلب بنك جديد (Snapshot)
+                            <label>طلب تحديث المباريات</label>
+                            <button onclick="forceFetch()" class="p-btn" style="width:100%; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> طلب البيانات من جديد
                             </button>
                         </div>
                     </div>
