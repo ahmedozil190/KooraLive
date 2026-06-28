@@ -319,13 +319,13 @@ if ($auth) {
         <div style="padding:30px; font-size:24px; font-weight:800; color:#6366f1; text-align:center; border-bottom:1px solid var(--border);">كورة لايف</div>
         <div style="padding-top:20px;">
             <a href="/admin/index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
-            <a href="/admin/index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
+            <a href="/admin/index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات الحالية</a>
             <a href="/admin/index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
             <a href="/admin/index.php?section=clubs"    class="nav-item <?php echo $sec=='clubs'  ?'active':''; ?>"><i class="fa-solid fa-shield-halved"></i> الأندية والبطولات</a>
             <a href="/admin/index.php?section=add_m"   class="nav-item <?php echo $sec=='add_m'  ?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
             <a href="/admin/index.php?section=instant"  class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
-            <a href="/admin/index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
-            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:18px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API</a>
+            <a href="/admin/index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
+            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
@@ -1069,17 +1069,18 @@ if ($auth) {
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
             $savedKey = isset($apiSettings['api_key']) && !empty($apiSettings['api_key']);
             $cacheMin = $apiSettings['cache_minutes'] ?? 15;
+            $fetchHour = $apiSettings['fetch_hour'] ?? 0;
             $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
         ?>
             <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة مزود البيانات (API)</h2>
-            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام الكاش الذكي: يتم أرشفة مباريات الأيام الثلاثة (أمس، اليوم، غد) مرة واحدة يومياً عند منتصف الليل لتوفير الطلبات.</p>
+            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام الكاش الذكي: يتم أرشفة مباريات الأيام الثلاثة (أمس، اليوم، غد) مرة واحدة يومياً لتوفير الطلبات.</p>
 
             <!-- بطاقات الحالة المحدثة -->
             <div class="stats-grid" style="margin-bottom:25px;">
                 <div class="stat-card total"><i class="fa-solid fa-calendar-check"></i><h3 id="st-fetch-date" style="font-size:16px;">...</h3><p>آخر جلب يومي</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;">12:00 AM</h3><p>تحديث البنك القادم</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;"><?php echo sprintf("%02d:00", $fetchHour); ?> <?php echo $fetchHour >= 12 ? 'PM' : 'AM'; ?></h3><p>تحديث البنك القادم</p></div>
                 <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:16px;">...</h3><p>آخر تحديث حي</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبات المستخدمة</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
@@ -1096,13 +1097,15 @@ if ($auth) {
                                 <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>تحديث النتائج (ألعاب جارية فقط)</label>
-                            <select id="cache-minutes" class="form-input">
-                                <option value="10" <?php echo $cacheMin==10?'selected':''; ?>>كل 10 دقائق</option>
-                                <option value="15" <?php echo $cacheMin==15?'selected':''; ?>>كل 15 دقيقة (موصى به)</option>
-                                <option value="30" <?php echo $cacheMin==30?'selected':''; ?>>كل 30 دقيقة</option>
-                            </select>
+                        <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px;">
+                            <div style="flex:1;">
+                                <label>تحديث النتائج (بالدقائق)</label>
+                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" max="1440">
+                            </div>
+                            <div style="flex:1;">
+                                <label>ساعة الجلب اليومي (0-23)</label>
+                                <input type="number" id="fetch-hour" class="form-input" value="<?php echo $fetchHour; ?>" min="0" max="23">
+                            </div>
                         </div>
                         <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                             <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
@@ -1158,15 +1161,16 @@ if ($auth) {
             async function saveApiSettings() {
                 const key = document.getElementById('api-key-input').value.trim();
                 const min = document.getElementById('cache-minutes').value;
+                const hour = document.getElementById('fetch-hour').value;
                 const auto = document.getElementById('auto-fetch').checked;
                 if (!key) { showToast('أدخل مفتاح الـ API أولاً', 'error'); return; }
                 const r = await fetch('/admin/api.php?action=save_api_settings', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({api_key: key, cache_minutes: parseInt(min), auto_fetch: auto})
+                    body: JSON.stringify({api_key: key, cache_minutes: parseInt(min), fetch_hour: parseInt(hour), auto_fetch: auto})
                 });
                 const d = await r.json();
-                if (d.success) showToast('تم حفظ الإعدادات بنجاح ✅', 'success');
+                if (d.success) { showToast('تم حفظ الإعدادات بنجاح ✅', 'success'); setTimeout(()=>location.reload(), 1000); }
                 else showToast('خطأ في الحفظ', 'error');
             }
 

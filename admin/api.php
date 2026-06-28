@@ -31,6 +31,7 @@ $settings = file_exists($settingsFile) ? array_merge($defaultSettings, json_deco
 $apiKey       = $settings['api_key'] ?? '';
 $autoFetch    = $settings['auto_fetch'] ?? true;
 $cacheMinutes = (int)($settings['cache_minutes'] ?? 15);
+$fetchHour    = (int)($settings['fetch_hour'] ?? 0);
 
 // ========== الدوال المساعدة ==========
 function readJson($path) {
@@ -93,9 +94,12 @@ function mapApiMatch($f, $dayLabel) {
 }
 
 // ========== 1. الجلب اليومي للبنك ==========
-function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank) {
+function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
     if (empty($apiKey)) return;
     $today = date('Y-m-d');
+    $currentHour = (int)date('H');
+    if ($currentHour < $fetchHour) return; // لم يحن وقت الجلب بعد
+
     $dailyCache = readJson($dailyCacheF);
     if (($dailyCache['date'] ?? '') === $today) return;
 
@@ -150,7 +154,7 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes) {
 }
 
 if ($autoFetch) {
-    runDailyFetch($apiKey, $dailyCacheF, $fixturesBank);
+    runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour);
     runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes);
 }
 
@@ -190,7 +194,8 @@ if ($action === 'api_status') {
 if ($action === 'save_api_settings') {
     $inp = json_decode(file_get_contents('php://input'), true);
     $settings['api_key'] = trim($inp['api_key'] ?? $settings['api_key']);
-    $settings['cache_minutes'] = max(5, intval($inp['cache_minutes'] ?? 15));
+    $settings['cache_minutes'] = max(1, intval($inp['cache_minutes'] ?? 15));
+    $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'] ?? 0)));
     $settings['auto_fetch'] = $inp['auto_fetch'] ?? true;
     writeJson($settingsFile, $settings);
     echo json_encode(['success' => true]); exit;
