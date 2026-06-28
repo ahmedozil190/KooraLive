@@ -909,11 +909,12 @@ if ($auth) {
                                 <th style="padding:15px 25px;">المباراة</th>
                                 <th style="padding:15px;">البطولة</th>
                                 <th style="padding:15px;">الوقت</th>
+                                <th style="padding:15px;">الحالة</th>
                                 <th style="padding:15px 25px; text-align:left;">التحكم</th>
                             </tr>
                         </thead>
                         <tbody id="api-bank-body">
-                            <tr><td colspan="4" style="text-align:center; padding:50px; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding:50px; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -955,6 +956,10 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
+                .status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-block; }
+                .status-live { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
+                .status-final { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+                .status-up { background:var(--bg-main); color:var(--text-dim); border:1px solid var(--border-color); }
             </style>
 
             <script>
@@ -972,10 +977,15 @@ if ($auth) {
                     const tbody = document.getElementById('api-bank-body');
                     const filtered = apiBank.filter(m => m.day === day);
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:60px; color:var(--text-dim);"><i class="fa-solid fa-check-double" style="font-size:30px; margin-bottom:15px; display:block; color:#10b981;"></i> لا توجد مباريات جديدة متاحة حالياً</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:60px; color:var(--text-dim);"><i class="fa-solid fa-check-double" style="font-size:30px; margin-bottom:15px; display:block; color:#10b981;"></i> لا توجد مباريات جديدة متاحة حالياً</td></tr>`;
                         return;
                     }
-                    tbody.innerHTML = filtered.map(m => `
+                    tbody.innerHTML = filtered.map(m => {
+                        let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
+                        if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
+                        else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
+
+                        return `
                         <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
                             <td style="padding:18px 25px;">
                                 <div style="display:flex; align-items:center; gap:12px;">
@@ -991,14 +1001,17 @@ if ($auth) {
                                 </div>
                             </td>
                             <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
-                            <td style="padding:15px; font-weight:800; color:#10b981; font-size:14px;">${m.time}</td>
+                            <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${m.time}</td>
+                            <td style="padding:15px;">
+                                <span class="status-badge ${stClass}">${stTxt}</span>
+                            </td>
                             <td style="padding:15px 25px; text-align:left;">
                                 <button class="api-add-btn" onclick="openApiModal('${m.id}')">
                                     <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
                                 </button>
                             </td>
-                        </tr>
-                    `).join('');
+                        </tr>`;
+                    }).join('');
                 }
 
                 function switchApiTab(tab) {
