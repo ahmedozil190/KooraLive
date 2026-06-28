@@ -96,20 +96,33 @@ function mapApiMatch($f, $dayLabel) {
 // ========== 1. الجلب اليومي للبنك ==========
 function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
     if (empty($apiKey)) return;
+    set_time_limit(300); // 5 دقائق مهلة
+    ini_set('memory_limit', '256M');
+
     $today = date('Y-m-d');
     $currentHour = (int)date('H');
-    if ($currentHour < $fetchHour) return; // لم يحن وقت الجلب بعد
+    if ($currentHour < $fetchHour) return;
 
     $dailyCache = readJson($dailyCacheF);
     if (($dailyCache['date'] ?? '') === $today) return;
 
-    $dates = ['yesterday' => date('Y-m-d', strtotime('-1 day')), 'today' => $today, 'tomorrow' => date('Y-m-d', strtotime('+1 day'))];
+    $dates = [
+        'yesterday' => date('Y-m-d', strtotime('-1 day')),
+        'today' => $today,
+        'tomorrow' => date('Y-m-d', strtotime('+1 day'))
+    ];
+
     $fetchedMatches = [];
     foreach ($dates as $dayLabel => $dateStr) {
         $result = callApi("fixtures?date=$dateStr&timezone=Asia/Riyadh", $apiKey);
-        if ($result) foreach ($result as $f) $fetchedMatches[] = mapApiMatch($f, $dayLabel);
+        if ($result && is_array($result)) {
+            foreach ($result as $f) {
+                $fetchedMatches[] = mapApiMatch($f, $dayLabel);
+            }
+        }
     }
-    if ($fetchedMatches) {
+
+    if (!empty($fetchedMatches)) {
         writeJson($fixturesBank, $fetchedMatches);
         writeJson($dailyCacheF, ['date' => $today, 'time' => time(), 'count' => count($fetchedMatches)]);
     }
