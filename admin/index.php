@@ -391,7 +391,10 @@ if ($auth) {
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
-                            <td colspan="6"><div style="padding:40px; text-align:center; color:var(--text-dim);"><i class="fa-solid fa-futbol" style="font-size:30px; margin-bottom:10px; display:block;"></i><p>لا توجد مباريات مضافة لهذا اليوم</p></div></td>
+                            <td colspan="6" style="text-align:center; padding:50px 0;">
+                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لهذا اليوم</div>
+                            </td>
                         </tr>
                         <?php foreach($dayM as $m): $statusClass = (isset($m['status']) && $m['status'] === 'live') ? 'status-live' : ''; ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
@@ -479,7 +482,10 @@ if ($auth) {
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
-                            <td colspan="6"><div style="padding:40px; text-align:center; color:var(--text-dim);"><i class="fa-solid fa-calendar-day" style="font-size:30px; margin-bottom:10px; display:block;"></i><p>لا توجد مباريات مضافة</p></div></td>
+                            <td colspan="6" style="text-align:center; padding:50px 0;">
+                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة</div>
+                            </td>
                         </tr>
                         <?php foreach($dayM as $m):
                             $badgeClass = (isset($m['status']) && $m['status'] === 'live') ? 'badge-live' : ((isset($m['status']) && $m['status'] === 'finished') ? 'badge-finished' : 'badge-upcoming');
@@ -981,7 +987,10 @@ if ($auth) {
                     const tbody = document.getElementById('api-bank-body');
                     const filtered = apiBank.filter(m => m.day === day);
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:60px; color:var(--text-dim);"><i class="fa-solid fa-check-double" style="font-size:30px; margin-bottom:15px; display:block; color:#10b981;"></i> لا توجد مباريات جديدة متاحة حالياً</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:60px 0;">
+                            <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                            <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
+                        </td></tr>`;
                         return;
                     }
                     tbody.innerHTML = filtered.map(m => {
@@ -1270,6 +1279,7 @@ if ($auth) {
                     <table class="table">
                         <thead><tr><th style="width:120px; text-align:center;">الصورة</th><th style="text-align:right;">العنوان</th><th style="width:180px; text-align:center;">التاريخ</th><th style="width:180px; text-align:center;">التحكم</th></tr></thead>
                         <tbody>
+                        <?php if(count($displayNews) > 0): ?>
                         <?php foreach($displayNews as $n): ?>
                             <tr>
                                 <td style="text-align:center;">
@@ -1285,6 +1295,14 @@ if ($auth) {
                                 </td>
                             </tr>
                         <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding:50px 0;">
+                                    <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                                    <div style="font-weight:700; color:var(--text-sub);">لا توجد أخبار مضافة حالياً</div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
