@@ -249,12 +249,61 @@ if ($action === 'trigger_live_update') {
     if (empty($apiKey)) {
         echo json_encode(['success' => false, 'error' => 'مفتاح API غير موجود']); exit;
     }
-    $cacheSeconds = (int)($settings['cache_seconds'] ?? 900);
-    // إعادة ضبط وقت التحديث الأخير لإجبار التحديث الفوري
-    writeJson($liveCacheF, ['time' => 0]);
-    runLiveUpdate($apiKey, $liveCacheF, $matchesFile, 0);
-    $l = readJson($liveCacheF);
-    echo json_encode(['success' => true, 'updated' => $l['updated'] ?? 0, 'time' => date('h:i A', $l['time'] ?? time())]); exit;
+
+    $allMatches = readJson($matchesFile);
+    $totalMatches = count($allMatches);
+
+    // اختيار المباريات التي تمتلك ID رقمي وليست منتهية
+    $idsToUpdate = [];
+    foreach ($allMatches as $m) {
+        $notFinished = ($m['status'] ?? '') !== 'finished';
+        $hasId = !empty($m['id']) && (is_numeric($m['id']) || preg_match('/^[0-9]+$/', $m['id']));
+        if ($notFinished && $hasId) {
+            $idsToUpdate[] = $m['id'];
+        }
+    }
+
+    $apiUpdatesCount = 0;
+    $updatedMatchesCount = 0;
+    
+    if (!empty($idsToUpdate)) {
+        $chunks = array_chunk($idsToUpdate, 20);
+        foreach ($chunks as $chunk) {
+            $res = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
+            if ($res && is_array($res)) {
+                foreach ($res as $f) {
+                    $apiUpdatesCount++;
+                    $apiId = (string)$f['fixture']['id'];
+                    foreach ($allMatches as &$m) {
+                        if ((string)$m['id'] === $apiId) {
+                            $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                            $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                            $m['timestamp'] = $f['fixture']['timestamp'] ?? 0;
+                            $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                            if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
+                            elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+                            else $m['status'] = 'upcoming';
+                            $updatedMatchesCount++;
+                        }
+                    }
+                }
+            }
+        }
+        if ($updatedMatchesCount > 0) {
+            writeJson($matchesFile, array_values($allMatches));
+        }
+        writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedMatchesCount]);
+    } else {
+        writeJson($liveCacheF, ['time' => time(), 'updated' => 0]);
+    }
+
+    echo json_encode([
+        'success'       => true,
+        'updated'       => $updatedMatchesCount,
+        'ids_sent'      => count($idsToUpdate),
+        'total_in_file' => $totalMatches,
+        'time'          => date('h:i A', time())
+    ]); exit;
 }
 
 // لوحة التحكم - جلب قائمة البنك للاختيار

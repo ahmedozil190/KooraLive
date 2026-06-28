@@ -1306,8 +1306,13 @@ if ($auth) {
                     const r = await fetch('/admin/api.php?action=trigger_live_update');
                     const d = await r.json();
                     if (d.success) {
-                        showToast('✅ تم تحديث ' + d.updated + ' مباراة | آخر تحديث: ' + d.time, 'success');
-                        // تحديث خانة "آخر تحديث حي" في الصفحة
+                        // عرض تفاصيل التشخيص في الرسالة
+                        let msg = `✅ تم التحديث: ${d.updated} مباراة`;
+                        msg += ` | المرسل للـ API: ${d.ids_sent}`;
+                        msg += ` | الإجمالي بالملف: ${d.total_in_file}`;
+                        
+                        showToast(msg, 'success');
+                        
                         const el = document.getElementById('st-live-update');
                         if (el) el.textContent = d.time;
                     } else {
