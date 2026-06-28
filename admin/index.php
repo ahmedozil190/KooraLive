@@ -318,12 +318,12 @@ if ($auth) {
         <div style="padding-top:20px;">
             <a href="/admin/index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
             <a href="/admin/index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
+            <a href="/admin/index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
             <a href="/admin/index.php?section=clubs"    class="nav-item <?php echo $sec=='clubs'  ?'active':''; ?>"><i class="fa-solid fa-shield-halved"></i> الأندية والبطولات</a>
             <a href="/admin/index.php?section=add_m"   class="nav-item <?php echo $sec=='add_m'  ?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
             <a href="/admin/index.php?section=instant"  class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
             <a href="/admin/index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
-            <a href="/admin/index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:18px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> إضافة مباراة API</a>
-            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API</a>
+            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:18px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
@@ -855,31 +855,50 @@ if ($auth) {
                     if (event.target == document.getElementById('searchModal')) closeModals();
                 }
             </script>
-        <?php elseif($sec == 'api_add'): ?>
-            <h2 style="font-weight:800; margin-bottom:10px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> إضافة مباريات من الـ API</h2>
-            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">اختر المباريات التي تود عرضها في الموقع وسيتم تحديث نتائجها تلقائياً.</p>
-
-            <div class="tabs-container" style="margin-bottom:20px;">
-                <div class="day-tabs" style="justify-content: flex-start; gap:10px;">
-                    <button class="day-tab active" data-day="yesterday" onclick="switchApiTab(this)">الأمس</button>
-                    <button class="day-tab" data-day="today" onclick="switchApiTab(this)">اليوم</button>
-                    <button class="day-tab" data-day="tomorrow" onclick="switchApiTab(this)">الغد</button>
-                </div>
+        <?php elseif($sec == 'api_add'): 
+            $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
+            $c_total = count($bank);
+            $c_today = count(array_filter($bank, fn($m) => $m['day'] == 'today'));
+            $c_yest  = count(array_filter($bank, fn($m) => $m['day'] == 'yesterday'));
+            $c_tom   = count(array_filter($bank, fn($m) => $m['day'] == 'tomorrow'));
+        ?>
+            <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباريات من الـ API</h2>
+            
+            <!-- بطاقات الإحصائيات الجمالية -->
+            <div class="stats-grid" style="margin-bottom:30px;">
+                <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $c_total; ?></h3><p>إجمالي بنك المباريات</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-calendar-check"></i><h3><?php echo $c_today; ?></h3><p>مباريات اليوم</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-calendar-minus"></i><h3><?php echo $c_yest; ?></h3><p>مباريات الأمس</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-calendar-plus"></i><h3><?php echo $c_tom; ?></h3><p>مباريات الغد</p></div>
             </div>
 
+            <!-- حاوية الجدول بتصميم "نظرة عامة" -->
             <div class="recent-card">
+                <div class="recent-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> 
+                        <h3 style="margin:0;">بنك مباريات الـ API</h3>
+                    </div>
+                    <!-- تبويبات الأيام في اليسار -->
+                    <div class="recent-tabs" style="background:var(--bg-main); padding:4px; border-radius:10px; display:flex; gap:5px;">
+                        <div class="r-tab active" data-day="today" onclick="switchApiTab(this)">اليوم</div>
+                        <div class="r-tab" data-day="yesterday" onclick="switchApiTab(this)">الأمس</div>
+                        <div class="r-tab" data-day="tomorrow" onclick="switchApiTab(this)">الغد</div>
+                    </div>
+                </div>
+                
                 <div style="overflow-x:auto;">
                     <table style="width:100%; border-collapse:collapse;">
                         <thead>
-                            <tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub);">
-                                <th style="padding:15px;">المباراة</th>
+                            <tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub); font-size:13px;">
+                                <th style="padding:15px 25px;">المباراة</th>
                                 <th style="padding:15px;">البطولة</th>
                                 <th style="padding:15px;">الوقت</th>
-                                <th style="padding:15px;">التحكم</th>
+                                <th style="padding:15px 25px; text-align:left;">التحكم</th>
                             </tr>
                         </thead>
                         <tbody id="api-bank-body">
-                            <tr><td colspan="4" style="text-align:center; padding:50px; color:var(--text-dim);">جاري تحميل بنك المباريات...</td></tr>
+                            <tr><td colspan="4" style="text-align:center; padding:50px; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -887,39 +906,40 @@ if ($auth) {
 
             <!-- Modal إضافة بيانات البث -->
             <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-                <div class="modal" style="background:var(--card); width:450px; border-radius:10px; overflow:hidden;">
+                <div class="modal" style="background:var(--card); width:450px; border-radius:15px; overflow:hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
                     <div class="modal-header" style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0;">إضافة بيانات البث</h3>
+                        <h3 style="margin:0; font-size:18px;">إضافة بيانات البث</h3>
                         <button onclick="closeApiModal()" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:20px;"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div style="padding:25px;">
                         <input type="hidden" id="add-api-id">
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <label style="display:block; margin-bottom:8px;">رابط البث</label>
-                            <input type="text" id="add-api-url" class="form-input" placeholder="https://..." style="width:100%; box-sizing:border-box;">
+                        <div class="form-group" style="margin-bottom:18px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700;">رابط البث</label>
+                            <input type="text" id="add-api-url" class="form-input" placeholder="https://..." style="width:100%; box-sizing:border-box; padding:12px;">
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:8px;">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN 1" style="width:100%; box-sizing:border-box;">
+                                <label style="display:block; margin-bottom:8px; font-weight:700;">القناة</label>
+                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN 1" style="width:100%; box-sizing:border-box; padding:12px;">
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:8px;">المعلق</label>
-                                <input type="text" id="add-api-comm" class="form-input" placeholder="المعلق" style="width:100%; box-sizing:border-box;">
+                                <label style="display:block; margin-bottom:8px; font-weight:700;">المعلق</label>
+                                <input type="text" id="add-api-comm" class="form-input" placeholder="المعلق" style="width:100%; box-sizing:border-box; padding:12px;">
                             </div>
                         </div>
-                        <button onclick="confirmAddFromBank()" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; margin-top:25px; font-weight:800; cursor:pointer;">
-                            تأكيد الإضافة للموقع
+                        <button onclick="confirmAddFromBank()" style="width:100%; padding:15px; background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color:#fff; border:none; border-radius:12px; margin-top:25px; font-weight:800; cursor:pointer; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.3);">
+                            <i class="fa-solid fa-check-circle" style="margin-left:8px;"></i> تأكيد الإضافة للموقع
                         </button>
                     </div>
                 </div>
             </div>
 
             <style>
-                .day-tab { padding:10px 25px; border-radius:10px; border:1px solid var(--border-color); background:var(--card); color:var(--text-main); cursor:pointer; font-weight:700; transition:0.3s; }
-                .day-tab.active { background:#6366f1; color:#fff; border-color:#6366f1; }
-                .api-add-btn { padding:8px 15px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.1); color:#6366f1; cursor:pointer; font-weight:700; transition:0.3s; }
-                .api-add-btn:hover { background:#6366f1; color:#fff; }
+                .r-tab { padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700; color:var(--text-sub); cursor:pointer; transition:0.3s; }
+                .r-tab:hover { color:var(--text-main); }
+                .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+                .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
+                .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
             </style>
 
             <script>
@@ -928,46 +948,48 @@ if ($auth) {
                     try {
                         const r = await fetch('/admin/api.php?action=get_bank');
                         apiBank = await r.json();
-                        const activeTab = document.querySelector('.day-tab.active').dataset.day;
+                        const activeTab = document.querySelector('.r-tab.active').dataset.day;
                         renderBank(activeTab);
-                    } catch(e) { 
-                        document.getElementById('api-bank-body').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#ef4444;">تعذر تحميل البيانات. تأكد من إعداد API Key.</td></tr>';
-                    }
+                    } catch(e) { console.error(e); }
                 }
 
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
                     const filtered = apiBank.filter(m => m.day === day);
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:50px; color:var(--text-dim);"><i class="fa-solid fa-circle-check" style="font-size:30px; margin-bottom:10px; display:block;"></i> لا توجد مباريات جديدة متاحة</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:60px; color:var(--text-dim);"><i class="fa-solid fa-check-double" style="font-size:30px; margin-bottom:15px; display:block; color:#10b981;"></i> لا توجد مباريات جديدة متاحة حالياً</td></tr>`;
                         return;
                     }
                     tbody.innerHTML = filtered.map(m => `
-                        <tr style="border-bottom:1px solid var(--border-color);">
-                            <td style="padding:15px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <img src="${m.homeLogo}" style="width:28px; height:28px; object-fit:contain;">
-                                    <span style="font-weight:700;">${m.homeTeam}</span>
-                                    <span style="color:var(--text-dim); font-size:12px;">vs</span>
-                                    <span style="font-weight:700;">${m.awayTeam}</span>
-                                    <img src="${m.awayLogo}" style="width:28px; height:28px; object-fit:contain;">
+                        <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                            <td style="padding:18px 25px;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
+                                        <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
+                                        <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                    </div>
+                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
+                                        <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                        <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
+                                    </div>
                                 </div>
                             </td>
-                            <td style="padding:15px; color:var(--text-sub);">${m.league}</td>
-                            <td style="padding:15px; font-weight:700; color:#10b981;">${m.time}</td>
-                            <td style="padding:15px; text-align:left;">
+                            <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
+                            <td style="padding:15px; font-weight:800; color:#10b981; font-size:14px;">${m.time}</td>
+                            <td style="padding:15px 25px; text-align:left;">
                                 <button class="api-add-btn" onclick="openApiModal('${m.id}')">
-                                    <i class="fa-solid fa-plus-circle"></i> إضافة للموقع
+                                    <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
                                 </button>
                             </td>
                         </tr>
                     `).join('');
                 }
 
-                function switchApiTab(btn) {
-                    document.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    renderBank(btn.dataset.day);
+                function switchApiTab(tab) {
+                    document.querySelectorAll('.r-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderBank(tab.dataset.day);
                 }
 
                 function openApiModal(id) {
@@ -986,6 +1008,11 @@ if ($auth) {
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
 
+                    const btn = event.currentTarget;
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
+
                     try {
                         const r = await fetch('/admin/api.php?action=add_from_bank', {
                             method: 'POST',
@@ -994,11 +1021,13 @@ if ($auth) {
                         });
                         const d = await r.json();
                         if(d.success) {
-                            showToast('تمت إضافة المباراة بنجاح ✅', 'success');
+                            showToast('تم بنجاح! المباراة الآن حية في الموقع ✅', 'success');
                             closeApiModal();
                             loadBank();
                         }
                     } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
 
                 loadBank();
