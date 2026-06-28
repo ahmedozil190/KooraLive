@@ -410,17 +410,17 @@ if ($auth) {
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
-                                <div style="display:flex; align-items:center; justify-content:center; width:100%; gap:0;">
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-left:10px;">
-                                        <span style="font-weight:700; font-size:13px; text-align:left; line-height:1.2;"><?php echo $m['homeTeam']; ?></span>
-                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
+                                <div style="display:grid; grid-template-columns: 1fr 50px 1fr; align-items:center; width:100%; direction:rtl;">
+                                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; overflow:hidden;">
+                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <div style="width:50px; display:flex; justify-content:center; flex-shrink:0;">
-                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border); display:inline-block; line-height:1;">VS</span>
+                                    <div style="display:flex; justify-content:center;">
+                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border-color); white-space:nowrap;">VS</span>
                                     </div>
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding-right:10px;">
-                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; text-align:right; line-height:1.2;"><?php echo $m['awayTeam']; ?></span>
+                                    <div style="display:flex; align-items:center; justify-content:flex-start; gap:10px; overflow:hidden;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
+                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -522,17 +522,17 @@ if ($auth) {
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
-                                <div style="display:flex; align-items:center; justify-content:center; width:100%; gap:0;">
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-left:10px;">
-                                        <span style="font-weight:700; font-size:13px; text-align:left; line-height:1.2;"><?php echo $m['homeTeam']; ?></span>
-                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
+                                <div style="display:grid; grid-template-columns: 1fr 50px 1fr; align-items:center; width:100%; direction:rtl;">
+                                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; overflow:hidden;">
+                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <div style="width:50px; display:flex; justify-content:center; flex-shrink:0;">
-                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border); display:inline-block; line-height:1;">VS</span>
+                                    <div style="display:flex; justify-content:center;">
+                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border-color); white-space:nowrap;">VS</span>
                                     </div>
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding-right:10px;">
-                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; text-align:right; line-height:1.2;"><?php echo $m['awayTeam']; ?></span>
+                                    <div style="display:flex; align-items:center; justify-content:flex-start; gap:10px; overflow:hidden;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
+                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                             </td>
@@ -972,29 +972,29 @@ if ($auth) {
                 </div>
             </div>
 
-            <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-                <div class="modal-content" style="width:90%; max-width:450px;">
-                    <div class="modal-header">
-                        <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة بيانات البث</h3>
+            <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+                <div class="modal-content" style="background: var(--bg-card); background-color: var(--bg-card) !important; width:90%; max-width:450px; border:1px solid var(--border-color); box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
+                    <div class="modal-header" style="background: var(--bg-body);">
+                        <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);"><i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة بيانات البث</h3>
                         <div class="modal-close" onclick="closeApiModal()"><i class="fa-solid fa-xmark"></i></div>
                     </div>
-                    <div style="padding:25px;">
+                    <div class="modal-body">
                         <input type="hidden" id="add-api-id">
                         <div class="form-group">
-                            <label>رابط البث</label>
+                            <label style="color:var(--text-main);">رابط البث</label>
                             <input type="text" id="add-api-url" class="form-input" placeholder="HLS / m3u8 / Embed URL">
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
                             <div class="form-group">
-                                <label>القناة</label>
+                                <label style="color:var(--text-main);">القناة</label>
                                 <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1">
                             </div>
                             <div class="form-group">
-                                <label>المعلق</label>
+                                <label style="color:var(--text-main);">المعلق</label>
                                 <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق">
                             </div>
                         </div>
-                        <button onclick="confirmAddFromBank()" class="p-btn" style="width:100%; height:55px; margin-top:25px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px;">
+                        <button onclick="confirmAddFromBank()" class="p-btn" style="width:100%; height:55px; margin-top:25px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
                             <i class="fa-solid fa-check-circle" style="margin-left:8px;"></i> تأكيد الإضافة للموقع
                         </button>
                     </div>
