@@ -988,16 +988,16 @@ if ($auth) {
                         <input type="hidden" id="add-api-id">
                         <div style="margin-bottom:15px;">
                             <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط البث</label>
-                            <input type="text" id="add-api-url" class="form-input" placeholder="HLS / m3u8 / Embed URL" style="width:100%; box-sizing:border-box;">
+                            <input type="text" id="add-api-url" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                             <div>
                                 <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
+                                <input type="text" id="add-api-channel" class="form-input" placeholder="أدخل اسم القناة" style="width:100%; box-sizing:border-box;">
                             </div>
                             <div>
                                 <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
-                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
+                                <input type="text" id="add-api-comm" class="form-input" placeholder="أدخل اسم المعلق" style="width:100%; box-sizing:border-box;">
                             </div>
                         </div>
                         <button onclick="confirmAddFromBank()" style="width:100%; height:55px; margin-top:25px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -1251,15 +1251,20 @@ if ($auth) {
                 if (ampm === 'PM' && h12 < 12) hour24 += 12;
                 if (ampm === 'AM' && h12 === 12) hour24 = 0;
 
+                // بناء البيانات — لا نُرسل api_key إلا إذا أدخل المستخدم قيمة جديدة
+                const payload = {
+                    cache_seconds: parseInt(sec),
+                    fetch_hour: hour24,
+                    auto_fetch: auto
+                };
+                if (keyInput.length > 0) {
+                    payload.api_key = keyInput;
+                }
+
                 const r = await fetch('/admin/api.php?action=save_api_settings', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        api_key: keyInput, 
-                        cache_seconds: parseInt(sec), 
-                        fetch_hour: hour24, 
-                        auto_fetch: auto
-                    })
+                    body: JSON.stringify(payload)
                 });
                 const d = await r.json();
                 if (d.success) { 
@@ -1391,7 +1396,7 @@ if ($auth) {
                     <div class="form-group"><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">مباشر</option><option value="finished">انتهت</option></select></div>
                     <div class="form-group"><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input" placeholder="0 - 0"></div>
                 </div>
-                <div class="form-group" style="margin-top:15px;"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="HLS / Embed URL"></div>
+                <div class="form-group" style="margin-top:15px;"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="أدخل رابط البث"></div>
             </div><div class="modal-foot" style="padding:15px 25px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:12px;">
                 <button type="button" class="btn-cancel-sm" style="padding:10px 20px;" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button>
                 <button type="submit" name="save_edit" class="btn-primary-sm" style="padding:10px 25px;">حفظ التعديل</button>

@@ -206,7 +206,12 @@ if ($action === 'api_status') {
 // لوحة التحكم - حفظ الإعدادات
 if ($action === 'save_api_settings') {
     $inp = json_decode(file_get_contents('php://input'), true);
-    $settings['api_key'] = trim($inp['api_key'] ?? $settings['api_key']);
+    // الإبقاء على المفتاح القديم إذا لم يُدخل المستخدم مفتاحاً جديداً
+    $newKey = trim($inp['api_key'] ?? '');
+    if (!empty($newKey)) {
+        $settings['api_key'] = $newKey;
+    }
+    // تحديث باقي الإعدادات
     $settings['cache_seconds'] = max(5, intval($inp['cache_seconds'] ?? 900));
     $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'] ?? 0)));
     $settings['auto_fetch'] = $inp['auto_fetch'] ?? true;
