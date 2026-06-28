@@ -972,30 +972,36 @@ if ($auth) {
                 </div>
             </div>
 
-            <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
-                <div class="modal-content" style="background: var(--bg-card); background-color: var(--bg-card) !important; width:90%; max-width:450px; border:1px solid var(--border-color); box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-                    <div class="modal-header" style="background: var(--bg-body);">
-                        <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);"><i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة بيانات البث</h3>
-                        <div class="modal-close" onclick="closeApiModal()"><i class="fa-solid fa-xmark"></i></div>
+            <div id="addApiModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+                <div style="background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:fadeInScale 0.3s ease;">
+                    <!-- Header -->
+                    <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">
+                            <i class="fa-solid fa-plus-circle" style="color:#6366f1; margin-left:8px;"></i> إضافة بيانات البث
+                        </h3>
+                        <div onclick="closeApiModal()" style="width:32px; height:32px; border-radius:50%; background:rgba(255,0,0,0.1); color:#ff4757; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
                     </div>
-                    <div class="modal-body">
+                    <!-- Body -->
+                    <div style="padding:25px; background:var(--bg-card);">
                         <input type="hidden" id="add-api-id">
-                        <div class="form-group">
-                            <label style="color:var(--text-main);">رابط البث</label>
-                            <input type="text" id="add-api-url" class="form-input" placeholder="HLS / m3u8 / Embed URL">
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط البث</label>
+                            <input type="text" id="add-api-url" class="form-input" placeholder="HLS / m3u8 / Embed URL" style="width:100%; box-sizing:border-box;">
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
-                            <div class="form-group">
-                                <label style="color:var(--text-main);">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
+                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
                             </div>
-                            <div class="form-group">
-                                <label style="color:var(--text-main);">المعلق</label>
-                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
+                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
                             </div>
                         </div>
-                        <button onclick="confirmAddFromBank()" class="p-btn" style="width:100%; height:55px; margin-top:25px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
-                            <i class="fa-solid fa-check-circle" style="margin-left:8px;"></i> تأكيد الإضافة للموقع
+                        <button onclick="confirmAddFromBank()" style="width:100%; height:55px; margin-top:25px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <i class="fa-solid fa-check-circle"></i> تأكيد الإضافة للموقع
                         </button>
                     </div>
                 </div>
@@ -1076,12 +1082,15 @@ if ($auth) {
 
                 function openApiModal(id) {
                     document.getElementById('add-api-id').value = id;
-                    document.getElementById('addApiModal').style.display = 'flex';
+                    const modal = document.getElementById('addApiModal');
+                    modal.style.display = 'flex';
                 }
 
                 function closeApiModal() {
                     document.getElementById('addApiModal').style.display = 'none';
                     document.getElementById('add-api-url').value = '';
+                    document.getElementById('add-api-channel').value = '';
+                    document.getElementById('add-api-comm').value = '';
                 }
 
                 async function confirmAddFromBank() {
