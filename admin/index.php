@@ -881,7 +881,7 @@ if ($auth) {
             
             <!-- بطاقات الإحصائيات الجمالية -->
             <div class="stats-grid" style="margin-bottom:30px;">
-                <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $c_total; ?></h3><p>إجمالي بنك المباريات</p></div>
+                <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $c_total; ?></h3><p>إجمالي المباريات</p></div>
                 <div class="stat-card live"><i class="fa-solid fa-calendar-check"></i><h3><?php echo $c_today; ?></h3><p>مباريات اليوم</p></div>
                 <div class="stat-card waiting"><i class="fa-solid fa-calendar-minus"></i><h3><?php echo $c_yest; ?></h3><p>مباريات الأمس</p></div>
                 <div class="stat-card finished"><i class="fa-solid fa-calendar-plus"></i><h3><?php echo $c_tom; ?></h3><p>مباريات الغد</p></div>
@@ -889,16 +889,16 @@ if ($auth) {
 
             <!-- حاوية الجدول بتصميم "نظرة عامة" -->
             <div class="recent-card">
-                <div class="recent-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:center; gap:10px;">
+                <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
                         <i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> 
-                        <h3 style="margin:0;">بنك مباريات الـ API</h3>
+                        <h3 style="margin:0;">المباريات</h3>
                     </div>
-                    <!-- تبويبات الأيام في اليسار -->
-                    <div class="recent-tabs" style="background:var(--bg-main); padding:4px; border-radius:10px; display:flex; gap:5px;">
-                        <div class="r-tab active" data-day="today" onclick="switchApiTab(this)">اليوم</div>
-                        <div class="r-tab" data-day="yesterday" onclick="switchApiTab(this)">الأمس</div>
-                        <div class="r-tab" data-day="tomorrow" onclick="switchApiTab(this)">الغد</div>
+                    <!-- تبويبات الأيام بتصميم "نظرة عامة" -->
+                    <div class="day-tabs" style="margin-bottom:0;">
+                        <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
+                        <div class="day-tab active" data-day="today" onclick="switchApiTab(this)">مباريات اليوم</div>
+                        <div class="day-tab" data-day="tomorrow" onclick="switchApiTab(this)">مباريات الغد</div>
                     </div>
                 </div>
                 
@@ -963,7 +963,7 @@ if ($auth) {
                     try {
                         const r = await fetch('/admin/api.php?action=get_bank');
                         apiBank = await r.json();
-                        const activeTab = document.querySelector('.r-tab.active').dataset.day;
+                        const activeTab = document.querySelector('.day-tab.active').dataset.day;
                         renderBank(activeTab);
                     } catch(e) { console.error(e); }
                 }
@@ -1002,7 +1002,7 @@ if ($auth) {
                 }
 
                 function switchApiTab(tab) {
-                    document.querySelectorAll('.r-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     renderBank(tab.dataset.day);
                 }
