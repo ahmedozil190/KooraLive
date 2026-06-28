@@ -1083,68 +1083,66 @@ if ($auth) {
                 <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
             </div>
 
-            <div style="max-width:800px; margin:0 auto;">
-                <div class="recent-card">
-                    <div class="recent-header">
-                        <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
-                        <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
-                    </div>
-                    <div style="padding:25px;">
-                        <div class="form-group">
-                            <label>مفتاح API-Football</label>
-                            <div style="position:relative;">
-                                <input type="password" id="api-key-input" class="form-input"
-                                    placeholder="<?php echo $savedKey ? '•••••••••• (محفوظ)' : 'أدخل المفتاح هنا...'; ?>"
-                                    style="padding-left:45px;">
-                                <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
-                            </div>
+            <div class="recent-card">
+                <div class="recent-header">
+                    <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
+                    <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
+                </div>
+                <div style="padding:25px;">
+                    <div class="form-group">
+                        <label>مفتاح API-Football</label>
+                        <div style="position:relative;">
+                            <input type="password" id="api-key-input" class="form-input"
+                                placeholder="<?php echo $savedKey ? '•••••••••• (محفوظ)' : 'أدخل المفتاح هنا...'; ?>"
+                                style="padding-left:45px;">
+                            <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                         </div>
+                    </div>
 
-                        <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
-                            <div style="flex:1; min-width:150px;">
-                                <label>تحديث النتائج (بالدقائق)</label>
-                                <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
-                            </div>
-                            <div style="flex:1; min-width:200px;">
-                                <label>وقت الجلب اليومي</label>
-                                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                    <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
-                                        value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                    <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
-                                        <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
-                                        <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM" style="flex:1; text-align:center;">PM</div>
-                                    </div>
+                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:150px;">
+                            <label>تحديث النتائج (بالدقائق)</label>
+                            <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
+                        </div>
+                        <div style="flex:1; min-width:200px;">
+                            <label>وقت الجلب اليومي</label>
+                            <div style="display:flex; gap:10px; align-items:center; width:100%;">
+                                <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
+                                    value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
+                                <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
+                                    <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
+                                    <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM" style="flex:1; text-align:center;">PM</div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <style>
-                            .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
-                            .t-opt { padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
-                            .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
-                        </style>
-                        <script>
-                            document.querySelectorAll('.t-opt').forEach(opt => {
-                                opt.onclick = function() {
-                                    this.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
-                                    this.classList.add('active');
-                                }
-                            });
-                        </script>
+                    <style>
+                        .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
+                        .t-opt { padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
+                        .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
+                    </style>
+                    <script>
+                        document.querySelectorAll('.t-opt').forEach(opt => {
+                            opt.onclick = function() {
+                                this.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
+                                this.classList.add('active');
+                            }
+                        });
+                    </script>
 
-                        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
-                            <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
-                            <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
-                        </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
+                        <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
+                        <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
+                    </div>
 
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                            <button onclick="saveApiSettings()" class="p-btn" style="height:50px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800;">
-                                <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
-                            </button>
-                            <button onclick="forceFetch()" class="p-btn" style="height:50px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
-                                <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
-                            </button>
-                        </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <button onclick="saveApiSettings()" class="p-btn" style="height:50px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800;">
+                            <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
+                        </button>
+                        <button onclick="forceFetch()" class="p-btn" style="height:50px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
+                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
+                        </button>
                     </div>
                 </div>
             </div>
