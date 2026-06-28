@@ -1071,15 +1071,15 @@ if ($auth) {
             $cacheMin = $apiSettings['cache_minutes'] ?? 15;
             $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
         ?>
-            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API المباريات</h2>
-            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام تحديث تلقائي بدون Cron – يجلب المباريات مرة يومياً ويحدّث النتائج كل <?php echo $cacheMin; ?> دقيقة تلقائياً</p>
+            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة مزود البيانات (API)</h2>
+            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام الكاش الذكي: يتم أرشفة مباريات الأيام الثلاثة (أمس، اليوم، غد) مرة واحدة يومياً عند منتصف الليل لتوفير الطلبات.</p>
 
-            <!-- بطاقات الحالة -->
+            <!-- بطاقات الحالة المحدثة -->
             <div class="stats-grid" style="margin-bottom:25px;">
-                <div class="stat-card total"><i class="fa-solid fa-calendar-day"></i><h3 id="st-fetch-date" style="font-size:18px;">...</h3><p>آخر جلب يومي</p></div>
-                <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:18px;">...</h3><p>آخر تحديث حي</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-hourglass-half"></i><h3 id="st-next-update">...</h3><p>التحديث القادم</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests">...</h3><p>طلبات مستخدمة اليوم</p></div>
+                <div class="stat-card total"><i class="fa-solid fa-calendar-check"></i><h3 id="st-fetch-date" style="font-size:16px;">...</h3><p>آخر جلب يومي</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;">12:00 AM</h3><p>تحديث البنك القادم</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:16px;">...</h3><p>آخر تحديث حي</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبات المستخدمة</p></div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
@@ -1095,48 +1095,37 @@ if ($auth) {
                                     style="padding-left:45px;">
                                 <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                             </div>
-                            <small style="color:var(--text-sub); font-size:11px;">احصل على مفتاحك من <a href="https://dashboard.api-football.com" target="_blank" style="color:#6366f1;">dashboard.api-football.com</a></small>
                         </div>
                         <div class="form-group">
-                            <label>فترة التحديث الحي (دقيقة)</label>
+                            <label>تحديث النتائج (ألعاب جارية فقط)</label>
                             <select id="cache-minutes" class="form-input">
-                                <option value="10" <?php echo $cacheMin==10?'selected':''; ?>>10 دقائق</option>
-                                <option value="15" <?php echo $cacheMin==15?'selected':''; ?>>15 دقيقة (موصى به)</option>
-                                <option value="20" <?php echo $cacheMin==20?'selected':''; ?>>20 دقيقة</option>
-                                <option value="30" <?php echo $cacheMin==30?'selected':''; ?>>30 دقيقة</option>
+                                <option value="10" <?php echo $cacheMin==10?'selected':''; ?>>كل 10 دقائق</option>
+                                <option value="15" <?php echo $cacheMin==15?'selected':''; ?>>كل 15 دقيقة (موصى به)</option>
+                                <option value="30" <?php echo $cacheMin==30?'selected':''; ?>>كل 30 دقيقة</option>
                             </select>
                         </div>
                         <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-                            <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer; accent-color:#6366f1;" <?php echo $autoF?'checked':''; ?>>
-                            <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي</label>
+                            <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
+                            <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
                         </div>
-                        <button onclick="saveApiSettings()" style="width:100%; padding:13px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:15px;">
-                            <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
-                        </button>
+                        <button onclick="saveApiSettings()" class="p-btn" style="width:100%; height:45px; background:#6366f1; color:#fff; border-radius:12px;">حفظ الإعدادات</button>
                     </div>
                 </div>
 
-                <!-- الإجراءات اليدوية -->
+                <!-- الإجراءات اليدوية المحدثة -->
                 <div class="recent-card">
                     <div class="recent-header"><i class="fa-solid fa-wand-magic-sparkles" style="color:#10b981;"></i><h3 style="margin-right:10px;">إجراءات يدوية</h3></div>
                     <div style="padding:25px; display:flex; flex-direction:column; gap:15px;">
-                        <button onclick="forceFetch()" style="width:100%; padding:13px; background:#10b981; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:15px;">
-                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب المباريات الآن (أمس + اليوم + غد)
+                        <button onclick="forceFetch()" class="p-btn" style="width:100%; height:45px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
+                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
                         </button>
-                        <div style="background:var(--bg-input); border-radius:12px; padding:18px; border:1px solid var(--border-color); line-height:2;">
-                            <p style="font-size:13px; color:var(--text-sub); margin:0;">
+                        <div style="background:var(--bg-input); border-radius:12px; padding:18px; border:1px solid var(--border-color); line-height:1.8;">
+                            <p style="font-size:12px; color:var(--text-sub); margin:0;">
                                 <i class="fa-solid fa-circle-info" style="color:#6366f1;"></i>
-                                <strong style="color:var(--text-main);"> كيف يعمل النظام:</strong><br>
-                                • يجلب المباريات تلقائياً <strong>مرة واحدة في اليوم</strong><br>
-                                • يحدّث النتائج تلقائياً <strong>كل <?php echo $cacheMin; ?> دقيقة</strong><br>
-                                • لا يحتاج Cron أو أي إعداد خارجي<br>
-                                • استهلاك يومي: <strong>~99 طلب</strong> من أصل 100
-                            </p>
-                        </div>
-                        <div style="background:rgba(239,68,68,0.08); border-radius:12px; padding:15px; border:1px solid rgba(239,68,68,0.2);">
-                            <p style="font-size:12px; color:#ef4444; margin:0; line-height:1.8;">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <strong> تنبيه:</strong> زر "جلب الآن" يستخدم 3 طلبات من حصتك اليومية. استخدمه عند الحاجة فقط.
+                                <strong style="color:var(--text-main);"> كيف يعمل الكاش اليومي:</strong><br>
+                                • يتم جلب نسخة المباريات (البنك) <strong>مرة واحدة يومياً</strong><br>
+                                • تتغير النسخة تلقائياً كل يوم عند الساعة <strong>12:00 بعد منتصف الليل</strong><br>
+                                • هذا يضمن لك استهلاك <strong>1% فقط</strong> من حصة طلباتك اليومية.
                             </p>
                         </div>
                     </div>
@@ -1149,10 +1138,7 @@ if ($auth) {
                     const r = await fetch('/admin/api.php?action=api_status');
                     const d = await r.json();
                     document.getElementById('st-fetch-date').textContent  = d.last_daily_date  || '--';
-                    const upd = d.last_live_update || '--';
-                    document.getElementById('st-live-update').textContent = upd.length > 16 ? upd.substring(11,16) : upd;
-                    const sec = d.next_update_in || 0;
-                    document.getElementById('st-next-update').textContent = sec > 60 ? Math.ceil(sec/60) + ' دقيقة' : 'جاهز الآن';
+                    document.getElementById('st-live-update').textContent = d.last_live_update || '--';
                     document.getElementById('st-requests').textContent    = d.requests_used != null ? d.requests_used + ' / ' + d.requests_limit : 'غير متاح';
                 } catch(e) { console.error('API Status Error:', e); }
             })();
