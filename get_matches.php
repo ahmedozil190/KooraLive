@@ -3,7 +3,7 @@ header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set('Africa/Cairo');
 
 // مفتاحك
-$apiKey = 'b7c2637a6338b1be3f0cd7a80b7cbfd6';
+$apiKey = 'e39e7a6fe1141aeddaf7a66b42e6cd9a';
 
 // الحصول على التاريخ (اليوم كافتراضي)
 $date = $_GET['date'] ?? date('Y-m-d');
