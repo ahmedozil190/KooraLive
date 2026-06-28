@@ -483,7 +483,11 @@ if ($auth) {
                         </tr>
                         <?php foreach($dayM as $m):
                             $badgeClass = (isset($m['status']) && $m['status'] === 'live') ? 'badge-live' : ((isset($m['status']) && $m['status'] === 'finished') ? 'badge-finished' : 'badge-upcoming');
-                            $badgeText  = (isset($m['status']) && $m['status'] === 'live') ? 'جارية' : ((isset($m['status']) && $m['status'] === 'finished') ? 'انتهت' : 'قادمة');
+                            $badgeText  = 'لم تبدأ بعد';
+                            if(isset($m['status'])) {
+                                if($m['status'] === 'live') $badgeText = 'مباشر الآن';
+                                elseif($m['status'] === 'finished') $badgeText = 'انتهت المباراة';
+                            }
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td><?php echo htmlspecialchars($m['homeTeam'] . " vs " . $m['awayTeam']); ?></td>
