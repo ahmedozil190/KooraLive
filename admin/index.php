@@ -10,6 +10,8 @@ $matchesFile = '../data/matches.json';
 $newsFile = '../data/news.json';
 $clubsFile = '../data/clubs.json';
 $leaguesFile = '../data/leagues.json';
+$settingsFile = '../data/api_settings.json';
+$fixturesBank = '../data/api_fixtures.json';
 
 if (isset($_POST['login'])) {
     if ($_POST['user'] === 'admin' && $_POST['pass'] === '123456') { 
@@ -856,13 +858,26 @@ if ($auth) {
                 }
             </script>
         <?php elseif($sec == 'api_add'): 
+            $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            $hasKey = !empty($apiS['api_key']);
             $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
             $c_total = count($bank);
-            $c_today = count(array_filter($bank, fn($m) => $m['day'] == 'today'));
-            $c_yest  = count(array_filter($bank, fn($m) => $m['day'] == 'yesterday'));
-            $c_tom   = count(array_filter($bank, fn($m) => $m['day'] == 'tomorrow'));
+            $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
+            $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
+            $c_tom   = count(array_filter($bank, fn($m) => ($m['day']??'') == 'tomorrow'));
         ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباريات من الـ API</h2>
+            
+            <?php if(!$hasKey): ?>
+            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:20px; border-radius:15px; margin-bottom:30px; display:flex; align-items:center; gap:15px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:24px; color:#ef4444;"></i>
+                <div>
+                    <h4 style="margin:0; color:#ef4444; font-weight:800;">مفتاح الـ API غير موجود!</h4>
+                    <p style="margin:5px 0 0; font-size:13px; color:var(--text-sub);">يرجى الانتقال لصفحة <strong>"إدارة API"</strong> وإضافة المفتاح الخاص بك لتتمكن من جلب المباريات.</p>
+                </div>
+                <a href="/admin/index.php?section=api_mgr" style="margin-right:auto; background:#ef4444; color:#fff; padding:8px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:13px;">انتقل للإعدادات</a>
+            </div>
+            <?php endif; ?>
             
             <!-- بطاقات الإحصائيات الجمالية -->
             <div class="stats-grid" style="margin-bottom:30px;">
