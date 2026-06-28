@@ -410,15 +410,17 @@ if ($auth) {
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
-                                <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%;">
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
-                                        <span style="font-weight:700; font-size:13px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
-                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                <div style="display:flex; align-items:center; justify-content:center; width:100%; gap:0;">
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-left:10px;">
+                                        <span style="font-weight:700; font-size:13px; text-align:left; line-height:1.2;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-body); padding:2px 8px; border-radius:5px; font-size:10px; font-weight:800; color:var(--text-dim); border:1px solid var(--border); min-width:35px; text-align:center;">VS</span>
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:8px;">
-                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
-                                        <span style="font-weight:700; font-size:13px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                    <div style="width:50px; display:flex; justify-content:center; flex-shrink:0;">
+                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border); display:inline-block; line-height:1;">VS</span>
+                                    </div>
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding-right:10px;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
+                                        <span style="font-weight:700; font-size:13px; text-align:right; line-height:1.2;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -520,15 +522,17 @@ if ($auth) {
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
-                                <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%;">
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
-                                        <span style="font-weight:700; font-size:13px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
-                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                <div style="display:flex; align-items:center; justify-content:center; width:100%; gap:0;">
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-left:10px;">
+                                        <span style="font-weight:700; font-size:13px; text-align:left; line-height:1.2;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-body); padding:2px 8px; border-radius:5px; font-size:10px; font-weight:800; color:var(--text-dim); border:1px solid var(--border); min-width:35px; text-align:center;">VS</span>
-                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:8px;">
-                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
-                                        <span style="font-weight:700; font-size:13px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                    <div style="width:50px; display:flex; justify-content:center; flex-shrink:0;">
+                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border); display:inline-block; line-height:1;">VS</span>
+                                    </div>
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding-right:10px;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">
+                                        <span style="font-weight:700; font-size:13px; text-align:right; line-height:1.2;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                             </td>
@@ -809,7 +813,8 @@ if ($auth) {
                 .custom-select-trigger:hover { border-color:#6366f1; background:rgba(99,102,241,0.05); }
                 
                 .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:9999; display:none; align-items:center; justify-content:center; }
-                .modal-content { background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 20px 50px rgba(0,0,0,0.3); animation:fadeInScale 0.3s ease; }
+                .modal-content { background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 20px 50px rgba(0,0,0,0.3); animation:fadeInScale 0.3s ease; position:relative; }
+                .modal-body { padding:25px; }
                 @keyframes fadeInScale { from{opacity:0; transform:scale(0.95);} to{opacity:1; transform:scale(1);} }
                 
                 .modal-header { padding:20px; background:var(--bg-body); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
@@ -1367,10 +1372,10 @@ if ($auth) {
             </div></div>
         <?php endif; ?>
         
-        <div id="edit-modal" class="modal-overlay"><div class="modal-content" style="width:90%; max-width:450px;"><div class="modal-header">
+        <div id="edit-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header">
             <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</h3>
             <div class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></div></div>
-            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div style="padding:25px;">
+            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                     <div class="form-group"><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input" placeholder="beIN Sports 1"></div>
                     <div class="form-group"><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input" placeholder="اسم المعلق"></div>
