@@ -70,9 +70,6 @@ function callApi($endpoint, $apiKey) {
     return ['response' => $data['response'] ?? []];
 }
 
-// ... بعد ذلك في trigger_live_update ...
-// ملاحظة: قمت بتعديل جزء الاتصال بالـ API في الأسفل
-
 
 function mapApiMatch($f, $dayLabel) {
     $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
@@ -127,8 +124,8 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
     $fetchedMatches = [];
     foreach ($dates as $dayLabel => $dateStr) {
         $result = callApi("fixtures?date=$dateStr&timezone=Asia/Riyadh", $apiKey);
-        if ($result && is_array($result)) {
-            foreach ($result as $f) {
+        if (isset($result['response']) && is_array($result['response'])) {
+            foreach ($result['response'] as $f) {
                 $fetchedMatches[] = mapApiMatch($f, $dayLabel);
             }
         }
@@ -156,8 +153,11 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheSeconds) {
     $chunks = array_chunk($idsToUpdate, 20);
     $apiUpdates = [];
     foreach ($chunks as $chunk) {
-        $res = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
-        if ($res) foreach ($res as $f) $apiUpdates[(string)$f['fixture']['id']] = $f;
+        $apiResult = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
+        $res = $apiResult['response'] ?? [];
+        if (!empty($res)) {
+            foreach ($res as $f) $apiUpdates[(string)$f['fixture']['id']] = $f;
+        }
     }
     if ($apiUpdates) {
         foreach ($matches as &$m) {
