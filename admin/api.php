@@ -191,15 +191,19 @@ if ($action === 'api_status') {
     $rem = null; $usd = null;
     if ($apiKey) {
         $ch = curl_init("https://v3.football.api-sports.io/status");
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => ["x-apisports-key: $apiKey"], CURLOPT_SSL_VERIFYPEER => false]);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => ["x-apisports-key: $apiKey"], CURLOPT_SSL_VERIFYPEER => false, CURLOPT_TIMEOUT => 10]);
         $res = json_decode(curl_exec($ch), true); curl_close($ch);
         $rem = $res['response']['requests']['limit_day'] ?? 100;
         $usd = $res['response']['requests']['current'] ?? 0;
     }
+    // عرض الوقت بنظام 12 ساعة
+    $lastLiveTime = isset($l['time']) ? date('h:i A', $l['time']) : '--';
     echo json_encode([
-        'last_daily_date' => $d['date'] ?? '--',
-        'last_live_update' => isset($l['time']) ? date('H:i', $l['time']) : '--',
-        'requests_used' => $usd, 'requests_limit' => $rem, 'api_key_set' => !empty($apiKey)
+        'last_daily_date'  => $d['date'] ?? '--',
+        'last_live_update' => $lastLiveTime,
+        'requests_used'    => $usd,
+        'requests_limit'   => $rem,
+        'api_key_set'      => !empty($apiKey)
     ], JSON_UNESCAPED_UNICODE); exit;
 }
 
@@ -219,11 +223,38 @@ if ($action === 'save_api_settings') {
     echo json_encode(['success' => true]); exit;
 }
 
-// لوحة التحكم - جلب فوري للبنك
+// لوحة التحكم - جلب فوري للبنك (مع تجاوز مهلة الـ Proxy)
 if ($action === 'force_fetch') {
+    if (empty($apiKey)) {
+        echo json_encode(['success' => false, 'error' => 'مفتاح API غير موجود']); exit;
+    }
+    // إرسال استجابة فورية للمتصفح قبل بدء الجلب الذي قد يطول
+    echo json_encode(['success' => true, 'message' => 'جاري الجلب في الخلفية...']);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request(); // إغلاق الاتصال مع المتصفح
+    } else {
+        @ob_flush(); flush();
+    }
+    ignore_user_abort(true);
+    set_time_limit(300);
+    // حذف كاش اليوم لإجبار إعادة الجلب
     if (file_exists($dailyCacheF)) unlink($dailyCacheF);
-    runDailyFetch($apiKey, $dailyCacheF, $fixturesBank);
-    echo json_encode(['success' => true, 'count' => count(readJson($fixturesBank))]); exit;
+    $fetchHour = (int)($settings['fetch_hour'] ?? 0);
+    runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour);
+    exit;
+}
+
+// تحديث النتائج الحية يدوياً من اللوحة
+if ($action === 'trigger_live_update') {
+    if (empty($apiKey)) {
+        echo json_encode(['success' => false, 'error' => 'مفتاح API غير موجود']); exit;
+    }
+    $cacheSeconds = (int)($settings['cache_seconds'] ?? 900);
+    // إعادة ضبط وقت التحديث الأخير لإجبار التحديث الفوري
+    writeJson($liveCacheF, ['time' => 0]);
+    runLiveUpdate($apiKey, $liveCacheF, $matchesFile, 0);
+    $l = readJson($liveCacheF);
+    echo json_encode(['success' => true, 'updated' => $l['updated'] ?? 0, 'time' => date('h:i A', $l['time'] ?? time())]); exit;
 }
 
 // لوحة التحكم - جلب قائمة البنك للاختيار

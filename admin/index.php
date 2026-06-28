@@ -1188,10 +1188,12 @@ if ($auth) {
                             </div>
                         </div>
                         <!-- جلب يدوي -->
-                        <div>
-                            <label>طلب تحديث المباريات</label>
-                            <button onclick="forceFetch()" class="p-btn" style="width:100%; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> طلب المباريات من جديد
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="forceFetch()" id="btn-force-fetch" class="p-btn" style="flex:1; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة
+                            </button>
+                            <button onclick="triggerLiveUpdate()" id="btn-live-update" class="p-btn" style="flex:1; height:48px; background:rgba(99,102,241,0.1); color:#6366f1; border:1px solid #6366f1; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-rotate"></i> تحديث النتائج الآن
                             </button>
                         </div>
                     </div>
@@ -1276,17 +1278,46 @@ if ($auth) {
             }
 
             async function forceFetch() {
-                showToast('جاري جلب المباريات... قد يستغرق بضع ثوانٍ', 'success');
+                const btn = document.getElementById('btn-force-fetch');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
                 try {
                     const r = await fetch('/admin/api.php?action=force_fetch');
                     const d = await r.json();
                     if (d.success) {
-                        showToast('تم جلب ' + d.count + ' مباراة بنجاح ✅', 'success');
-                        setTimeout(() => location.reload(), 2000);
+                        showToast('✅ بدأ الجلب في الخلفية، انتظر 30 ثانية ثم حدّث الصفحة', 'success');
+                        // إعادة تحميل الصفحة بعد 35 ثانية تلقائياً
+                        setTimeout(() => location.reload(), 35000);
                     } else {
                         showToast(d.error || 'حدث خطأ أثناء الجلب', 'error');
                     }
-                } catch(e) { showToast('تعذر الاتصال بالسيرفر', 'error'); }
+                } catch(e) {
+                    showToast('تعذر الاتصال بالسيرفر', 'error');
+                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة';
+            }
+
+            async function triggerLiveUpdate() {
+                const btn = document.getElementById('btn-live-update');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
+                try {
+                    const r = await fetch('/admin/api.php?action=trigger_live_update');
+                    const d = await r.json();
+                    if (d.success) {
+                        showToast('✅ تم تحديث ' + d.updated + ' مباراة | آخر تحديث: ' + d.time, 'success');
+                        // تحديث خانة "آخر تحديث حي" في الصفحة
+                        const el = document.getElementById('st-live-update');
+                        if (el) el.textContent = d.time;
+                    } else {
+                        showToast(d.error || 'فشل التحديث', 'error');
+                    }
+                } catch(e) {
+                    showToast('تعذر الاتصال بالسيرفر', 'error');
+                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث النتائج الآن';
             }
             </script>
 
