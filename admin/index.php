@@ -1078,7 +1078,10 @@ if ($auth) {
             <!-- بطاقات الحالة المحدثة -->
             <div class="stats-grid" style="margin-bottom:25px;">
                 <div class="stat-card total"><i class="fa-solid fa-calendar-check"></i><h3 id="st-fetch-date" style="font-size:16px;">...</h3><p>آخر جلب يومي</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;"><?php echo sprintf("%02d:00", $fetchHour); ?> <?php echo $fetchHour >= 12 ? 'PM' : 'AM'; ?></h3><p>تحديث البنك القادم</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;"><?php 
+                    $dispMsg = ($fetchHour == 0) ? '12:00 AM' : (($fetchHour > 12) ? ($fetchHour-12).':00 PM' : (($fetchHour==12)?'12:00 PM':$fetchHour.':00 AM'));
+                    echo $dispMsg; 
+                ?></h3><p>تحديث البنك القادم</p></div>
                 <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:16px;">...</h3><p>آخر تحديث حي</p></div>
                 <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
             </div>
@@ -1117,9 +1120,27 @@ if ($auth) {
                         </div>
                     </div>
 
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px;">
+                        <!-- جلب تلقائي -->
+                        <div>
+                            <label style="display:block; margin-bottom:10px; font-weight:800;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
+                            <div class="time-toggle" id="auto-fetch-toggle" style="display:flex; width:100%;">
+                                <div class="t-opt <?php echo $autoF ? 'active' : ''; ?>" data-val="1" style="flex:1; text-align:center;">تفعيل</div>
+                                <div class="t-opt <?php echo !$autoF ? 'active' : ''; ?>" data-val="0" style="flex:1; text-align:center;">تعطيل</div>
+                            </div>
+                        </div>
+                        <!-- جلب يدوي -->
+                        <div>
+                            <label style="display:block; margin-bottom:10px; font-weight:800;">طلب تحديث المباريات</label>
+                            <button onclick="forceFetch()" class="p-btn" style="width:100%; height:45px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> جلب بنك جديد (Snapshot)
+                            </button>
+                        </div>
+                    </div>
+
                     <style>
                         .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
-                        .t-opt { padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
+                        .t-opt { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
                         .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
                     </style>
                     <script>
@@ -1131,19 +1152,9 @@ if ($auth) {
                         });
                     </script>
 
-                    <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
-                        <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer;" <?php echo $autoF?'checked':''; ?>>
-                        <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي (الوضع الذكي)</label>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                        <button onclick="saveApiSettings()" class="p-btn" style="height:50px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800;">
-                            <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
-                        </button>
-                        <button onclick="forceFetch()" class="p-btn" style="height:50px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:12px; font-weight:800;">
-                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب بنك جديد (Snapshot)
-                        </button>
-                    </div>
+                    <button onclick="saveApiSettings()" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px;">
+                        <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
+                    </button>
                 </div>
             </div>
 
@@ -1174,8 +1185,8 @@ if ($auth) {
                 const keyInput = document.getElementById('api-key-input').value.trim();
                 const min = document.getElementById('cache-minutes').value;
                 const h12 = parseInt(document.getElementById('fetch-h-12').value);
-                const ampm = document.querySelector('.t-opt.active').dataset.val;
-                const auto = document.getElementById('auto-fetch').checked;
+                const ampm = document.querySelector('#ampm-toggle .t-opt.active').dataset.val;
+                const auto = document.querySelector('#auto-fetch-toggle .t-opt.active').dataset.val === "1";
 
                 // تحويل الوقت من 12h إلى 24h
                 let hour24 = h12;
