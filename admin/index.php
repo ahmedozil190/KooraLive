@@ -1104,12 +1104,12 @@ if ($auth) {
                             </div>
                             <div style="flex:1; min-width:200px;">
                                 <label>وقت الجلب اليومي</label>
-                                <div style="display:flex; gap:10px; align-items:center;">
-                                    <input type="number" id="fetch-h-12" class="form-input" style="width:70px; text-align:center;" 
+                                <div style="display:flex; gap:10px; align-items:center; width:100%;">
+                                    <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:center;" 
                                         value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                    <div class="time-toggle" id="ampm-toggle">
-                                        <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM">AM</div>
-                                        <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM">PM</div>
+                                    <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
+                                        <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
+                                        <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM" style="flex:1; text-align:center;">PM</div>
                                     </div>
                                 </div>
                             </div>
