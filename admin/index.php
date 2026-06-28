@@ -409,13 +409,17 @@ if ($auth) {
                             $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                             <td style="padding:15px 25px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
-                                    <img src="<?php echo $m['homeLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
-                                    <span style="background:var(--bg-body); padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-dim);">VS</span>
-                                    <img src="<?php echo $m['awayLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
-                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                             <td style="padding:15px; width:450px;">
+                                <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%;">
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                                        <span style="font-weight:700; font-size:13px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                    </div>
+                                    <span style="background:var(--bg-body); padding:2px 8px; border-radius:5px; font-size:10px; font-weight:800; color:var(--text-dim); border:1px solid var(--border); min-width:35px; text-align:center;">VS</span>
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:8px;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                        <span style="font-weight:700; font-size:13px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                    </div>
                                 </div>
                              </td>
                              <td style="color:var(--text-sub); font-size:13px;"><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
@@ -515,13 +519,17 @@ if ($auth) {
                             $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                            <td style="padding:15px 25px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
-                                    <img src="<?php echo $m['homeLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
-                                    <span style="background:var(--bg-body); padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-dim);">VS</span>
-                                    <img src="<?php echo $m['awayLogo']; ?>" style="width:22px; height:22px; object-fit:contain;">
-                                    <span style="font-weight:700; font-size:13px; min-width:80px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                            <td style="padding:15px; width:450px;">
+                                <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%;">
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                                        <span style="font-weight:700; font-size:13px; text-align:left;"><?php echo $m['homeTeam']; ?></span>
+                                        <img src="<?php echo $m['homeLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                    </div>
+                                    <span style="background:var(--bg-body); padding:2px 8px; border-radius:5px; font-size:10px; font-weight:800; color:var(--text-dim); border:1px solid var(--border); min-width:35px; text-align:center;">VS</span>
+                                    <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:8px;">
+                                        <img src="<?php echo $m['awayLogo']; ?>" style="width:24px; height:24px; object-fit:contain;">
+                                        <span style="font-weight:700; font-size:13px; text-align:right;"><?php echo $m['awayTeam']; ?></span>
+                                    </div>
                                 </div>
                             </td>
                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
@@ -959,30 +967,29 @@ if ($auth) {
                 </div>
             </div>
 
-            <!-- Modal إضافة بيانات البث -->
-            <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-                <div class="modal" style="background:var(--card); width:450px; border-radius:15px; overflow:hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-                    <div class="modal-header" style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0; font-size:18px;">إضافة بيانات البث</h3>
-                        <button onclick="closeApiModal()" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:20px;"><i class="fa-solid fa-xmark"></i></button>
+            <div id="addApiModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+                <div class="modal-content" style="width:90%; max-width:450px;">
+                    <div class="modal-header">
+                        <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة بيانات البث</h3>
+                        <div class="modal-close" onclick="closeApiModal()"><i class="fa-solid fa-xmark"></i></div>
                     </div>
                     <div style="padding:25px;">
                         <input type="hidden" id="add-api-id">
-                        <div class="form-group" style="margin-bottom:18px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:700;">رابط البث</label>
-                            <input type="text" id="add-api-url" class="form-input" placeholder="https://..." style="width:100%; box-sizing:border-box; padding:12px;">
+                        <div class="form-group">
+                            <label>رابط البث</label>
+                            <input type="text" id="add-api-url" class="form-input" placeholder="HLS / m3u8 / Embed URL">
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:8px; font-weight:700;">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN 1" style="width:100%; box-sizing:border-box; padding:12px;">
+                                <label>القناة</label>
+                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1">
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:8px; font-weight:700;">المعلق</label>
-                                <input type="text" id="add-api-comm" class="form-input" placeholder="المعلق" style="width:100%; box-sizing:border-box; padding:12px;">
+                                <label>المعلق</label>
+                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق">
                             </div>
                         </div>
-                        <button onclick="confirmAddFromBank()" style="width:100%; padding:15px; background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color:#fff; border:none; border-radius:12px; margin-top:25px; font-weight:800; cursor:pointer; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.3);">
+                        <button onclick="confirmAddFromBank()" class="p-btn" style="width:100%; height:55px; margin-top:25px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px;">
                             <i class="fa-solid fa-check-circle" style="margin-left:8px;"></i> تأكيد الإضافة للموقع
                         </button>
                     </div>
@@ -1360,15 +1367,21 @@ if ($auth) {
             </div></div>
         <?php endif; ?>
         
-        <!-- نافذة تعديل المباراة (عامة) -->
-        <div id="edit-modal" class="modal-overlay"><div class="modal-box"><div class="modal-head"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</div>
-            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
-                <div><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input"></div>
-                <div><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input"></div>
-                <div><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">جارية الآن</option><option value="finished">انتهت</option></select></div>
-                <div><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input"></div>
-                <div class="full"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input"></div>
-            </div><div class="modal-foot"><button type="button" class="btn-cancel-sm" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button><button type="submit" name="save_edit" class="btn-primary-sm">حفظ</button></div></form>
+        <div id="edit-modal" class="modal-overlay"><div class="modal-content" style="width:90%; max-width:450px;"><div class="modal-header">
+            <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</h3>
+            <div class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></div></div>
+            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div style="padding:25px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group"><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input" placeholder="beIN Sports 1"></div>
+                    <div class="form-group"><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input" placeholder="اسم المعلق"></div>
+                    <div class="form-group"><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">مباشر</option><option value="finished">انتهت</option></select></div>
+                    <div class="form-group"><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input" placeholder="0 - 0"></div>
+                </div>
+                <div class="form-group" style="margin-top:15px;"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="HLS / Embed URL"></div>
+            </div><div class="modal-foot" style="padding:15px 25px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" class="btn-cancel-sm" style="padding:10px 20px;" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button>
+                <button type="submit" name="save_edit" class="btn-primary-sm" style="padding:10px 25px;">حفظ التعديل</button>
+            </div></form>
         </div></div>
     </main>
     <script>
