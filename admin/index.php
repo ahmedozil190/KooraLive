@@ -1133,7 +1133,7 @@ if ($auth) {
                         <div>
                             <label>طلب تحديث المباريات</label>
                             <button onclick="forceFetch()" class="p-btn" style="width:100%; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> طلب البيانات من جديد
+                                <i class="fa-solid fa-cloud-arrow-down"></i> طلب المباريات من جديد
                             </button>
                         </div>
                     </div>
