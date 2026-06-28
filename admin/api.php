@@ -45,7 +45,7 @@ function writeJson($path, $data) {
 }
 
 function callApi($endpoint, $apiKey) {
-    if (empty($apiKey)) return null;
+    if (empty($apiKey)) return ['error' => 'No API Key'];
     $url = "https://v3.football.api-sports.io/$endpoint";
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -57,10 +57,22 @@ function callApi($endpoint, $apiKey) {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    if ($httpCode !== 200) return null;
+    
+    if ($httpCode !== 200) return ['error' => "HTTP Error $httpCode"];
+    
     $data = json_decode($response, true);
-    return (empty($data['errors'])) ? ($data['response'] ?? []) : null;
+    if (!empty($data['errors'])) {
+        // جمع كل الأخطاء في رسالة واحدة
+        $errStr = is_array($data['errors']) ? implode(', ', array_map(function($k, $v) { return "$k: $v"; }, array_keys($data['errors']), $data['errors'])) : 'Unknown API Error';
+        return ['error' => $errStr];
+    }
+    
+    return ['response' => $data['response'] ?? []];
 }
+
+// ... بعد ذلك في trigger_live_update ...
+// ملاحظة: قمت بتعديل جزء الاتصال بالـ API في الأسفل
+
 
 function mapApiMatch($f, $dayLabel) {
     $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
@@ -252,39 +264,39 @@ if ($action === 'trigger_live_update') {
 
     $allMatches = readJson($matchesFile);
     $totalMatches = count($allMatches);
-
-    // اختيار المباريات التي تمتلك ID رقمي وليست منتهية
     $idsToUpdate = [];
     foreach ($allMatches as $m) {
         $notFinished = ($m['status'] ?? '') !== 'finished';
         $hasId = !empty($m['id']) && (is_numeric($m['id']) || preg_match('/^[0-9]+$/', $m['id']));
-        if ($notFinished && $hasId) {
-            $idsToUpdate[] = $m['id'];
-        }
+        if ($notFinished && $hasId) $idsToUpdate[] = $m['id'];
     }
 
-    $apiUpdatesCount = 0;
     $updatedMatchesCount = 0;
-    
+    $errorMessage = null;
+
     if (!empty($idsToUpdate)) {
         $chunks = array_chunk($idsToUpdate, 20);
         foreach ($chunks as $chunk) {
-            $res = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
-            if ($res && is_array($res)) {
-                foreach ($res as $f) {
-                    $apiUpdatesCount++;
-                    $apiId = (string)$f['fixture']['id'];
-                    foreach ($allMatches as &$m) {
-                        if ((string)$m['id'] === $apiId) {
-                            $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
-                            $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
-                            $m['timestamp'] = $f['fixture']['timestamp'] ?? 0;
-                            $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
-                            if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
-                            elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
-                            else $m['status'] = 'upcoming';
-                            $updatedMatchesCount++;
-                        }
+            $apiResult = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
+            
+            if (isset($apiResult['error'])) {
+                $errorMessage = $apiResult['error'];
+                break;
+            }
+
+            $res = $apiResult['response'] ?? [];
+            foreach ($res as $f) {
+                $apiId = (string)$f['fixture']['id'];
+                foreach ($allMatches as &$m) {
+                    if ((string)$m['id'] === $apiId) {
+                        $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                        $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                        if (isset($f['fixture']['timestamp'])) $m['timestamp'] = $f['fixture']['timestamp'];
+                        $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                        if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
+                        elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+                        else $m['status'] = 'upcoming';
+                        $updatedMatchesCount++;
                     }
                 }
             }
@@ -293,17 +305,20 @@ if ($action === 'trigger_live_update') {
             writeJson($matchesFile, array_values($allMatches));
         }
         writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedMatchesCount]);
-    } else {
-        writeJson($liveCacheF, ['time' => time(), 'updated' => 0]);
     }
 
-    echo json_encode([
-        'success'       => true,
-        'updated'       => $updatedMatchesCount,
-        'ids_sent'      => count($idsToUpdate),
-        'total_in_file' => $totalMatches,
-        'time'          => date('h:i A', time())
-    ]); exit;
+    if ($errorMessage) {
+        echo json_encode(['success' => false, 'error' => "خطأ من الـ API: $errorMessage"]);
+    } else {
+        echo json_encode([
+            'success'       => true,
+            'updated'       => $updatedMatchesCount,
+            'ids_sent'      => count($idsToUpdate),
+            'total_in_file' => $totalMatches,
+            'time'          => date('h:i A', time())
+        ]);
+    }
+    exit;
 }
 
 // لوحة التحكم - جلب قائمة البنك للاختيار
