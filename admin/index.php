@@ -1072,9 +1072,8 @@ if ($auth) {
             $fetchHour = $apiSettings['fetch_hour'] ?? 0;
             $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
         ?>
-            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة مزود البيانات (API)</h2>
-            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام الكاش الذكي: يتم أرشفة مباريات الأيام الثلاثة (أمس، اليوم، غد) مرة واحدة يومياً لتوفير الطلبات.</p>
-
+            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i>إدارة نظام API</h2>
+            
             <!-- بطاقات الحالة المحدثة -->
             <div class="stats-grid" style="margin-bottom:25px;">
                 <div class="stat-card total"><i class="fa-solid fa-calendar-check"></i><h3 id="st-fetch-date" style="font-size:16px;">...</h3><p>آخر جلب يومي</p></div>
