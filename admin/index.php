@@ -1068,7 +1068,7 @@ if ($auth) {
             $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
             $savedKey = isset($apiSettings['api_key']) && !empty($apiSettings['api_key']);
-            $cacheMin = $apiSettings['cache_minutes'] ?? 15;
+            $cacheSec = $apiSettings['cache_seconds'] ?? 900;
             $fetchHour = $apiSettings['fetch_hour'] ?? 0;
             $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
         ?>
@@ -1103,8 +1103,8 @@ if ($auth) {
 
                     <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
-                            <label>تحديث النتائج بالدقائق</label>
-                            <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
+                            <label>تحديث النتائج بالثواني</label>
+                            <input type="number" id="cache-seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
                         </div>
                         <div style="flex:1; min-width:200px;">
                             <label>وقت تحديث المباريات اليومي</label>
@@ -1182,7 +1182,7 @@ if ($auth) {
 
             async function saveApiSettings() {
                 const keyInput = document.getElementById('api-key-input').value.trim();
-                const min = document.getElementById('cache-minutes').value;
+                const sec = document.getElementById('cache-seconds').value;
                 const h12 = parseInt(document.getElementById('fetch-h-12').value);
                 const ampm = document.querySelector('#ampm-toggle .t-opt.active').dataset.val;
                 const auto = document.querySelector('#auto-fetch-toggle .t-opt.active').dataset.val === "1";
@@ -1196,8 +1196,8 @@ if ($auth) {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        api_key: keyInput, // سيتم تجاهله في السيرفر إذا كان فارغاً
-                        cache_minutes: parseInt(min), 
+                        api_key: keyInput, 
+                        cache_seconds: parseInt(sec), 
                         fetch_hour: hour24, 
                         auto_fetch: auto
                     })

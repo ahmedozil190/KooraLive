@@ -116,10 +116,10 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
 }
 
 // ========== 2. تحديث النتائج الحية لمباريات الموقع ==========
-function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes) {
+function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheSeconds) {
     if (empty($apiKey)) return;
     $liveCache = readJson($liveCacheF);
-    if ((time() - ($liveCache['time'] ?? 0)) < ($cacheMinutes * 60)) return;
+    if ((time() - ($liveCache['time'] ?? 0)) < $cacheSeconds) return;
 
     $matches = readJson($matchesFile);
     $idsToUpdate = [];
@@ -155,7 +155,7 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes) {
 
 if ($autoFetch) {
     runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour);
-    runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheMinutes);
+    runLiveUpdate($apiKey, $liveCacheF, $matchesFile, (int)($settings['cache_seconds'] ?? 900));
 }
 
 // ========== معالجة الطلبات ==========
@@ -194,7 +194,7 @@ if ($action === 'api_status') {
 if ($action === 'save_api_settings') {
     $inp = json_decode(file_get_contents('php://input'), true);
     $settings['api_key'] = trim($inp['api_key'] ?? $settings['api_key']);
-    $settings['cache_minutes'] = max(1, intval($inp['cache_minutes'] ?? 15));
+    $settings['cache_seconds'] = max(5, intval($inp['cache_seconds'] ?? 900));
     $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'] ?? 0)));
     $settings['auto_fetch'] = $inp['auto_fetch'] ?? true;
     writeJson($settingsFile, $settings);
