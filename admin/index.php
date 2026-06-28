@@ -316,12 +316,13 @@ if ($auth) {
     <aside class="side">
         <div style="padding:30px; font-size:24px; font-weight:800; color:#6366f1; text-align:center; border-bottom:1px solid var(--border);">كورة لايف</div>
         <div style="padding-top:20px;">
-            <a href="/admin/index.php?section=main" class="nav-item <?php echo $sec=='main'?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
-            <a href="/admin/index.php?section=current" class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
-            <a href="/admin/index.php?section=clubs" class="nav-item <?php echo $sec=='clubs'?'active':''; ?>"><i class="fa-solid fa-shield-halved"></i> الأندية والبطولات</a>
-            <a href="/admin/index.php?section=add_m" class="nav-item <?php echo $sec=='add_m'?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
-            <a href="/admin/index.php?section=instant" class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
-            <a href="/admin/index.php?section=news" class="nav-item <?php echo $sec=='news'?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
+            <a href="/admin/index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
+            <a href="/admin/index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات</a>
+            <a href="/admin/index.php?section=clubs"    class="nav-item <?php echo $sec=='clubs'  ?'active':''; ?>"><i class="fa-solid fa-shield-halved"></i> الأندية والبطولات</a>
+            <a href="/admin/index.php?section=add_m"   class="nav-item <?php echo $sec=='add_m'  ?'active':''; ?>"><i class="fa-solid fa-plus-circle"></i> إضافة مباراة</a>
+            <a href="/admin/index.php?section=instant"  class="nav-item <?php echo $sec=='instant'?'active':''; ?>"><i class="fa-solid fa-bolt"></i> إضافة فورية</a>
+            <a href="/admin/index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> الأخبار</a>
+            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:18px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
@@ -853,6 +854,141 @@ if ($auth) {
                     if (event.target == document.getElementById('searchModal')) closeModals();
                 }
             </script>
+        <?php elseif($sec == 'api_mgr'):
+            $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
+            $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
+            $savedKey = isset($apiSettings['api_key']) && !empty($apiSettings['api_key']);
+            $cacheMin = $apiSettings['cache_minutes'] ?? 15;
+            $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
+        ?>
+            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة API المباريات</h2>
+            <p style="color:var(--text-sub); margin-bottom:25px; font-size:14px;">نظام تحديث تلقائي بدون Cron – يجلب المباريات مرة يومياً ويحدّث النتائج كل <?php echo $cacheMin; ?> دقيقة تلقائياً</p>
+
+            <!-- بطاقات الحالة -->
+            <div class="stats-grid" style="margin-bottom:25px;">
+                <div class="stat-card total"><i class="fa-solid fa-calendar-day"></i><h3 id="st-fetch-date" style="font-size:18px;">...</h3><p>آخر جلب يومي</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:18px;">...</h3><p>آخر تحديث حي</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-hourglass-half"></i><h3 id="st-next-update">...</h3><p>التحديث القادم</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests">...</h3><p>طلبات مستخدمة اليوم</p></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
+                <!-- إعدادات الاتصال -->
+                <div class="recent-card">
+                    <div class="recent-header"><i class="fa-solid fa-key" style="color:#6366f1;"></i><h3 style="margin-right:10px;">إعدادات الاتصال</h3></div>
+                    <div style="padding:25px;">
+                        <div class="form-group">
+                            <label>مفتاح API-Football</label>
+                            <div style="position:relative;">
+                                <input type="password" id="api-key-input" class="form-input"
+                                    placeholder="<?php echo $savedKey ? '•••••••••• (محفوظ)' : 'أدخل المفتاح هنا...'; ?>"
+                                    style="padding-left:45px;">
+                                <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
+                            </div>
+                            <small style="color:var(--text-sub); font-size:11px;">احصل على مفتاحك من <a href="https://dashboard.api-football.com" target="_blank" style="color:#6366f1;">dashboard.api-football.com</a></small>
+                        </div>
+                        <div class="form-group">
+                            <label>فترة التحديث الحي (دقيقة)</label>
+                            <select id="cache-minutes" class="form-input">
+                                <option value="10" <?php echo $cacheMin==10?'selected':''; ?>>10 دقائق</option>
+                                <option value="15" <?php echo $cacheMin==15?'selected':''; ?>>15 دقيقة (موصى به)</option>
+                                <option value="20" <?php echo $cacheMin==20?'selected':''; ?>>20 دقيقة</option>
+                                <option value="30" <?php echo $cacheMin==30?'selected':''; ?>>30 دقيقة</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                            <input type="checkbox" id="auto-fetch" style="width:18px; height:18px; cursor:pointer; accent-color:#6366f1;" <?php echo $autoF?'checked':''; ?>>
+                            <label for="auto-fetch" style="margin:0; cursor:pointer; font-weight:700;">تفعيل الجلب التلقائي</label>
+                        </div>
+                        <button onclick="saveApiSettings()" style="width:100%; padding:13px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:15px;">
+                            <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </div>
+
+                <!-- الإجراءات اليدوية -->
+                <div class="recent-card">
+                    <div class="recent-header"><i class="fa-solid fa-wand-magic-sparkles" style="color:#10b981;"></i><h3 style="margin-right:10px;">إجراءات يدوية</h3></div>
+                    <div style="padding:25px; display:flex; flex-direction:column; gap:15px;">
+                        <button onclick="forceFetch()" style="width:100%; padding:13px; background:#10b981; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:15px;">
+                            <i class="fa-solid fa-cloud-arrow-down" style="margin-left:8px;"></i> جلب المباريات الآن (أمس + اليوم + غد)
+                        </button>
+                        <div style="background:var(--bg-input); border-radius:12px; padding:18px; border:1px solid var(--border-color); line-height:2;">
+                            <p style="font-size:13px; color:var(--text-sub); margin:0;">
+                                <i class="fa-solid fa-circle-info" style="color:#6366f1;"></i>
+                                <strong style="color:var(--text-main);"> كيف يعمل النظام:</strong><br>
+                                • يجلب المباريات تلقائياً <strong>مرة واحدة في اليوم</strong><br>
+                                • يحدّث النتائج تلقائياً <strong>كل <?php echo $cacheMin; ?> دقيقة</strong><br>
+                                • لا يحتاج Cron أو أي إعداد خارجي<br>
+                                • استهلاك يومي: <strong>~99 طلب</strong> من أصل 100
+                            </p>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.08); border-radius:12px; padding:15px; border:1px solid rgba(239,68,68,0.2);">
+                            <p style="font-size:12px; color:#ef4444; margin:0; line-height:1.8;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <strong> تنبيه:</strong> زر "جلب الآن" يستخدم 3 طلبات من حصتك اليومية. استخدمه عند الحاجة فقط.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            (async function loadApiStatus() {
+                try {
+                    const r = await fetch('/admin/api.php?action=api_status');
+                    const d = await r.json();
+                    document.getElementById('st-fetch-date').textContent  = d.last_daily_date  || '--';
+                    const upd = d.last_live_update || '--';
+                    document.getElementById('st-live-update').textContent = upd.length > 16 ? upd.substring(11,16) : upd;
+                    const sec = d.next_update_in || 0;
+                    document.getElementById('st-next-update').textContent = sec > 60 ? Math.ceil(sec/60) + ' دقيقة' : 'جاهز الآن';
+                    document.getElementById('st-requests').textContent    = d.requests_used != null ? d.requests_used + ' / ' + d.requests_limit : 'غير متاح';
+                } catch(e) { console.error('API Status Error:', e); }
+            })();
+
+            function toggleApiKey() {
+                const inp = document.getElementById('api-key-input');
+                const icon = inp.nextElementSibling;
+                if (inp.type === 'password') {
+                    inp.type = 'text';
+                    icon.className = 'fa-solid fa-eye-slash';
+                } else {
+                    inp.type = 'password';
+                    icon.className = 'fa-solid fa-eye';
+                }
+            }
+
+            async function saveApiSettings() {
+                const key = document.getElementById('api-key-input').value.trim();
+                const min = document.getElementById('cache-minutes').value;
+                const auto = document.getElementById('auto-fetch').checked;
+                if (!key) { showToast('أدخل مفتاح الـ API أولاً', 'error'); return; }
+                const r = await fetch('/admin/api.php?action=save_api_settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({api_key: key, cache_minutes: parseInt(min), auto_fetch: auto})
+                });
+                const d = await r.json();
+                if (d.success) showToast('تم حفظ الإعدادات بنجاح ✅', 'success');
+                else showToast('خطأ في الحفظ', 'error');
+            }
+
+            async function forceFetch() {
+                showToast('جاري جلب المباريات... قد يستغرق بضع ثوانٍ', 'success');
+                try {
+                    const r = await fetch('/admin/api.php?action=force_fetch');
+                    const d = await r.json();
+                    if (d.success) {
+                        showToast('تم جلب ' + d.count + ' مباراة بنجاح ✅', 'success');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showToast(d.error || 'حدث خطأ أثناء الجلب', 'error');
+                    }
+                } catch(e) { showToast('تعذر الاتصال بالسيرفر', 'error'); }
+            }
+            </script>
+
         <?php elseif($sec == 'news'):
             $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
             usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
