@@ -1104,7 +1104,7 @@ if ($auth) {
 
                     <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
-                            <label>تحديث النتائج - بالدقائق</label>
+                            <label>تحديث النتائج بالدقائق</label>
                             <input type="number" id="cache-minutes" class="form-input" value="<?php echo $cacheMin; ?>" min="1" style="text-align:right;">
                         </div>
                         <div style="flex:1; min-width:200px;">
