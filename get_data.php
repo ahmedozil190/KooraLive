@@ -59,60 +59,69 @@ if ($autoFetch && !empty($apiKey)) {
     
     // التحديث فقط إذا مر الوقت المحدد (للحفاظ على سرعة التطبيق)
     if ((time() - ($liveCache['time'] ?? 0)) >= $cacheSeconds) {
-        $matches = readJson($matchesFile);
+        $todayStr = date('Y-m-d');
+        $apiResult = callApi("fixtures?date=$todayStr&timezone=Asia/Riyadh", $apiKey);
+        $res = $apiResult['response'] ?? [];
 
-        // حذف المباريات التي مر عليها أكثر من يومين تلقائياً
-        $twoDaysAgo = strtotime('-2 days');
-        $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
-            if (empty($m['timestamp'])) return true;
-            return (int)$m['timestamp'] > $twoDaysAgo;
-        }));
+        if (!empty($res)) {
+            $apiUpdates = [];
+            foreach ($res as $f) $apiUpdates[(string)$f['fixture']['id']] = $f;
 
-        $idsToUpdate = [];
-        foreach ($matches as $m) {
-            if (($m['source'] ?? '') === 'api' && ($m['status'] ?? '') !== 'finished') {
-                $idsToUpdate[] = $m['id'];
-            }
-        }
-        
-        if (!empty($idsToUpdate)) {
-            $apiResult = callApi("fixtures?ids=" . implode('-', array_slice($idsToUpdate, 0, 20)), $apiKey);
-            if (isset($apiResult['response']) && is_array($apiResult['response'])) {
-                $apiUpdates = [];
-                foreach ($apiResult['response'] as $f) {
-                    $apiUpdates[(string)$f['fixture']['id']] = $f;
-                }
+            $todayStr     = date('Y-m-d');
+            $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
+            $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
 
-                $todayStr     = date('Y-m-d');
-                $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
-                $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
+            // 1. تحديث مباريات الموقع
+            $matches = readJson($matchesFile);
+            
+            // تنظيف القديم (يومين)
+            $twoDaysAgo = strtotime('-2 days');
+            $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
+                if (empty($m['timestamp'])) return true;
+                return (int)$m['timestamp'] > $twoDaysAgo;
+            }));
 
-                foreach ($matches as &$m) {
-                    // تحديث حقل day تلقائياً مع مراعاة المباريات التي تمتد لما بعد منتصف الليل
-                    if (!empty($m['timestamp'])) {
-                        $matchDate   = date('Y-m-d', $m['timestamp']);
-                        $matchStatus = $m['status'] ?? 'upcoming';
-                        if ($matchDate === $tomorrowStr) {
-                            $m['day'] = 'tomorrow';
-                        } elseif ($matchDate === $todayStr) {
-                            $m['day'] = 'today';
-                        } elseif ($matchDate === $yesterdayStr) {
-                            $m['day'] = ($matchStatus === 'finished') ? 'yesterday' : 'today';
-                        }
-                    }
-
-                    // تحديث النتائج والحالة
-                    if (isset($apiUpdates[$m['id']])) {
-                        $f = $apiUpdates[$m['id']];
-                        $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
-                        $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
-                        $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
-                        if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
-                        elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+            foreach ($matches as &$m) {
+                // تحديث حقل day
+                if (!empty($m['timestamp'])) {
+                    $matchDate   = date('Y-m-d', $m['timestamp']);
+                    $matchStatus = $m['status'] ?? 'upcoming';
+                    if ($matchDate === $tomorrowStr) $m['day'] = 'tomorrow';
+                    elseif ($matchDate === $todayStr) $m['day'] = 'today';
+                    elseif ($matchDate === $yesterdayStr) {
+                        $m['day'] = ($matchStatus === 'finished') ? 'yesterday' : 'today';
                     }
                 }
-                writeJson($matchesFile, $matches);
+
+                // تحديث البيانات من النتائج المجلوبة
+                if (isset($apiUpdates[$m['id']])) {
+                    $f = $apiUpdates[$m['id']];
+                    $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                    $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                    $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                    if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
+                    elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+                    else $m['status'] = 'upcoming';
+                }
             }
+            writeJson($matchesFile, $matches);
+
+            // 2. تحديث البنك أيضاً ليكون جاهزاً في أي لحظة
+            $bank = readJson($fixturesBank);
+            $bankUpdated = false;
+            foreach ($bank as &$bm) {
+                if (isset($apiUpdates[$bm['id']])) {
+                    $f = $apiUpdates[$bm['id']];
+                    $bm['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                    $bm['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                    $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                    if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $bm['status'] = 'finished';
+                    elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $bm['status'] = 'live';
+                    else $bm['status'] = 'upcoming';
+                    $bankUpdated = true;
+                }
+            }
+            if ($bankUpdated) writeJson($fixturesBank, $bank);
         }
         writeJson($liveCacheF, ['time' => time()]);
     }
