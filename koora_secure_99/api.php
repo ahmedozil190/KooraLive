@@ -234,9 +234,17 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
     $matches = readJson($matchesFile);
     if (empty($matches)) return; 
 
-    // 2. طلب النتائج الحية
-    $apiResult = callApi("met=Livescore", $apiKey);
+    // 2. طلب نتائج اليوم (بدلاً من Livescore لتجنب خطأ 500)
+    $today = date('Y-m-d');
+    $apiResult = callApi("met=Fixtures&from=$today&to=$today", $apiKey);
     $res = $apiResult['response'] ?? [];
+    
+    // إذا فشل طلب اليوم، نحاول Livescore كملاذ أخير
+    if (empty($res)) {
+        $apiResult = callApi("met=Livescore", $apiKey);
+        $res = $apiResult['response'] ?? [];
+    }
+    
     if (empty($res)) return;
 
     // 3. فلترة البيانات: نأخذ فقط ما نحتاجه (IDs والأهداف) لتوفير الذاكرة
