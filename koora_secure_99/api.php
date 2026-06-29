@@ -124,6 +124,7 @@ function mapApiMatch($f, $dayLabel) {
         'homeLogo' => $f['teams']['home']['logo'] ?? '',
         'awayLogo' => $f['teams']['away']['logo'] ?? '',
         'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league'),
+        'league_id' => (string)($f['league']['id'] ?? ''),
         'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
         'timestamp' => $f['fixture']['timestamp'] ?? 0,
         'day' => $dayLabel,
@@ -416,13 +417,28 @@ if ($action === 'trigger_live_update') {
     exit;
 }
 
-// لوحة التحكم - جلب قائمة البنك للاختيار
+// لوحة التحكم - جلب قائمة البنك للاختيار (مع دعم الفلترة اللحظية)
 if ($action === 'get_bank') {
     $bank = readJson($fixturesBank);
     $site = readJson($matchesFile);
+    $settings = readJson($settingsFile);
+    $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
+    
     $siteIds = array_column($site, 'id');
     $res = [];
-    foreach ($bank as $m) if (!in_array($m['id'], $siteIds)) $res[] = $m;
+    foreach ($bank as $m) {
+        // تخطي إذا كانت المباراة مضافة للموقع فعلاً
+        if (in_array($m['id'], $siteIds)) continue;
+        
+        // تطبيق الفلترة اللحظية حسب الدوريات المفضلة
+        if (!empty($favLeagues)) {
+            $mLeagueId = $m['league_id'] ?? '';
+            if (!empty($mLeagueId) && !in_array($mLeagueId, $favLeagues)) {
+                continue; // تخطي إذا لم يكن في المفضلة
+            }
+        }
+        $res[] = $m;
+    }
     echo json_encode($res, JSON_UNESCAPED_UNICODE); exit;
 }
 
