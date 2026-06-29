@@ -16,11 +16,10 @@ $fixturesBank = '../data/api_fixtures.json';
 if (isset($_POST['login'])) {
     if ($_POST['user'] === 'admin' && $_POST['pass'] === '123456') { 
         $_SESSION['a'] = true; 
-        header("Location: /admin/index.php"); 
-        exit; 
+        header("Location: index.php"); exit; 
     }
 }
-if (isset($_GET['logout'])) { session_destroy(); header("Location: /admin/index.php"); exit; }
+if (isset($_GET['logout'])) { session_destroy(); header("Location: index.php"); exit; }
 $auth = isset($_SESSION['a']);
 $sec = isset($_GET['section']) ? $_GET['section'] : 'main';
 $news = json_decode(@file_get_contents($newsFile), true);
@@ -35,13 +34,13 @@ if ($auth) {
         file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
         $backSec = isset($_GET['section']) ? $_GET['section'] : 'main';
         $backDay = isset($_GET['day']) ? $_GET['day'] : 'today';
-        header("Location: /admin/index.php?section=$backSec&day=$backDay"); exit;
+        header("Location: index.php?section=$backSec&day=$backDay"); exit;
     }
     if (isset($_GET['del_n'])) {
         $ns = json_decode(@file_get_contents($newsFile), true) ?: [];
         $ns = array_filter($ns, function($v) { return $v['id'] != $_GET['del_n']; });
         file_put_contents($newsFile, json_encode(array_values($ns), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-        header("Location: /admin/index.php?section=news"); exit;
+        header("Location: index.php?section=news"); exit;
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['add_n'])) {
@@ -61,7 +60,7 @@ if ($auth) {
             if(!$d) $d = array();
             $d[] = array('id'=>time(),'title'=>$_POST['t'],'image'=>$imgPath,'content'=>$_POST['c'],'date'=>date('Y-m-d'));
             file_put_contents($newsFile, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=news&success=1"); exit;
+            header("Location: index.php?section=news&success=1"); exit;
         }
         if (isset($_POST['save_edit'])) {
             $mid = $_POST['edit_match_id'];
@@ -80,7 +79,7 @@ if ($auth) {
                 }
             }
             file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=current&success=1"); exit;
+            header("Location: index.php?section=current&success=1"); exit;
         }
         if (isset($_POST['save_news_edit'])) {
             $nid = $_POST['edit_news_id'];
@@ -104,7 +103,7 @@ if ($auth) {
                 }
             }
             file_put_contents($newsFile, json_encode(array_values($ns), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: /admin/index.php?section=news"); exit;
+            header("Location: index.php?section=news"); exit;
         }
         if (isset($_POST['clean_imgs'])) {
             $files = glob('../uploads/*');
@@ -122,7 +121,7 @@ if ($auth) {
             foreach($files as $f) {
                 if(!in_array(basename($f), $used)) { unlink($f); $count++; }
             }
-            header("Location: /admin/index.php?section=news&cleaned=$count"); exit;
+            header("Location: index.php?section=news&cleaned=$count"); exit;
         }
         // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
     }
@@ -164,15 +163,15 @@ if ($auth) {
     <aside class="side">
         <div style="padding:30px; font-size:24px; font-weight:800; color:#6366f1; text-align:center; border-bottom:1px solid var(--border);">كورة لايف</div>
         <div style="padding-top:20px;">
-            <a href="/admin/index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
-            <a href="/admin/index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات الحالية</a>
-            <a href="/admin/index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
-            <a href="/admin/index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
-            <a href="/admin/index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
+            <a href="index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
+            <a href="index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات الحالية</a>
+            <a href="index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
+            <a href="index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
+            <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
-            <a href="/admin/index.php?logout=1" class="f-icon" style="color:#ef4444;"><i class="fa-solid fa-power-off"></i></a>
+            <a href="index.php?logout=1" class="f-icon" style="color:#ef4444;"><i class="fa-solid fa-power-off"></i></a>
         </div>
     </aside>
     <main class="main">
@@ -270,7 +269,7 @@ if ($auth) {
                              <td>
                                  <div style="display:flex; gap:8px;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                     <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                     <a href="index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                  </div>
                              </td>
                          </tr>
@@ -382,7 +381,7 @@ if ($auth) {
                             <td>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                    <a href="/admin/index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                    <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -539,7 +538,7 @@ if ($auth) {
                     <h4 style="margin:0; color:#ef4444; font-weight:800;">مفتاح الـ API غير موجود!</h4>
                     <p style="margin:5px 0 0; font-size:13px; color:var(--text-sub);">يرجى الانتقال لصفحة <strong>"إدارة API"</strong> وإضافة المفتاح الخاص بك لتتمكن من جلب المباريات.</p>
                 </div>
-                <a href="/admin/index.php?section=api_mgr" style="margin-right:auto; background:#ef4444; color:#fff; padding:8px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:13px;">انتقل للإعدادات</a>
+                <a href="index.php?section=api_mgr" style="margin-right:auto; background:#ef4444; color:#fff; padding:8px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:13px;">انتقل للإعدادات</a>
             </div>
             <?php endif; ?>
             
@@ -635,7 +634,7 @@ if ($auth) {
                 let apiBank = [];
                 async function loadBank() {
                     try {
-                        const r = await fetch('/admin/api.php?action=get_bank');
+                        const r = await fetch('api.php?action=get_bank');
                         apiBank = await r.json();
                         const activeTab = document.querySelector('.day-tab.active').dataset.day;
                         renderBank(activeTab);
@@ -717,7 +716,7 @@ if ($auth) {
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
 
                     try {
-                        const r = await fetch('/admin/api.php?action=add_from_bank', {
+                        const r = await fetch('api.php?action=add_from_bank', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({id, streamUrl: url, channel: ch, commentator: comm})
@@ -833,7 +832,7 @@ if ($auth) {
             <script>
             (async function loadApiStatus() {
                 try {
-                    const r = await fetch('/admin/api.php?action=api_status');
+                    const r = await fetch('api.php?action=api_status');
                     const d = await r.json();
                     document.getElementById('st-fetch-date').textContent  = d.last_daily_date  || '--';
                     document.getElementById('st-live-update').textContent = d.last_live_update || '--';
@@ -875,7 +874,7 @@ if ($auth) {
                     payload.api_key = keyInput;
                 }
 
-                const r = await fetch('/admin/api.php?action=save_api_settings', {
+                const r = await fetch('api.php?action=save_api_settings', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
@@ -894,7 +893,7 @@ if ($auth) {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
                 try {
-                    const r = await fetch('/admin/api.php?action=force_fetch');
+                    const r = await fetch('api.php?action=force_fetch');
                     const d = await r.json();
                     if (d.success) {
                         showToast('✅ بدأ الجلب في الخلفية، انتظر 30 ثانية ثم حدّث الصفحة', 'success');
@@ -915,7 +914,7 @@ if ($auth) {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
                 try {
-                    const r = await fetch('/admin/api.php?action=trigger_live_update');
+                    const r = await fetch('api.php?action=trigger_live_update');
                     const d = await r.json();
                     if (d.success) {
                         // عرض تفاصيل التشخيص في الرسالة
@@ -993,7 +992,7 @@ if ($auth) {
                                 <td>
                                     <div style="display:flex; gap:10px; justify-content:center;">
                                         <button class="btn-edit" onclick="openNewsEdit(this)" data-news='<?php echo htmlspecialchars(json_encode($n), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                        <a href="/admin/index.php?del_n=<?php echo $n['id']; ?>&section=news&p=<?php echo $page; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                        <a href="index.php?del_n=<?php echo $n['id']; ?>&section=news&p=<?php echo $page; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                     </div>
                                 </td>
                             </tr>
