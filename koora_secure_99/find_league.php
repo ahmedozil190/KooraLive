@@ -51,6 +51,7 @@ echo "<html><head><title>كل الدوريات - API</title>
 </head><body>";
 
 echo "<h1>All Supported Leagues & Cups</h1>";
+echo "<p style='text-align:center; font-weight:bold; color:#6366f1; margin-bottom:20px;'>Total Leagues Found: " . count($leagues) . "</p>";
 echo "<table><thead><tr><th>ID</th><th>Country</th><th>League Name</th><th>Type</th></tr></thead><tbody>";
 
 foreach ($leagues as $l) {
