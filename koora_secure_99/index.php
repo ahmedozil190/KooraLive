@@ -1035,36 +1035,51 @@ if ($auth) {
             }
 
             async function saveApiSettings() {
-                const keyInput = document.getElementById('api-key-input').value.trim();
-                const sec = document.getElementById('cache-seconds').value;
-                const h12 = parseInt(document.getElementById('fetch-h-12').value);
-                const ampm = document.querySelector('#ampm-toggle .t-opt.active').textContent.trim();
+                try {
+                    const keyEl = document.getElementById('api-key-input');
+                    const secEl = document.getElementById('cache-seconds');
+                    const h12El = document.getElementById('fetch-h-12');
+                    const ampmEl = document.querySelector('#ampm-toggle .t-opt.active');
 
-                // تحويل الوقت من 12h إلى 24h
-                let hour24 = h12;
-                if (ampm === 'PM' && h12 < 12) hour24 += 12;
-                if (ampm === 'AM' && h12 === 12) hour24 = 0;
+                    if (!secEl || !h12El || !ampmEl) {
+                        console.error('Missing required elements');
+                        return;
+                    }
 
-                // بناء البيانات — نرسل فقط ما هو متاح في الواجهة
-                const payload = {
-                    cache_seconds: parseInt(sec),
-                    fetch_hour: hour24
-                };
-                if (keyInput.length > 0) {
-                    payload.api_key = keyInput;
-                }
+                    const keyInput = keyEl ? keyEl.value.trim() : '';
+                    const sec = secEl.value;
+                    const h12 = parseInt(h12El.value) || 12;
+                    const ampm = ampmEl.textContent.trim();
 
-                const r = await fetch('api.php?action=save_api_settings', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                const d = await r.json();
-                if (d.success) { 
-                    showToast('تم حفظ الإعدادات بنجاح ✅', 'success'); 
-                    setTimeout(()=>location.reload(), 1000); 
-                } else {
-                    showToast('خطأ في الحفظ', 'error');
+                    // تحويل الوقت من 12h إلى 24h
+                    let hour24 = h12;
+                    if (ampm === 'PM' && h12 < 12) hour24 += 12;
+                    if (ampm === 'AM' && h12 === 12) hour24 = 0;
+
+                    const payload = {
+                        cache_seconds: parseInt(sec) || 60,
+                        fetch_hour: hour24
+                    };
+                    if (keyInput.length > 0) payload.api_key = keyInput;
+
+                    const r = await fetch('api.php?action=save_api_settings', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    const d = await r.json();
+                    
+                    if (d.success) {
+                        if (typeof showToast === 'function') showToast('تم حفظ الإعدادات بنجاح ✅', 'success');
+                        else alert('تم حفظ الإعدادات بنجاح ✅');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        throw new Error(d.error || 'فشل الحفظ');
+                    }
+                } catch (e) {
+                    console.error('Save Error:', e);
+                    if (typeof showToast === 'function') showToast('خطأ في الحفظ: ' + e.message, 'error');
+                    else alert('خطأ في الحفظ: ' + e.message);
                 }
             }
 
