@@ -80,24 +80,34 @@ function writeJson($path, $data) {
 // ========== دوار جلب البيانات من AllSportsAPI ==========
 function callApi($endpoint, $apiKey) {
     if (empty($apiKey)) return ['error' => 'No API Key'];
-    // AllSportsAPI uses ?met= endpoint & APIkey=key
+    
+    // تعديل الرابط ليكون أكثر استقراراً مع إضافة بارامترات لضمان جودة الرد
     $url = "https://apiv2.allsportsapi.com/football/?APIkey=$apiKey&$endpoint";
     
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 25,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) KooraLive/1.0'
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
     
-    if ($httpCode !== 200) return ['error' => "HTTP Error $httpCode"];
+    if ($curlError) return ['error' => "CURL Error: $curlError"];
+    if ($httpCode !== 200) {
+        $msg = "HTTP Error $httpCode";
+        // إذا كان هناك رد من السيرفر حتى مع الخطأ، نحاول قراءته
+        $temp = json_decode($response, true);
+        if (isset($temp['error'])) $msg .= " - " . (is_array($temp['error']) ? json_encode($temp['error']) : $temp['error']);
+        return ['error' => $msg];
+    }
     
     $data = json_decode($response, true);
-    if (!isset($data['result'])) {
-        return ['error' => $data['error'] ?? 'API Returned No Result'];
+    if (!isset($data['result']) && isset($data['error'])) {
+        return ['error' => $data['error']];
     }
     
     return ['response' => $data['result'] ?? []];
