@@ -413,12 +413,32 @@ if ($action === 'add_from_bank') {
     $id = (string)$inp['id'];
     $bank = readJson($fixturesBank);
     $site = readJson($matchesFile);
+    $arMap = readJson($arMapFile);
+    $mapUpdated = false;
+
+    // معالجة الترجمات المرسلة وحفظها في ar_map
+    if (!empty($inp['translations'])) {
+        foreach ($inp['translations'] as $type => $data) {
+            if (!empty($data['id']) && !empty($data['ar'])) {
+                $arMap[(string)$data['id']] = trim($data['ar']);
+                $mapUpdated = true;
+            }
+        }
+    }
+    if ($mapUpdated) writeJson($arMapFile, $arMap);
+
     foreach ($bank as $bm) {
         if ($bm['id'] === $id) {
+            // تحديث الأسماء العربية فوراً للمباراة المضافة
+            if (!empty($inp['translations']['home']['ar']))   $bm['homeTeam'] = trim($inp['translations']['home']['ar']);
+            if (!empty($inp['translations']['away']['ar']))   $bm['awayTeam'] = trim($inp['translations']['away']['ar']);
+            if (!empty($inp['translations']['league']['ar'])) $bm['league']   = trim($inp['translations']['league']['ar']);
+
             $bm['streamUrl'] = $inp['streamUrl'] ?? '';
             $bm['channel'] = $inp['channel'] ?? 'غير معروف';
             $bm['commentator'] = $inp['commentator'] ?? 'غير معروف';
-            $site[] = $bm; break;
+            $site[] = $bm;
+            break;
         }
     }
     writeJson($matchesFile, $site);

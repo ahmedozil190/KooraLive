@@ -522,6 +522,7 @@ if ($auth) {
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $hasKey = !empty($apiS['api_key']);
             $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
+            $arMap = json_decode(@file_get_contents($arMapFile), true) ?: []; // تحميل الخريطة هنا
             $c_total = count($bank);
             $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
             $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
@@ -595,15 +596,42 @@ if ($auth) {
                     <!-- Body -->
                     <div style="padding:25px; background:var(--bg-card);">
                         <input type="hidden" id="add-api-id">
+                        
+                        <!-- خانات التعريب الفوري -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px; background:rgba(99,102,241,0.05); padding:15px; border-radius:12px; border:1px dashed #6366f1;">
+                            <div style="grid-column: span 2; font-size:12px; font-weight:800; color:#6366f1; margin-bottom:5px;"><i class="fa-solid fa-language"></i> تعريب فوري (سيتم حفظه للأبد)</div>
+                            <div>
+                                <label style="display:block; margin-bottom:5px; font-weight:700; font-size:12px;">الفريق الأول (عربي)</label>
+                                <input type="text" id="add-api-home-ar" class="form-input" style="width:100%; box-sizing:border-box;">
+                                <input type="hidden" id="add-api-home-id">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:5px; font-weight:700; font-size:12px;">الفريق الثاني (عربي)</label>
+                                <input type="text" id="add-api-away-ar" class="form-input" style="width:100%; box-sizing:border-box;">
+                                <input type="hidden" id="add-api-away-id">
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:5px; font-weight:700; font-size:12px;">البطولة (عربي)</label>
+                                <input type="text" id="add-api-league-ar" class="form-input" style="width:100%; box-sizing:border-box;">
+                                <input type="hidden" id="add-api-league-id">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">القناة</label>
+                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">المعلق</label>
+                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
+                            </div>
+                        </div>
+
                         <div style="margin-bottom:15px;">
                             <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط البث</label>
                             <input type="text" id="add-api-url" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                            <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="أدخل اسم القناة" style="width:100%; box-sizing:border-box;">
-                            </div>
                             <div>
                                 <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
                                 <input type="text" id="add-api-comm" class="form-input" placeholder="أدخل اسم المعلق" style="width:100%; box-sizing:border-box;">
@@ -716,8 +744,29 @@ if ($auth) {
                     renderBank(tab.dataset.day);
                 }
 
+                const arMap = <?php echo json_encode($arMap); ?>;
+
                 function openApiModal(id) {
+                    const match = apiFixturesData.find(m => m.id == id);
+                    if(!match) return;
+
                     document.getElementById('add-api-id').value = id;
+                    
+                    // تحضير الـ Placeholder (الاسم الإنجليزي من الـ API)
+                    document.getElementById('add-api-home-ar').placeholder = match.homeTeam || '';
+                    document.getElementById('add-api-home-id').value = match.homeId || '';
+                    
+                    document.getElementById('add-api-away-ar').placeholder = match.awayTeam || '';
+                    document.getElementById('add-api-away-id').value = match.awayId || '';
+                    
+                    document.getElementById('add-api-league-ar').placeholder = match.league || '';
+                    document.getElementById('add-api-league-id').value = match.leagueId || '';
+
+                    // الملء التلقائي إذا كان الاسم موجوداً في ar_map
+                    document.getElementById('add-api-home-ar').value = arMap[match.homeId] || '';
+                    document.getElementById('add-api-away-ar').value = arMap[match.awayId] || '';
+                    document.getElementById('add-api-league-ar').value = arMap[match.leagueId] || '';
+
                     const modal = document.getElementById('addApiModal');
                     modal.style.display = 'flex';
                 }
@@ -734,6 +783,14 @@ if ($auth) {
                     const url = document.getElementById('add-api-url').value;
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
+                    
+                    // بيانات التعريب
+                    const homeAr = document.getElementById('add-api-home-ar').value;
+                    const homeId = document.getElementById('add-api-home-id').value;
+                    const awayAr = document.getElementById('add-api-away-ar').value;
+                    const awayId = document.getElementById('add-api-away-id').value;
+                    const leagueAr = document.getElementById('add-api-league-ar').value;
+                    const leagueId = document.getElementById('add-api-league-id').value;
 
                     const btn = event.currentTarget;
                     const originalText = btn.innerHTML;
@@ -744,11 +801,18 @@ if ($auth) {
                         const r = await fetch('api.php?action=add_from_bank', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({id, streamUrl: url, channel: ch, commentator: comm})
+                            body: JSON.stringify({
+                                id, streamUrl: url, channel: ch, commentator: comm,
+                                translations: {
+                                    home: { id: homeId, ar: homeAr },
+                                    away: { id: awayId, ar: awayAr },
+                                    league: { id: leagueId, ar: leagueAr }
+                                }
+                            })
                         });
                         const d = await r.json();
                         if(d.success) {
-                            showToast('تم بنجاح! المباراة الآن حية في الموقع ✅', 'success');
+                            showToast('تم بنجاح! تم تعريب البيانات وإضافة المباراة ✅', 'success');
                             closeApiModal();
                             loadBank();
                         }
