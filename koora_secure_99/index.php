@@ -243,8 +243,8 @@ if ($auth) {
                         <?php foreach($dayM as $m): 
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
-                            $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
+                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                             $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
@@ -355,8 +355,8 @@ if ($auth) {
                         <?php foreach($dayM as $m):
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
-                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
+                            $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
@@ -686,6 +686,7 @@ if ($auth) {
                             let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
                             if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
                             else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
+                            else { stClass = 'status-up'; stTxt = 'لم تبدأ بعد'; }
 
                             return `
                             <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
@@ -1037,20 +1038,17 @@ if ($auth) {
                 const keyInput = document.getElementById('api-key-input').value.trim();
                 const sec = document.getElementById('cache-seconds').value;
                 const h12 = parseInt(document.getElementById('fetch-h-12').value);
-                const ampm = document.querySelector('#ampm-toggle .t-opt.active').dataset.val;
-                const auto = document.querySelector('#auto-fetch-toggle .t-opt.active').dataset.val === "1";
+                const ampm = document.querySelector('#ampm-toggle .t-opt.active').textContent.trim();
 
                 // تحويل الوقت من 12h إلى 24h
                 let hour24 = h12;
                 if (ampm === 'PM' && h12 < 12) hour24 += 12;
                 if (ampm === 'AM' && h12 === 12) hour24 = 0;
 
-                // بناء البيانات — لا نُرسل api_key إلا إذا أدخل المستخدم قيمة جديدة
+                // بناء البيانات — نرسل فقط ما هو متاح في الواجهة
                 const payload = {
                     cache_seconds: parseInt(sec),
-                    fetch_hour: hour24,
-                    auto_fetch: auto,
-                    fav_leagues: document.getElementById('fav-leagues-input').value.trim()
+                    fetch_hour: hour24
                 };
                 if (keyInput.length > 0) {
                     payload.api_key = keyInput;
