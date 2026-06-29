@@ -668,6 +668,7 @@ if ($auth) {
                     }, {});
 
                     let html = '';
+                    for (const league in grouped) {
                         // إضافة سطر عنوان الدوري
                         const leagueId = grouped[league][0].league_id || '-';
                         html += `
