@@ -783,7 +783,20 @@ if ($auth) {
             </div>
 
             <div style="background:var(--bg-card); padding:25px; border-radius:20px; border:1px solid var(--border-color); margin-bottom:30px;">
-                <p style="color:var(--text-sub); margin-bottom:20px; font-weight:700;">اختر الدوريات التي تريد جلب مبارياتها فقط. (إذا لم تختر شيئاً سيتم جلب كل الدوريات)</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                    <p style="color:var(--text-sub); margin:0; font-weight:700;">اختر الدوريات التي تريد جلب مبارياتها فقط. (إذا لم تختر شيئاً سيتم جلب كل الدوريات)</p>
+                    <button onclick="document.getElementById('add-league-form').style.display='flex'" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; padding:8px 15px; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px;">
+                        <i class="fa-solid fa-plus-circle"></i> إضافة بطولة جديدة
+                    </button>
+                </div>
+
+                <!-- نموذج إضافة بطولة جديدة (مخفي افتراضياً) -->
+                <div id="add-league-form" style="display:none; gap:10px; margin-bottom:20px; padding:15px; background:var(--bg-body); border-radius:12px; border:1px dashed #10b981; align-items:center; flex-wrap:wrap;">
+                    <input type="text" id="new-league-id" placeholder="رقم البطولة (ID)" style="width:120px; padding:10px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; color:var(--text-main); outline:none;">
+                    <input type="text" id="new-league-name" placeholder="اسم البطولة بالعربي" style="flex:1; min-width:200px; padding:10px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; color:var(--text-main); outline:none;">
+                    <button onclick="addNewLeague(this)" style="background:#10b981; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">حفظ</button>
+                    <button onclick="document.getElementById('add-league-form').style.display='none'" style="background:transparent; color:var(--text-dim); border:none; cursor:pointer; font-weight:700;">إلغاء</button>
+                </div>
                 
                 <div id="leagues-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:500px; overflow-y:auto; padding:10px; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-body);">
                     <?php foreach($allLeagues as $id => $name): ?>
@@ -796,7 +809,7 @@ if ($auth) {
                     <?php endforeach; ?>
                 </div>
 
-                <button onclick="saveFavLeagues()" style="margin-top:25px; width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
+                        <button onclick="saveFavLeagues(this)" style="margin-top:25px; width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
                     <i class="fa-solid fa-save"></i> حفظ التفضيلات
                 </button>
             </div>
@@ -825,9 +838,8 @@ if ($auth) {
                     });
                 }
 
-                async function saveFavLeagues() {
+                async function saveFavLeagues(btn) {
                     const ids = Array.from(document.querySelectorAll('#leagues-grid input:checked')).map(i => i.value);
-                    const btn = event.currentTarget;
                     const originalText = btn.innerHTML;
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
@@ -838,12 +850,39 @@ if ($auth) {
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({ fav_leagues: ids.join(',') })
                         });
-                        if(await r.json()) {
+                        const res = await r.json();
+                        if(res.success) {
                             showToast('تم حفظ الدوريات المفضلة بنجاح ✅', 'success');
                         }
                     } catch(e) { showToast('خطأ في الاتصال', 'error'); }
                     btn.disabled = false;
                     btn.innerHTML = originalText;
+                }
+
+                async function addNewLeague(btn) {
+                    const id = document.getElementById('new-league-id').value.trim();
+                    const name = document.getElementById('new-league-name').value.trim();
+                    if(!id || !name) { showToast('الرجاء تعبئة جميع الخانات', 'error'); return; }
+
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '...';
+
+                    try {
+                        const r = await fetch('api.php?action=add_league', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ id, name })
+                        });
+                        const res = await r.json();
+                        if(res.success) {
+                            showToast('تم إضافة البطولة بنجاح! سيتم تحديث الصفحة', 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast(res.error || 'حدث خطأ ما', 'error');
+                        }
+                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+                    btn.disabled = false; btn.innerHTML = originalText;
                 }
             </script>
 

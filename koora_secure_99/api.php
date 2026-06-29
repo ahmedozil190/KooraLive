@@ -313,21 +313,30 @@ if ($action === 'api_status') {
     ], JSON_UNESCAPED_UNICODE); exit;
 }
 
-// لوحة التحكم - حفظ الإعدادات
+// لوحة التحكم - حفظ الإعدادات (تحديث ذكي)
 if ($action === 'save_api_settings') {
     $inp = json_decode(file_get_contents('php://input'), true);
-    // الإبقاء على المفتاح القديم إذا لم يُدخل المستخدم مفتاحاً جديداً
-    // الإبقاء على المفتاح القديم إذا لم يُدخل المستخدم مفتاحاً جديداً
-    $newKey = trim($inp['api_key'] ?? '');
-    if (!empty($newKey)) {
-        $settings['api_key'] = $newKey;
-    }
-    // تحديث باقي الإعدادات
-    $settings['cache_seconds'] = max(5, intval($inp['cache_seconds'] ?? 900));
-    $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'] ?? 0)));
-    $settings['auto_fetch'] = $inp['auto_fetch'] ?? true;
-    $settings['fav_leagues'] = $inp['fav_leagues'] ?? '';
+    if (isset($inp['api_key']))    $settings['api_key'] = trim($inp['api_key']);
+    if (isset($inp['auto_fetch'])) $settings['auto_fetch'] = (bool)$inp['auto_fetch'];
+    if (isset($inp['cache_seconds'])) $settings['cache_seconds'] = max(5, intval($inp['cache_seconds']));
+    if (isset($inp['fetch_hour']))    $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'])));
+    if (isset($inp['fav_leagues']))   $settings['fav_leagues'] = $inp['fav_leagues'];
     writeJson($settingsFile, $settings);
+    echo json_encode(['success' => true]); exit;
+}
+
+// إضافة بطولة جديدة لملف التعريب
+if ($action === 'add_league') {
+    $inp = json_decode(file_get_contents('php://input'), true);
+    $id = trim($inp['id'] ?? '');
+    $name = trim($inp['name'] ?? '');
+    if (empty($id) || empty($name)) {
+        echo json_encode(['success' => false, 'error' => 'البيانات ناقصة']); exit;
+    }
+    $map = readJson($arMapFile);
+    if (!isset($map['leagues'])) $map['leagues'] = [];
+    $map['leagues'][$id] = $name;
+    writeJson($arMapFile, $map);
     echo json_encode(['success' => true]); exit;
 }
 
