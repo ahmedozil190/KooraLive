@@ -4,8 +4,8 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الخاص بك من لوحة تحكم API-Football
 $apiKey = '757f2fdd5505850e862a81f8569790bf';
 
-// رابط API-Football (v3) لجلب جميع المباريات المباشرة
-$apiUrl = "https://v3.football.api-sports.io/fixtures?live=all";
+// رابط API-Football (v3) لجلب جميع مباريات يوم معين (29 يونيو 2026)
+$apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
@@ -36,8 +36,9 @@ if (isset($data['response']) && is_array($data['response'])) {
             'awayTeam'     => $f['teams']['away']['name'],
             'homeScore'    => $f['goals']['home'],
             'awayScore'    => $f['goals']['away'],
-            'status'       => $f['fixture']['status']['short'], // مثل 1H, 2H, HT
-            'minute'       => $f['fixture']['status']['elapsed'], // الدقيقة الحالية
+            'status_short' => $f['fixture']['status']['short'], // مثل FT (انتهت), NS (لم تبدأ)
+            'status_long'  => $f['fixture']['status']['long'],
+            'time'         => $f['fixture']['date'],
             'league'       => $f['league']['name'],
             'country'      => $f['league']['country'],
             'homeLogo'     => $f['teams']['home']['logo'],
@@ -46,7 +47,6 @@ if (isset($data['response']) && is_array($data['response'])) {
     }
     echo json_encode($matches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
-    $errorMsg = $data['errors']['token'] ?? ($data['errors']['requests'] ?? 'لا توجد مباريات مباشرة حالياً');
-    echo json_encode(['info' => $errorMsg], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['info' => 'لا توجد بيانات متاحة لهذا التاريخ أو المفتاح غير صالـح'], JSON_UNESCAPED_UNICODE);
 }
 ?>
