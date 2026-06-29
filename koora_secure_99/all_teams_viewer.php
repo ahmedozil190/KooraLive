@@ -32,21 +32,31 @@ $selectedCountry = $_GET['country'] ?? '';
 $selectedLeague = $_GET['league'] ?? '';
 $leagues = [];
 $teams = [];
+$apiError = '';
 
 // إذا تم اختيار دولة، جلب دورياتها
 if (!empty($selectedCountry)) {
     $lData = callApi("leagues?country=" . urlencode($selectedCountry), $apiKey);
-    $leagues = $lData['response'] ?? [];
+    if (!empty($lData['errors'])) {
+        $apiError = is_array($lData['errors']) ? implode(', ', $lData['errors']) : 'خطأ غير معروف من الـ API';
+    } else {
+        $leagues = $lData['response'] ?? [];
+        if (empty($leagues)) $apiError = "لا توجد دوريات مسجلة لهذه الدولة في الـ API حالياً.";
+    }
 }
 
-// إذا تم اختيار دوري، جلب فرقه (نستخدم سنة 2023 كافتراضي)
+// إذا تم اختيار دوري، جلب فرقه
 if (!empty($selectedLeague)) {
-    $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2023", $apiKey);
-    // إذا كانت 2023 فارغة، نجرب 2024
+    $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2024", $apiKey);
     if (empty($tData['response'])) {
-        $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2024", $apiKey);
+        $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2023", $apiKey);
     }
-    $teams = $tData['response'] ?? [];
+    
+    if (!empty($tData['errors'])) {
+        $apiError = is_array($tData['errors']) ? implode(', ', $tData['errors']) : 'خطأ في جلب الفرق';
+    } else {
+        $teams = $tData['response'] ?? [];
+    }
 }
 
 ?>
@@ -76,6 +86,12 @@ if (!empty($selectedLeague)) {
     <div class="container">
         <h1>📊 مستعرض البطولات والأندية</h1>
         
+        <?php if (!empty($apiError)): ?>
+            <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; font-weight: bold; text-align: center;">
+                ⚠️ تنبيه من الـ API: <?= $apiError ?>
+            </div>
+        <?php endif; ?>
+
         <form class="selector-grid" method="GET">
             <div class="form-group">
                 <label>1. اختر الدولة:</label>
