@@ -305,6 +305,7 @@ if ($action === 'save_api_settings') {
     $settings['cache_seconds'] = max(5, intval($inp['cache_seconds'] ?? 900));
     $settings['fetch_hour'] = max(0, min(23, intval($inp['fetch_hour'] ?? 0)));
     $settings['auto_fetch'] = $inp['auto_fetch'] ?? true;
+    $settings['fav_leagues'] = $inp['fav_leagues'] ?? '';
     writeJson($settingsFile, $settings);
     echo json_encode(['success' => true]); exit;
 }

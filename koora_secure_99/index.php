@@ -815,13 +815,15 @@ if ($auth) {
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px; align-items: flex-end;">
-                        <!-- جلب تلقائي -->
-                        <div>
-                            <label>تفعيل النظام التلقائي</label>
-                            <div class="time-toggle" id="auto-fetch-toggle" style="display:flex; width:100%; height:48px; box-sizing:border-box; align-items:center;">
-                                <div class="t-opt <?php echo $autoF ? 'active' : ''; ?>" data-val="1" style="flex:1; text-align:center; height:38px; display:flex; align-items:center; justify-content:center;">تفعيل</div>
-                                <div class="t-opt <?php echo !$autoF ? 'active' : ''; ?>" data-val="0" style="flex:1; text-align:center; height:38px; display:flex; align-items:center; justify-content:center;">تعطيل</div>
                             </div>
+                        </div>
+                        <!-- الدوريات المفضلة -->
+                        <div style="grid-column: span 2;">
+                            <label>IDs الدوريات المفضلة (اختياري)</label>
+                            <input type="text" id="fav-leagues-input" class="form-input" 
+                                value="<?php echo htmlspecialchars($apiSettings['fav_leagues'] ?? ''); ?>" 
+                                placeholder="مثال: 233, 4, 39, 140 (اتركه فارغاً لعرض الكل)">
+                            <small style="color:var(--text-dim); margin-top:5px; display:block;">أدخل أرقام IDs الدوريات التي تريد ظهورها فقط في بنك المباريات، مفصولة بفاصلة.</small>
                         </div>
                         <!-- جلب يدوي -->
                         <div style="display:flex; gap:10px;">
@@ -893,7 +895,8 @@ if ($auth) {
                 const payload = {
                     cache_seconds: parseInt(sec),
                     fetch_hour: hour24,
-                    auto_fetch: auto
+                    auto_fetch: auto,
+                    fav_leagues: document.getElementById('fav-leagues-input').value.trim()
                 };
                 if (keyInput.length > 0) {
                     payload.api_key = keyInput;
