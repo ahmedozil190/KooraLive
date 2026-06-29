@@ -1122,9 +1122,9 @@ if ($auth) {
                     const r = await fetch('api.php?action=trigger_live_update');
                     const d = await r.json();
                     if (d.success) {
-                        // عرض تفاصيل التشخيص في الرسالة
+                        // عرض تفاصيل التشخيص في الرسالة بشكل جمالي
                         let msg = `✅ تم التحديث: ${d.updated} مباراة`;
-                        msg += ` | المرسل للـ API: ${d.ids_sent}`;
+                        if (d.ids_fixed > 0) msg += ` (تم تصحيح ${d.ids_fixed} ID)`;
                         msg += ` | الإجمالي بالملف: ${d.total_in_file}`;
                         
                         showToast(msg, 'success');
