@@ -26,6 +26,14 @@ function callApi($endpoint, $apiKey) {
 $data = callApi("leagues", $apiKey);
 $leagues = $data['response'] ?? [];
 
+// ترتيب القائمة أبجدياً: حسب الدولة أولاً، ثم حسب اسم الدوري
+usort($leagues, function($a, $b) {
+    if ($a['country']['name'] === $b['country']['name']) {
+        return strcmp($a['league']['name'], $b['league']['name']);
+    }
+    return strcmp($a['country']['name'], $b['country']['name']);
+});
+
 echo "<html><head><title>كل الدوريات - API</title>
 <style>
     body { font-family: sans-serif; direction: ltr; padding: 20px; background: #f4f7f6; }
