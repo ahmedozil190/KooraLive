@@ -212,71 +212,54 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
     $liveCache = readJson($liveCacheF);
     if ((time() - ($liveCache['time'] ?? 0)) < $cacheSeconds) return;
 
-    // جلب النتائج المباشرة لكل البطولات بطلب واحد
+    // 1. جلب المباريات المضافة في الموقع أولاً لنعرف ماذا نحتاج
+    $matches = readJson($matchesFile);
+    if (empty($matches)) return; 
+
+    // 2. طلب النتائج الحية
     $apiResult = callApi("met=Livescore", $apiKey);
     $res = $apiResult['response'] ?? [];
+    if (empty($res)) return;
 
+    // 3. فلترة البيانات: نأخذ فقط ما نحتاجه (IDs والأهداف) لتوفير الذاكرة
     $apiUpdates = [];
     foreach ($res as $f) {
-        $apiUpdates[(string)$f['event_key']] = $f;
+        $id = (string)$f['event_key'];
+        $apiUpdates[$id] = [
+            'score' => $f['event_final_result'] ?? '0 - 0',
+            'status' => trim($f['event_status'] ?? ''),
+            'live' => ($f['event_live'] == '1')
+        ];
     }
+    unset($res); // مسح المصفوفة الضخمة الأصلية فوراً لتحرير الذاكرة
 
-    // لتحديث البيانات الموجودة في الموقع وحذف القديمة
-    $todayStr     = date('Y-m-d');
-    $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
-    $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
-
-    // 1. تحديث مباريات الموقع
-    $matches = readJson($matchesFile);
-    if (empty($matches)) return; // لا يوجد مباريات للمتابعة
-    
+    // 4. تحديث مباريات الموقع
     $twoDaysAgo = strtotime('-2 days');
     $matchesUpdated = false;
 
     foreach ($matches as &$m) {
-        // حذف الماتشات القديمة جداً
         if (($m['timestamp'] ?? 0) < $twoDaysAgo) continue;
 
         if (isset($apiUpdates[$m['id']])) {
-            $f = $apiUpdates[$m['id']];
-            $score = $f['event_final_result'] ?? '0 - 0';
-            $scoreParts = explode('-', $score);
+            $update = $apiUpdates[$m['id']];
+            $scoreParts = explode('-', $update['score']);
             
             $newH = trim($scoreParts[0] ?? '0');
             $newA = trim($scoreParts[1] ?? '0');
-            $newStatus = trim($f['event_status'] ?? '');
+            $newStatus = $update['status'];
             
-            // تحديث إذا تغيرت البيانات فقط
             if ($m['homeScore'] != $newH || $m['awayScore'] != $newA || $m['status_text'] != $newStatus) {
                 $m['homeScore'] = $newH;
                 $m['awayScore'] = $newA;
                 $m['status_text'] = $newStatus ?: 'مباشر';
-                if ($f['event_live'] == '1') $m['status'] = 'live';
+                if ($update['live']) $m['status'] = 'live';
                 elseif (strpos($newStatus, 'Finished') !== false) $m['status'] = 'finished';
                 $matchesUpdated = true;
             }
         }
     }
+    
     if ($matchesUpdated) writeJson($matchesFile, $matches);
-
-    // 2. تحديث البنك بشكل سريع (لأول 50 مباراة فقط مثلاً لتوفير الوقت)
-    $bank = readJson($fixturesBank);
-    $bankUpdated = false;
-    $count = 0;
-    foreach ($bank as &$bm) {
-        if ($count++ > 200) break; // تحديث أول 200 مباراة في البنك لتجنب البطء
-        if (isset($apiUpdates[$bm['id']])) {
-            $f = $apiUpdates[$bm['id']];
-            $score = $f['event_final_result'] ?? '0 - 0';
-            $scoreParts = explode('-', $score);
-            $bm['homeScore'] = trim($scoreParts[0] ?? '0');
-            $bm['awayScore'] = trim($scoreParts[1] ?? '0');
-            $bm['status_text'] = $f['event_status'] ?? 'مباشر';
-            if ($f['event_live'] == '1') $bm['status'] = 'live';
-            $bankUpdated = true;
-        }
-    }
-    writeJson($fixturesBank, $bank);
     writeJson($liveCacheF, ['time' => time(), 'updated' => count($apiUpdates)]);
 }
 
