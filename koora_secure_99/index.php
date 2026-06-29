@@ -266,7 +266,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $stTxt; ?></span></td>
+                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -378,7 +378,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                            <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $badgeText; ?></span></td>
+                            <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
@@ -630,10 +630,6 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
-                .status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-block; }
-                .status-live { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
-                .status-final { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
-                .status-up { background:var(--bg-main); color:var(--text-dim); border:1px solid var(--border-color); }
             </style>
 
             <script>
