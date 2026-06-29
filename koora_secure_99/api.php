@@ -8,11 +8,29 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 
+// منع السيرفر من إرسال أخطاء HTML وقبضها برمجياً
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// دالة لالتقاط الأخطاء القاتلة (مثل تجاوز الذاكرة) وعرضها كـ JSON
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        // تنظيف أي مخرجات سابقة لإرسال JSON نظيف
+        if (ob_get_length()) ob_clean();
+        echo json_encode([
+            'success' => false,
+            'error' => "Server Internal Error: " . $error['message'] . " (Line: " . $error['line'] . ")"
+        ]);
+        exit;
+    }
+});
+
 date_default_timezone_set('Asia/Riyadh');
 
 // رفع حدود السيرفر لمعالجة البيانات الضخمة من AllSportsAPI
-ini_set('memory_limit', '512M');
-set_time_limit(120);
+ini_set('memory_limit', '1024M'); // ضاعفنا الذاكرة لـ 1 جيجا للأمان التام
+set_time_limit(180);
 
 // ========== مسارات الملفات ==========
 $baseDir      = __DIR__ . '/../data/';
