@@ -168,6 +168,7 @@ if ($auth) {
             <a href="index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات الحالية</a>
             <a href="index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
             <a href="index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
+            <a href="index.php?section=fav_leagues" class="nav-item <?php echo $sec=='fav_leagues'?'active':''; ?>"><i class="fa-solid fa-star"></i> الدوريات المفضلة</a>
             <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
         </div>
         <div class="sidebar-footer">
@@ -766,6 +767,86 @@ if ($auth) {
 
                 loadBank();
             </script>
+            </div>
+        <?php elseif($sec == 'fav_leagues'):
+            $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            $favs = !empty($apiS['fav_leagues']) ? explode(',', $apiS['fav_leagues']) : [];
+            $map = json_decode(@file_get_contents($arMapFile), true) ?: [];
+            $allLeagues = $map['leagues'] ?? [];
+        ?>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b; margin-left:10px;"></i>الدوريات المفضلة</h2>
+                <div class="search-box" style="margin-bottom:0; width:300px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()">
+                </div>
+            </div>
+
+            <div style="background:var(--bg-card); padding:25px; border-radius:20px; border:1px solid var(--border-color); margin-bottom:30px;">
+                <p style="color:var(--text-sub); margin-bottom:20px; font-weight:700;">اختر الدوريات التي تريد جلب مبارياتها فقط. (إذا لم تختر شيئاً سيتم جلب كل الدوريات)</p>
+                
+                <div id="leagues-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:500px; overflow-y:auto; padding:10px; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-body);">
+                    <?php foreach($allLeagues as $id => $name): ?>
+                        <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
+                            <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
+                            <span class="check-box"><i class="fa-solid fa-check"></i></span>
+                            <span class="league-name"><?php echo $name; ?></span>
+                            <span class="league-id"><?php echo $id; ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+
+                <button onclick="saveFavLeagues()" style="margin-top:25px; width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <i class="fa-solid fa-save"></i> حفظ التفضيلات
+                </button>
+            </div>
+
+            <style>
+                .league-check { display:flex; align-items:center; gap:12px; padding:10px 15px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; cursor:pointer; transition:0.2s; position:relative; }
+                .league-check:hover { background:rgba(99,102,241,0.05); border-color:#6366f1; }
+                .league-check input { display:none; }
+                .check-box { width:20px; height:20px; border-radius:6px; border:2px solid var(--border-color); display:flex; align-items:center; justify-content:center; color:transparent; transition:0.2s; font-size:10px; }
+                .league-check input:checked + .check-box { background:#6366f1; border-color:#6366f1; color:#fff; }
+                .league-name { font-weight:700; font-size:13px; color:var(--text-main); }
+                .league-id { font-size:10px; color:var(--text-dim); margin-right:auto; }
+                
+                .search-box { position:relative; }
+                .search-box i { position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--text-dim); }
+                .search-box input { width:100%; padding:12px 40px 12px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none; }
+                .search-box input:focus { border-color:#6366f1; }
+            </style>
+
+            <script>
+                function filterLeagues() {
+                    const q = document.getElementById('league-search').value.toLowerCase();
+                    document.querySelectorAll('.league-check').forEach(el => {
+                        const name = el.dataset.name.toLowerCase();
+                        el.style.display = name.includes(q) ? 'flex' : 'none';
+                    });
+                }
+
+                async function saveFavLeagues() {
+                    const ids = Array.from(document.querySelectorAll('#leagues-grid input:checked')).map(i => i.value);
+                    const btn = event.currentTarget;
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+                    try {
+                        const r = await fetch('api.php?action=save_api_settings', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ fav_leagues: ids.join(',') })
+                        });
+                        if(await r.json()) {
+                            showToast('تم حفظ الدوريات المفضلة بنجاح ✅', 'success');
+                        }
+                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            </script>
+
         <?php elseif($sec == 'api_mgr'):
             $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];

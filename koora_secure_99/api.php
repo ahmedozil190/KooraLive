@@ -135,10 +135,11 @@ function mapApiMatch($f, $dayLabel) {
     ];
 }
 
-// ========== 1. الجلب اليومي للبنك ==========
+// ========== 1. الجلب اليومي للبنك (مع دعم الفلترة) ==========
 function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
     if (empty($apiKey)) return;
-    set_time_limit(300); // 5 دقائق مهلة
+    global $settingsFile;
+    set_time_limit(300);
     ini_set('memory_limit', '256M');
 
     $today = date('Y-m-d');
@@ -147,6 +148,9 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
 
     $dailyCache = readJson($dailyCacheF);
     if (($dailyCache['date'] ?? '') === $today) return;
+
+    $settings = readJson($settingsFile);
+    $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
 
     $dates = [
         'yesterday' => date('Y-m-d', strtotime('-1 day')),
@@ -159,6 +163,12 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
         $result = callApi("fixtures?date=$dateStr&timezone=Asia/Riyadh", $apiKey);
         if (isset($result['response']) && is_array($result['response'])) {
             foreach ($result['response'] as $f) {
+                // إذا كانت القائمة المفضلة غير فارغة، نتحقق من وجود الدوري فيها
+                if (!empty($favLeagues)) {
+                    if (isset($f['league']['id']) && !in_array((string)$f['league']['id'], $favLeagues)) {
+                        continue; // تخطي الدوري غير المفضل
+                    }
+                }
                 $fetchedMatches[] = mapApiMatch($f, $dayLabel);
             }
         }
