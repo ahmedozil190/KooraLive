@@ -1,10 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// المفتاح الخاص بك من لوحة تحكم API-Football
+// المفتاح الجديد الخاص بك
 $apiKey = 'fbcca31c5f3f9f2638659f404dc62463';
 
-// رابط API-Football (v3) ليوم 29 يونيو 2026
+// رابط API-Football (v3) مع جلب الأحداث (الأهداف، البطاقات، إلخ)
 $apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
 
 $ch = curl_init();
@@ -30,12 +30,43 @@ $data = json_decode($response, true);
 if (isset($data['response']) && is_array($data['response'])) {
     $matches = [];
     foreach ($data['response'] as $f) {
-        // فك تشفير التاريخ والوقت
         $dateTime = new DateTime($f['fixture']['date']);
         $dateStr  = $dateTime->format('Y-m-d');
         $timeStr  = $dateTime->format('H:i');
 
-        // تجهيز النتائج بتنسيق ALLSportsAPI
+        // معالجة الأحداث (الأهداف والبطاقات والتبديلات)
+        $goalscorers = [];
+        $cards = [];
+        $substitutions = [];
+        
+        if (isset($f['events']) && is_array($f['events'])) {
+            foreach ($f['events'] as $e) {
+                if ($e['type'] === 'Goal') {
+                    $goalscorers[] = [
+                        "time" => $e['time']['elapsed'] + ($e['time']['extra'] ?? 0),
+                        "home_scorer" => ($e['team']['id'] == $f['teams']['home']['id']) ? $e['player']['name'] : "",
+                        "home_assist" => ($e['team']['id'] == $f['teams']['home']['id']) ? ($e['assist']['name'] ?? "") : "",
+                        "away_scorer" => ($e['team']['id'] == $f['teams']['away']['id']) ? $e['player']['name'] : "",
+                        "away_assist" => ($e['team']['id'] == $f['teams']['away']['id']) ? ($e['assist']['name'] ?? "") : "",
+                        "score" => $e['detail'] ?? ""
+                    ];
+                } elseif ($e['type'] === 'Card') {
+                    $cards[] = [
+                        "time" => $e['time']['elapsed'] + ($e['time']['extra'] ?? 0),
+                        "home_fault" => ($e['team']['id'] == $f['teams']['home']['id']) ? $e['player']['name'] : "",
+                        "away_fault" => ($e['team']['id'] == $f['teams']['away']['id']) ? $e['player']['name'] : "",
+                        "card" => $e['detail'] ?? "Yellow Card"
+                    ];
+                } elseif ($e['type'] === 'subst') {
+                    $substitutions[] = [
+                        "time" => $e['time']['elapsed'] + ($e['time']['extra'] ?? 0),
+                        "home_substitution" => ($e['team']['id'] == $f['teams']['home']['id']) ? $e['player']['id'] . " | " . $e['assist']['name'] : "",
+                        "away_substitution" => ($e['team']['id'] == $f['teams']['away']['id']) ? $e['player']['id'] . " | " . $e['assist']['name'] : ""
+                    ];
+                }
+            }
+        }
+
         $htScore = ($f['score']['halftime']['home'] !== null) ? $f['score']['halftime']['home'] . " - " . $f['score']['halftime']['away'] : "";
         $ftScore = ($f['score']['fulltime']['home'] !== null) ? $f['score']['fulltime']['home'] . " - " . $f['score']['fulltime']['away'] : "";
         $penaltyScore = ($f['score']['penalty']['home'] !== null) ? $f['score']['penalty']['home'] . " - " . $f['score']['penalty']['away'] : "";
@@ -64,14 +95,12 @@ if (isset($data['response']) && is_array($data['response'])) {
             "event_referee"         => $f['fixture']['referee'] ?? "",
             "home_team_logo"        => $f['teams']['home']['logo'],
             "away_team_logo"        => $f['teams']['away']['logo'],
-            "event_country_key"     => null, // غير متوفر مباشرة بتنسيق رقمي في الاستعلام
             "league_logo"           => $f['league']['logo'],
-            "country_logo"          => "",
-            "event_home_formation"  => "", // يحتاج لطلب lineups منفصل
-            "event_away_formation"  => "", // يحتاج لطلب lineups منفصل
-            "fk_stage_key"          => null,
-            "stage_name"            => $f['league']['round'] ?? "",
-            "league_group"          => null
+            "goalscorers"           => $goalscorers,
+            "cards"                 => $cards,
+            "substitutions"         => $substitutions,
+            "statistics"            => [], // تحتاج لطلب منفصل لكل مباراة
+            "lineups"               => [], // تحتاج لطلب lineups منفصل
         ];
     }
     echo json_encode($matches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
