@@ -234,9 +234,10 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
     $matches = readJson($matchesFile);
     if (empty($matches)) return; 
 
-    // 2. طلب نتائج اليوم (بدلاً من Livescore لتجنب خطأ 500)
-    $today = date('Y-m-d');
-    $apiResult = callApi("met=Fixtures&from=$today&to=$today", $apiKey);
+    // 2. طلب نتائج (أمس + اليوم + غداً) لضمان تغطية كل الماتشات المضافة
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $tomorrow  = date('Y-m-d', strtotime('+1 day'));
+    $apiResult = callApi("met=Fixtures&from=$yesterday&to=$tomorrow", $apiKey);
     $res = $apiResult['response'] ?? [];
     
     // إذا فشل طلب اليوم، نحاول Livescore كملاذ أخير
@@ -406,9 +407,10 @@ if ($action === 'trigger_live_update') {
         echo json_encode(['success' => true, 'updated' => 0, 'ids_sent' => 0, 'total_in_file' => 0, 'time' => date('h:i A')]); exit;
     }
 
-    // طلب نتائج اليوم الموحد (أسرع وأضمن لتجنب خطأ 500)
-    $today = date('Y-m-d');
-    $apiResult = callApi("met=Fixtures&from=$today&to=$today", $apiKey);
+    // طلب نتائج (أمس + اليوم + غداً) لضمان تغطية شاملة للماتشات المضافة
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $tomorrow  = date('Y-m-d', strtotime('+1 day'));
+    $apiResult = callApi("met=Fixtures&from=$yesterday&to=$tomorrow", $apiKey);
     $res = $apiResult['response'] ?? [];
     
     // محاولة Livescore إذا لم تظهر نتائج في Fixtures
