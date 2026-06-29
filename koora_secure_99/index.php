@@ -522,7 +522,8 @@ if ($auth) {
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $hasKey = !empty($apiS['api_key']);
             $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
-            $arMap = json_decode(@file_get_contents($arMapFile), true) ?: []; // تحميل الخريطة هنا
+            // تصحيح: التحقق من وجود الملف قبل محاولة فتحه
+            $arMap = file_exists($arMapFile) ? (json_decode(file_get_contents($arMapFile), true) ?: []) : []; 
             $c_total = count($bank);
             $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
             $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
