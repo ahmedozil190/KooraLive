@@ -297,6 +297,7 @@ if ($action === 'api_status') {
 if ($action === 'save_api_settings') {
     $inp = json_decode(file_get_contents('php://input'), true);
     // الإبقاء على المفتاح القديم إذا لم يُدخل المستخدم مفتاحاً جديداً
+    // الإبقاء على المفتاح القديم إذا لم يُدخل المستخدم مفتاحاً جديداً
     $newKey = trim($inp['api_key'] ?? '');
     if (!empty($newKey)) {
         $settings['api_key'] = $newKey;

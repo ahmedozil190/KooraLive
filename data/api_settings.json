@@ -1,0 +1,7 @@
+{
+    "api_key": "3cf36f23705916ef44bad17fd3889ea7",
+    "auto_fetch": true,
+    "cache_minutes": 15,
+    "fetch_hour": 0,
+    "cache_seconds": 900
+}

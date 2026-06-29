@@ -790,7 +790,8 @@ if ($auth) {
                         <label>مفتاح API-Football</label>
                         <div style="position:relative;">
                             <input type="password" id="api-key-input" class="form-input"
-                                placeholder="<?php echo $savedKey ? '•••••••••• (محفوظ)' : 'أدخل المفتاح هنا...'; ?>"
+                                value="<?php echo $apiSettings['api_key'] ?? ''; ?>"
+                                placeholder="أدخل المفتاح هنا..."
                                 style="padding-left:45px;">
                             <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                         </div>
