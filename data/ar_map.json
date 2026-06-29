@@ -1,4 +1,5 @@
 {
+    "_S01_LEAGUES": "========= البطولات والمسابقات =========",
     "Champions League": "دوري أبطال أوروبا",
     "Europa League": "الدوري الأوروبي",
     "Premier League": "الدوري الإنجليزي الممتاز",
@@ -19,6 +20,7 @@
     "Botola Pro": "الدوري المغربي",
     "Ligue Professionnelle 1": "الدوري التونسي",
 
+    "_S02_EGYPT": "========= الدوري المصري =========",
     "Al Ahly": "الأهلي",
     "Zamalek": "الزمالك",
     "Pyramids": "بيراميدز",
@@ -40,6 +42,7 @@
     "ZED FC": "زد اف سي",
     "Pharco": "فاركو",
 
+    "_S03_SAUDI": "========= الدوري السعودي =========",
     "Al Hilal": "الهلال",
     "Al Nassr": "النصر",
     "Al Ahli": "الأهلي",
@@ -59,6 +62,7 @@
     "Al Hazem": "الحزم",
     "Al Ittihad": "الاتحاد",
 
+    "_S04_EUROPEAN_CLUBS": "========= الأندية الأوروبية =========",
     "Real Madrid": "ريال مدريد",
     "Barcelona": "برشلونة",
     "Atletico Madrid": "أتلتيكو مدريد",
@@ -79,6 +83,7 @@
     "Bayer Leverkusen": "باير ليفركوزن",
     "Aston Villa": "أستون فيلا",
 
+    "_S05_NATIONAL_TEAMS": "========= المنتخبات والدول =========",
     "Argentina": "الأرجنتين",
     "Brazil": "البرازيل",
     "France": "فرنسا",
@@ -99,6 +104,7 @@
     "South Korea": "كوريا الجنوبية",
     "USA": "الولايات المتحدة",
     "Uruguay": "أوروغواي",
+    "Uzbekistan": "أوزبكستان",
     "Senegal": "السنغال",
     "Nigeria": "نيجيريا",
     "Cameroon": "الكاميرون",
@@ -114,5 +120,8 @@
     "United Arab Emirates": "الإمارات",
     "Libya": "ليبيا",
     "Sudan": "السودان",
-    "Mauritania": "موريتانيا"
+    "Mauritania": "موريتانيا",
+    "Cape Verde": "الرأس الأخضر",
+    "Cabo Verde": "الرأس الأخضر",
+    "Montenegro": "الجبل الأسود"
 }
