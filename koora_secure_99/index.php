@@ -991,27 +991,8 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px; align-items: flex-end;">
-                            </div>
-                        </div>
-                        <!-- الدوريات المفضلة -->
-                        <div style="grid-column: span 2;">
-                            <label>IDs الدوريات المفضلة (اختياري)</label>
-                            <input type="text" id="fav-leagues-input" class="form-input" 
-                                value="<?php echo htmlspecialchars($apiSettings['fav_leagues'] ?? ''); ?>" 
-                                placeholder="مثال: 233, 4, 39, 140 (اتركه فارغاً لعرض الكل)">
-                            <small style="color:var(--text-dim); margin-top:5px; display:block;">أدخل أرقام IDs الدوريات التي تريد ظهورها فقط في بنك المباريات، مفصولة بفاصلة.</small>
-                        </div>
-                        <!-- جلب يدوي -->
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="forceFetch()" id="btn-force-fetch" class="p-btn" style="flex:1; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة
-                            </button>
-                            <button onclick="triggerLiveUpdate()" id="btn-live-update" class="p-btn" style="flex:1; height:48px; background:rgba(99,102,241,0.1); color:#6366f1; border:1px solid #6366f1; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                <i class="fa-solid fa-rotate"></i> تحديث النتائج الآن
-                            </button>
-                        </div>
-                    </div>
+                    <!-- تم إيقاف التحكم اليدوي لاعتماد النظام على التحديث التلقائي الذكي -->
+                    <div style="margin-bottom:20px;"></div>
 
                     <style>
                         .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
@@ -1093,53 +1074,7 @@ if ($auth) {
                 }
             }
 
-            async function forceFetch() {
-                const btn = document.getElementById('btn-force-fetch');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
-                try {
-                    const r = await fetch('api.php?action=force_fetch');
-                    const d = await r.json();
-                    if (d.success) {
-                        showToast('✅ بدأ الجلب في الخلفية، انتظر 30 ثانية ثم حدّث الصفحة', 'success');
-                        // إعادة تحميل الصفحة بعد 35 ثانية تلقائياً
-                        setTimeout(() => location.reload(), 35000);
-                    } else {
-                        showToast(d.error || 'حدث خطأ أثناء الجلب', 'error');
-                    }
-                } catch(e) {
-                    showToast('تعذر الاتصال بالسيرفر', 'error');
-                }
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة';
-            }
-
-            async function triggerLiveUpdate() {
-                const btn = document.getElementById('btn-live-update');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
-                try {
-                    const r = await fetch('api.php?action=trigger_live_update');
-                    const d = await r.json();
-                    if (d.success) {
-                        // عرض تفاصيل التشخيص في الرسالة بشكل جمالي
-                        let msg = `✅ تم التحديث: ${d.updated} مباراة`;
-                        if (d.ids_fixed > 0) msg += ` (تم تصحيح ${d.ids_fixed} ID)`;
-                        msg += ` | الإجمالي بالملف: ${d.total_in_file}`;
-                        
-                        showToast(msg, 'success');
-                        
-                        const el = document.getElementById('st-live-update');
-                        if (el) el.textContent = d.time;
-                    } else {
-                        showToast(d.error || 'فشل التحديث', 'error');
-                    }
-                } catch(e) {
-                    showToast('تعذر الاتصال بالسيرفر', 'error');
-                }
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث النتائج الآن';
-            }
+            // تم حذف وظائف forceFetch و triggerLiveUpdate لعدم الحاجة إليها بعد تنفيذ الأتمتة
             </script>
 
         <?php elseif($sec == 'news'):
