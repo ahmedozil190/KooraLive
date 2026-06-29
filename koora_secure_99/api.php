@@ -121,9 +121,13 @@ function mapApiMatch($f, $dayLabel) {
         'id' => (string)$f['fixture']['id'],
         'homeTeam' => getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', 'team'),
         'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', 'team'),
+        'homeTeamEng' => $f['teams']['home']['name'] ?? '',
+        'awayTeamEng' => $f['teams']['away']['name'] ?? '',
         'homeLogo' => $f['teams']['home']['logo'] ?? '',
         'awayLogo' => $f['teams']['away']['logo'] ?? '',
         'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league') . ' - ' . getArName($f['league']['country'] ?? '', '', 'country'),
+        'leagueEng' => $f['league']['name'] ?? '',
+        'countryEng' => $f['league']['country'] ?? '',
         'league_id' => (string)($f['league']['id'] ?? ''),
         'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
         'timestamp' => $f['fixture']['timestamp'] ?? 0,
@@ -340,6 +344,22 @@ if ($action === 'add_league') {
     echo json_encode(['success' => true]); exit;
 }
 
+// حذف بطولة من ملف التعريب
+if ($action === 'delete_league') {
+    $inp = json_decode(file_get_contents('php://input'), true);
+    $id = trim($inp['id'] ?? '');
+    if (empty($id)) {
+        echo json_encode(['success' => false, 'error' => 'الرقم غير موجود']); exit;
+    }
+    $map = readJson($arMapFile);
+    if (isset($map['leagues'][$id])) {
+        unset($map['leagues'][$id]);
+        writeJson($arMapFile, $map);
+        echo json_encode(['success' => true]); exit;
+    }
+    echo json_encode(['success' => false, 'error' => 'البطولة غير موجودة']); exit;
+}
+
 // لوحة التحكم - جلب فوري للبنك (مع تجاوز مهلة الـ Proxy)
 if ($action === 'force_fetch') {
     if (empty($apiKey)) {
@@ -426,7 +446,7 @@ if ($action === 'trigger_live_update') {
     exit;
 }
 
-// لوحة التحكم - جلب قائمة البنك للاختيار (مع دعم الفلترة اللحظية)
+// لوحة التحكم - جلب قائمة البنك للاختيار (مع دعم الفلترة والترجمة اللحظية)
 if ($action === 'get_bank') {
     $bank = readJson($fixturesBank);
     $site = readJson($matchesFile);
@@ -436,14 +456,20 @@ if ($action === 'get_bank') {
     $siteIds = array_column($site, 'id');
     $res = [];
     foreach ($bank as $m) {
-        // تخطي إذا كانت المباراة مضافة للموقع فعلاً
         if (in_array($m['id'], $siteIds)) continue;
         
-        // تطبيق الفلترة اللحظية حسب الدوريات المفضلة
+        // إعادة الترجمة لحظياً بناءً على آخر التعديلات في ar_map.json
+        if (isset($m['leagueEng'])) {
+            $m['league'] = getArName($m['leagueEng'], $m['league_id'] ?? '', 'league') . ' - ' . getArName($m['countryEng'] ?? '', '', 'country');
+        }
+        if (isset($m['homeTeamEng'])) $m['homeTeam'] = getArName($m['homeTeamEng'], $m['homeID'] ?? '', 'team');
+        if (isset($m['awayTeamEng'])) $m['awayTeam'] = getArName($m['awayTeamEng'], $m['awayID'] ?? '', 'team');
+
+        // تطبيق الفلترة
         if (!empty($favLeagues)) {
             $mLeagueId = $m['league_id'] ?? '';
             if (!empty($mLeagueId) && !in_array($mLeagueId, $favLeagues)) {
-                continue; // تخطي إذا لم يكن في المفضلة
+                continue;
             }
         }
         $res[] = $m;

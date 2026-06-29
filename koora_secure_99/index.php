@@ -809,14 +809,16 @@ if ($auth) {
                             <p style="font-weight:700;">لا توجد بطولات مضافة حتى الآن</p>
                         </div>
                     <?php else: ?>
-                        <?php foreach($allLeagues as $id => $name): ?>
                             <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
                                 <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
                                 <span class="check-box"><i class="fa-solid fa-check"></i></span>
                                 <span class="league-name"><?php echo $name; ?></span>
                                 <span class="league-id"><?php echo $id; ?></span>
+                                <button onclick="deleteLeague('<?php echo $id; ?>', event)" class="delete-league-btn" title="حذف البطولة">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
                             </label>
-                        <?php endforeach; ?>
+<?php endforeach; ?>
                         
                         <!-- رسالة البحث (مخفية) -->
                         <div id="search-empty" style="display:none; grid-column: 1 / -1; padding:50px; text-align:center; color:var(--text-dim);">
@@ -838,8 +840,12 @@ if ($auth) {
                 .check-box { width:20px; height:20px; border-radius:6px; border:2px solid var(--border-color); display:flex; align-items:center; justify-content:center; color:transparent; transition:0.2s; font-size:10px; }
                 .league-check input:checked + .check-box { background:#6366f1; border-color:#6366f1; color:#fff; }
                 .league-name { font-weight:700; font-size:13px; color:var(--text-main); }
-                .league-id { font-size:10px; color:var(--text-dim); margin-right:auto; }
+                .league-id { font-size:10px; color:var(--text-dim); margin-right:auto; padding-left: 25px; }
                 
+                .delete-league-btn { position:absolute; left:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--text-dim); cursor:pointer; opacity:0; transition:0.2s; padding:5px; z-index:10; }
+                .league-check:hover .delete-league-btn { opacity:1; }
+                .delete-league-btn:hover { color:#ef4444; }
+
                 .search-box { position:relative; }
                 .search-box i { position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--text-dim); }
                 .search-box input { width:100%; padding:12px 40px 12px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none; }
@@ -906,6 +912,25 @@ if ($auth) {
                         }
                     } catch(e) { showToast('خطأ في الاتصال', 'error'); }
                     btn.disabled = false; btn.innerHTML = originalText;
+                }
+
+                async function deleteLeague(id, event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if(!confirm('هل أنت متأكد من حذف هذه البطولة من القائمة نهائياً؟')) return;
+
+                    try {
+                        const r = await fetch('api.php?action=delete_league', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ id })
+                        });
+                        const res = await r.json();
+                        if(res.success) {
+                            showToast('تم حذف البطولة بنجاح ✅', 'success');
+                            location.reload();
+                        }
+                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
                 }
             </script>
 
