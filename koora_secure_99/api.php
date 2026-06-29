@@ -22,12 +22,25 @@ $fixturesBank = $baseDir . 'api_fixtures.json';
 $arMapFile    = $baseDir . 'ar_map.json';
 
 // ========== دوال التعريب ==========
-function getArName($engName) {
+function getArName($engName, $id = '', $country = '') {
     global $arMapFile;
     static $map = null;
     if ($map === null) {
         $map = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), true) : [];
     }
+    
+    // 1. البحث بالـ ID (الأكثر دقة)
+    if (!empty($id) && isset($map[(string)$id])) {
+        return $map[(string)$id];
+    }
+    
+    // 2. جرب البحث عن "الدولة:الاسم" (للحالات العامة)
+    if (!empty($country)) {
+        $compositeKey = "$country:$engName";
+        if (isset($map[$compositeKey])) return $map[$compositeKey];
+    }
+    
+    // 3. البحث عن الاسم بمفرده
     return $map[$engName] ?? $engName;
 }
 
@@ -97,11 +110,11 @@ function mapApiMatch($f, $dayLabel) {
 
     return [
         'id' => (string)$f['fixture']['id'],
-        'homeTeam' => getArName($f['teams']['home']['name'] ?? ''),
-        'awayTeam' => getArName($f['teams']['away']['name'] ?? ''),
+        'homeTeam' => getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? ''),
+        'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? ''),
         'homeLogo' => $f['teams']['home']['logo'] ?? '',
         'awayLogo' => $f['teams']['away']['logo'] ?? '',
-        'league' => getArName($f['league']['name'] ?? ''),
+        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', $f['league']['country'] ?? ''),
         'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
         'timestamp' => $f['fixture']['timestamp'] ?? 0,
         'day' => $dayLabel,
@@ -193,9 +206,9 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
             // تحديث البيانات الحية إذا وجدت في نتائج اليوم
             if (isset($apiUpdates[$m['id']])) {
                 $f = $apiUpdates[$m['id']];
-                $m['homeTeam']  = getArName($f['teams']['home']['name'] ?? $m['homeTeam']);
-                $m['awayTeam']  = getArName($f['teams']['away']['name'] ?? $m['awayTeam']);
-                $m['league']    = getArName($f['league']['name'] ?? $m['league']);
+                $m['homeTeam']  = getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', $f['league']['country'] ?? '');
+                $m['awayTeam']  = getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', $f['league']['country'] ?? '');
+                $m['league']    = getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', $f['league']['country'] ?? '');
                 $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
                 $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
                 $m['time'] = date('H:i', $f['fixture']['timestamp'] ?? time());
@@ -214,9 +227,9 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
         foreach ($bank as &$bm) {
             if (isset($apiUpdates[$bm['id']])) {
                 $f = $apiUpdates[$bm['id']];
-                $bm['homeTeam']  = getArName($f['teams']['home']['name'] ?? $bm['homeTeam']);
-                $bm['awayTeam']  = getArName($f['teams']['away']['name'] ?? $bm['awayTeam']);
-                $bm['league']    = getArName($f['league']['name'] ?? $bm['league']);
+                $bm['homeTeam']  = getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', $f['league']['country'] ?? '');
+                $bm['awayTeam']  = getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', $f['league']['country'] ?? '');
+                $bm['league']    = getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', $f['league']['country'] ?? '');
                 $bm['homeScore'] = (string)($f['goals']['home'] ?? '0');
                 $bm['awayScore'] = (string)($f['goals']['away'] ?? '0');
                 $rawStatus = $f['fixture']['status']['short'] ?? 'NS';

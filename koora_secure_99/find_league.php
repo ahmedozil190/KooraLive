@@ -51,13 +51,15 @@ echo "<html><head><title>كل الدوريات - API</title>
 </head><body>";
 
 echo "<h1>All Supported Leagues & Cups</h1>";
-echo "<table><thead><tr><th>Country</th><th>League / Tournament Name</th><th>Type</th></tr></thead><tbody>";
+echo "<table><thead><tr><th>ID</th><th>Country</th><th>League Name</th><th>Type</th></tr></thead><tbody>";
 
 foreach ($leagues as $l) {
     $flag = !empty($l['country']['flag']) ? "<img src='{$l['country']['flag']}'>" : "";
     $logo = !empty($l['league']['logo']) ? "<img src='{$l['league']['logo']}'>" : "";
+    $leagueId = $l['league']['id'];
     
     echo "<tr>
+            <td><span class='copy-code'>\"$leagueId\": \"{$l['league']['name']}\"</span></td>
             <td>$flag <span class='country-name'>{$l['country']['name']}</span></td>
             <td>$logo <span class='league-name'>{$l['league']['name']}</span></td>
             <td><span class='type-badge'>{$l['league']['type']}</span></td>
