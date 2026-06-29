@@ -123,7 +123,7 @@ function mapApiMatch($f, $dayLabel) {
         'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', 'team'),
         'homeLogo' => $f['teams']['home']['logo'] ?? '',
         'awayLogo' => $f['teams']['away']['logo'] ?? '',
-        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league'),
+        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league') . ' - ' . getArName($f['league']['country'] ?? '', '', 'country'),
         'league_id' => (string)($f['league']['id'] ?? ''),
         'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
         'timestamp' => $f['fixture']['timestamp'] ?? 0,
