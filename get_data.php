@@ -60,6 +60,14 @@ if ($autoFetch && !empty($apiKey)) {
     // التحديث فقط إذا مر الوقت المحدد (للحفاظ على سرعة التطبيق)
     if ((time() - ($liveCache['time'] ?? 0)) >= $cacheSeconds) {
         $matches = readJson($matchesFile);
+
+        // حذف المباريات التي مر عليها أكثر من يومين تلقائياً
+        $twoDaysAgo = strtotime('-2 days');
+        $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
+            if (empty($m['timestamp'])) return true;
+            return (int)$m['timestamp'] > $twoDaysAgo;
+        }));
+
         $idsToUpdate = [];
         foreach ($matches as $m) {
             if (($m['source'] ?? '') === 'api' && ($m['status'] ?? '') !== 'finished') {
@@ -74,8 +82,26 @@ if ($autoFetch && !empty($apiKey)) {
                 foreach ($apiResult['response'] as $f) {
                     $apiUpdates[(string)$f['fixture']['id']] = $f;
                 }
-                
+
+                $todayStr     = date('Y-m-d');
+                $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
+                $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
+
                 foreach ($matches as &$m) {
+                    // تحديث حقل day تلقائياً مع مراعاة المباريات التي تمتد لما بعد منتصف الليل
+                    if (!empty($m['timestamp'])) {
+                        $matchDate   = date('Y-m-d', $m['timestamp']);
+                        $matchStatus = $m['status'] ?? 'upcoming';
+                        if ($matchDate === $tomorrowStr) {
+                            $m['day'] = 'tomorrow';
+                        } elseif ($matchDate === $todayStr) {
+                            $m['day'] = 'today';
+                        } elseif ($matchDate === $yesterdayStr) {
+                            $m['day'] = ($matchStatus === 'finished') ? 'yesterday' : 'today';
+                        }
+                    }
+
+                    // تحديث النتائج والحالة
                     if (isset($apiUpdates[$m['id']])) {
                         $f = $apiUpdates[$m['id']];
                         $m['homeScore'] = (string)($f['goals']['home'] ?? '0');

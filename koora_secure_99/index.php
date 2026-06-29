@@ -642,6 +642,7 @@ if ($auth) {
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
                     const filtered = apiBank.filter(m => m.day === day);
+                    
                     if(filtered.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:60px 0;">
                             <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
@@ -649,38 +650,64 @@ if ($auth) {
                         </td></tr>`;
                         return;
                     }
-                    tbody.innerHTML = filtered.map(m => {
-                        let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
-                        if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
-                        else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
 
-                        return `
-                        <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
-                            <td style="padding:18px 25px;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                        <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
-                                        <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
-                                    </div>
-                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
-                                        <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
-                                        <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
-                                    </div>
+                    // تجميع المباريات حسب الدوري
+                    const grouped = filtered.reduce((acc, match) => {
+                        const league = match.league || 'بطولات أخرى';
+                        if (!acc[league]) acc[league] = [];
+                        acc[league].push(match);
+                        return acc;
+                    }, {});
+
+                    let html = '';
+                    for (const league in grouped) {
+                        // إضافة سطر عنوان الدوري
+                        html += `
+                        <tr class="league-group-header">
+                            <td colspan="5" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
+                                    <span style="font-weight:800; font-size:14px; color:#6366f1;">${league}</span>
+                                    <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:800; margin-right:auto;">${grouped[league].length} مباريات</span>
                                 </div>
                             </td>
-                            <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
-                            <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
-                            <td style="padding:15px;">
-                                <span class="status-badge ${stClass}">${stTxt}</span>
-                            </td>
-                            <td style="padding:15px 25px; text-align:left;">
-                                <button class="api-add-btn" onclick="openApiModal('${m.id}')">
-                                    <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
-                                </button>
-                            </td>
                         </tr>`;
-                    }).join('');
+
+                        // إضافة المباريات التابعة لهذا الدوري
+                        html += grouped[league].map(m => {
+                            let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
+                            if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
+                            else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
+
+                            return `
+                            <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                                <td style="padding:18px 25px;">
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
+                                            <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
+                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                        </div>
+                                        <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
+                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                            <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
+                                <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
+                                <td style="padding:15px;">
+                                    <span class="status-badge ${stClass}">${stTxt}</span>
+                                </td>
+                                <td style="padding:15px 25px; text-align:left;">
+                                    <button class="api-add-btn" onclick="openApiModal('${m.id}')">
+                                        <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
+                                    </button>
+                                </td>
+                            </tr>`;
+                        }).join('');
+                    }
+                    tbody.innerHTML = html;
                 }
 
                 function switchApiTab(tab) {

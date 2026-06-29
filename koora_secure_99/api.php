@@ -145,6 +145,14 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheSeconds) {
 
     $matches = readJson($matchesFile);
     $idsToUpdate = [];
+
+    // حذف المباريات التي مر عليها أكثر من يومين تلقائياً
+    $twoDaysAgo = strtotime('-2 days');
+    $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
+        if (empty($m['timestamp'])) return true;
+        return (int)$m['timestamp'] > $twoDaysAgo;
+    }));
+
     foreach ($matches as $m) {
         if (($m['source'] ?? '') === 'api' && ($m['status'] ?? '') !== 'finished') $idsToUpdate[] = $m['id'];
     }
@@ -160,7 +168,32 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $cacheSeconds) {
         }
     }
     if ($apiUpdates) {
+        $todayStr     = date('Y-m-d');
+        $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
+        $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
+
         foreach ($matches as &$m) {
+            // تحديث حقل day بناءً على timestamp الفعلي
+            if (!empty($m['timestamp'])) {
+                $matchDate = date('Y-m-d', $m['timestamp']);
+                $matchStatus = $m['status'] ?? 'upcoming';
+
+                if ($matchDate === $tomorrowStr) {
+                    $m['day'] = 'tomorrow';
+                } elseif ($matchDate === $todayStr) {
+                    $m['day'] = 'today';
+                } elseif ($matchDate === $yesterdayStr) {
+                    // لا ننقلها لـ "أمس" إلا إذا انتهت فعلاً
+                    // (لتفادي نقل المباريات التي تبدأ قبل منتصف الليل وتنتهي بعده)
+                    if ($matchStatus === 'finished') {
+                        $m['day'] = 'yesterday';
+                    } else {
+                        $m['day'] = 'today'; // تبقى في "اليوم" حتى تنتهي
+                    }
+                }
+            }
+
+            // تحديث النتائج والحالة
             if (isset($apiUpdates[$m['id']])) {
                 $f = $apiUpdates[$m['id']];
                 $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
