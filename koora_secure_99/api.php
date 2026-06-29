@@ -425,15 +425,39 @@ if ($action === 'trigger_live_update') {
         $apiUpdates[$id] = [
             'score'  => $f['event_final_result'] ?? '0 - 0',
             'status' => $f['event_status'] ?? '',
-            'live'   => ($f['event_live'] == '1')
+            'live'   => ($f['event_live'] == '1'),
+            'home'   => $f['event_home_team'] ?? '',
+            'away'   => $f['event_away_team'] ?? ''
         ];
     }
     unset($res);
 
     $updatedCount = 0;
+    $idFixedCount = 0;
+
     foreach ($allMatches as &$m) {
+        $found = false;
+        $up = null;
+
+        // 1. محاولة المطابقة بالـ ID أولاً
         if (isset($apiUpdates[$m['id']])) {
             $up = $apiUpdates[$m['id']];
+            $found = true;
+        } 
+        // 2. إذا فشل، نحاول المطابقة بأسماء الفرق (لإصلاح الـ IDs القديمة)
+        else {
+            foreach ($apiUpdates as $apiId => $updateData) {
+                if ($updateData['home'] == ($m['homeTeamEng'] ?? '') && $updateData['away'] == ($m['awayTeamEng'] ?? '')) {
+                    $m['id'] = $apiId; // تصحيح الـ ID في ملفك فوراً
+                    $up = $updateData;
+                    $found = true;
+                    $idFixedCount++;
+                    break;
+                }
+            }
+        }
+
+        if ($found && $up) {
             $scoreParts = explode('-', $up['score']);
             $newH = trim($scoreParts[0] ?? '0');
             $newA = trim($scoreParts[1] ?? '0');
@@ -450,13 +474,13 @@ if ($action === 'trigger_live_update') {
         }
     }
 
-    if ($updatedCount > 0) writeJson($matchesFile, $allMatches);
+    if ($updatedCount > 0 || $idFixedCount > 0) writeJson($matchesFile, $allMatches);
     writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedCount]);
 
     echo json_encode([
         'success'       => true,
         'updated'       => $updatedCount,
-        'ids_sent'      => 'Today Batch',
+        'ids_fixed'     => $idFixedCount,
         'total_in_file' => $totalMatches,
         'time'          => date('h:i A')
     ]);
