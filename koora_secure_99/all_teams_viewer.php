@@ -2,7 +2,7 @@
 header('Content-Type: text/html; charset=utf-8');
 $baseDir = '../data/';
 $settingsFile = $baseDir . 'api_settings.json';
-$arMapFile = $baseDir . 'ar_map.json';
+$arMapFile = '../ar_map.json';
 
 $settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
 $apiKey = $settings['api_key'] ?? '';

@@ -19,7 +19,7 @@ $cacheDir     = $baseDir . 'api_cache/';
 $dailyCacheF  = $cacheDir . 'daily_fetch.json';
 $liveCacheF   = $cacheDir . 'live_update.json';
 $fixturesBank = $baseDir . 'api_fixtures.json';
-$arMapFile    = $baseDir . 'ar_map.json';
+$arMapFile    = __DIR__ . '/../ar_map.json'; // خارج مجلد data
 
 // ========== دوال التعريب ==========
 function getArName($engName, $id = '', $country = '') {

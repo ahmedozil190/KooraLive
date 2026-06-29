@@ -12,6 +12,7 @@ $clubsFile = '../data/clubs.json';
 $leaguesFile = '../data/leagues.json';
 $settingsFile = '../data/api_settings.json';
 $fixturesBank = '../data/api_fixtures.json';
+$arMapFile      = '../ar_map.json'; // خارج مجلد data
 
 if (isset($_POST['login'])) {
     if ($_POST['user'] === 'admin' && $_POST['pass'] === '123456') { 
