@@ -124,7 +124,21 @@ if ($auth) {
             }
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
-        // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
+        if (isset($_POST['save_api_mgr'])) {
+            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            if (!empty($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
+            $s['cache_seconds'] = max(5, intval($_POST['cache_seconds']));
+            
+            $h12 = intval($_POST['fetch_hour_12'] ?? 12);
+            $ampm = $_POST['fetch_ampm'] ?? 'AM';
+            $h24 = $h12;
+            if ($ampm === 'PM' && $h12 < 12) $h24 += 12;
+            if ($ampm === 'AM' && $h12 === 12) $h24 = 0;
+            $s['fetch_hour'] = $h24;
+            
+            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: index.php?section=api_mgr&success=1"); exit;
+        }
     }
 }
 ?>
@@ -958,11 +972,11 @@ if ($auth) {
                     <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
                     <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
                 </div>
-                <div style="padding:25px;">
+                <form method="POST" style="padding:25px;">
                     <div class="form-group">
                         <label>مفتاح API-Football</label>
                         <div style="position:relative;">
-                            <input type="password" id="api-key-input" class="form-input"
+                            <input type="password" name="api_key" id="api-key-input" class="form-input"
                                 value="<?php echo $apiSettings['api_key'] ?? ''; ?>"
                                 placeholder="أدخل المفتاح هنا..."
                                 style="padding-left:45px;">
@@ -970,45 +984,28 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:25px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
                             <label>تحديث النتائج بالثواني</label>
-                            <input type="number" id="cache-seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
+                            <input type="number" name="cache_seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
                         </div>
                         <div style="flex:1; min-width:200px;">
                             <label>وقت تحديث المباريات اليومي</label>
                             <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
+                                <input type="number" name="fetch_hour_12" class="form-input" style="flex:1; text-align:right;" 
                                     value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
-                                    <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
-                                    <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM" style="flex:1; text-align:center;">PM</div>
-                                </div>
+                                <select name="fetch_ampm" class="form-input" style="flex:1; height:45px;">
+                                    <option value="AM" <?php echo $fetchHour < 12 ? 'selected' : ''; ?>>AM</option>
+                                    <option value="PM" <?php echo $fetchHour >= 12 ? 'selected' : ''; ?>>PM</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- تم إيقاف التحكم اليدوي لاعتماد النظام على التحديث التلقائي الذكي -->
-                    <div style="margin-bottom:20px;"></div>
-
-                    <style>
-                        .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
-                        .t-opt { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
-                        .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
-                    </style>
-                    <script>
-                        document.querySelectorAll('.t-opt').forEach(opt => {
-                            opt.onclick = function() {
-                                this.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
-                                this.classList.add('active');
-                            }
-                        });
-                    </script>
-
-                    <button onclick="saveApiSettings()" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px;">
+                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
                     </button>
-                </div>
+                </form>
             </div>
 
             <script>
@@ -1034,54 +1031,6 @@ if ($auth) {
                 }
             }
 
-            async function saveApiSettings() {
-                try {
-                    const keyEl = document.getElementById('api-key-input');
-                    const secEl = document.getElementById('cache-seconds');
-                    const h12El = document.getElementById('fetch-h-12');
-                    const ampmEl = document.querySelector('#ampm-toggle .t-opt.active');
-
-                    if (!secEl || !h12El || !ampmEl) {
-                        console.error('Missing required elements');
-                        return;
-                    }
-
-                    const keyInput = keyEl ? keyEl.value.trim() : '';
-                    const sec = secEl.value;
-                    const h12 = parseInt(h12El.value) || 12;
-                    const ampm = ampmEl.textContent.trim();
-
-                    // تحويل الوقت من 12h إلى 24h
-                    let hour24 = h12;
-                    if (ampm === 'PM' && h12 < 12) hour24 += 12;
-                    if (ampm === 'AM' && h12 === 12) hour24 = 0;
-
-                    const payload = {
-                        cache_seconds: parseInt(sec) || 60,
-                        fetch_hour: hour24
-                    };
-                    if (keyInput.length > 0) payload.api_key = keyInput;
-
-                    const r = await fetch('api.php?action=save_api_settings', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(payload)
-                    });
-                    const d = await r.json();
-                    
-                    if (d.success) {
-                        if (typeof showToast === 'function') showToast('تم حفظ الإعدادات بنجاح ✅', 'success');
-                        else alert('تم حفظ الإعدادات بنجاح ✅');
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        throw new Error(d.error || 'فشل الحفظ');
-                    }
-                } catch (e) {
-                    console.error('Save Error:', e);
-                    if (typeof showToast === 'function') showToast('خطأ في الحفظ: ' + e.message, 'error');
-                    else alert('خطأ في الحفظ: ' + e.message);
-                }
-            }
 
             // تم حذف وظائف forceFetch و triggerLiveUpdate لعدم الحاجة إليها بعد تنفيذ الأتمتة
             </script>
