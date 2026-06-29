@@ -175,7 +175,15 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
 
     if (!empty($res)) {
         $apiUpdates = [];
-        foreach ($res as $f) $apiUpdates[(string)$f['fixture']['id']] = $f;
+        $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
+        
+        foreach ($res as $f) {
+            $leagueId = (string)($f['league']['id'] ?? '');
+            // أضف للتحديثات فقط إذا كان من المفضلات أو إذا كانت المفضلات فارغة
+            if (empty($favLeagues) || in_array($leagueId, $favLeagues)) {
+                $apiUpdates[(string)$f['fixture']['id']] = $f;
+            }
+        }
 
         $todayStr     = date('Y-m-d');
         $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
