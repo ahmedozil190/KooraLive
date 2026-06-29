@@ -10,13 +10,8 @@ $arMap = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), tr
 
 if (empty($apiKey)) die("خطأ: مفتاح الـ API غير موجود!");
 
-// استخراج قائمة الدول فقط من ملف التعريب
-$countries = [];
-foreach ($arMap as $eng => $ar) {
-    // تجاهل أي مفاتيح تبدأ بـ _ (عناوين أو ميتا-داتا) أو أرقام (بطولات)
-    if (strpos($eng, '_') === 0 || is_numeric($eng)) continue; 
-    $countries[$eng] = $ar;
-}
+// استخراج قائمة الدول من القسم الجديد في ملف التعريب
+$countries = $arMap['countries'] ?? [];
 asort($countries); // ترتيب أبجدي للعرض
 
 function callApi($endpoint, $apiKey) {
