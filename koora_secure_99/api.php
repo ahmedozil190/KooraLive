@@ -402,60 +402,62 @@ if ($action === 'trigger_live_update') {
 
     $allMatches = readJson($matchesFile);
     $totalMatches = count($allMatches);
-    $idsToUpdate = [];
-    foreach ($allMatches as $m) {
-        $notFinished = ($m['status'] ?? '') !== 'finished';
-        $hasId = !empty($m['id']) && (is_numeric($m['id']) || preg_match('/^[0-9]+$/', $m['id']));
-        if ($notFinished && $hasId) $idsToUpdate[] = $m['id'];
+    if ($totalMatches === 0) {
+        echo json_encode(['success' => true, 'updated' => 0, 'ids_sent' => 0, 'total_in_file' => 0, 'time' => date('h:i A')]); exit;
     }
 
-    $updatedMatchesCount = 0;
-    $errorMessage = null;
+    // طلب نتائج اليوم الموحد (أسرع وأضمن لتجنب خطأ 500)
+    $today = date('Y-m-d');
+    $apiResult = callApi("met=Fixtures&from=$today&to=$today", $apiKey);
+    $res = $apiResult['response'] ?? [];
+    
+    // محاولة Livescore إذا لم تظهر نتائج في Fixtures
+    if (empty($res)) {
+        $apiResult = callApi("met=Livescore", $apiKey);
+        $res = $apiResult['response'] ?? [];
+    }
 
-    if (!empty($idsToUpdate)) {
-        $chunks = array_chunk($idsToUpdate, 20);
-        foreach ($chunks as $chunk) {
-            $apiResult = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
-            
-            if (isset($apiResult['error'])) {
-                $errorMessage = $apiResult['error'];
-                break;
-            }
+    $apiUpdates = [];
+    foreach ($res as $f) {
+        $id = (string)$f['event_key'];
+        $apiUpdates[$id] = [
+            'score'  => $f['event_final_result'] ?? '0 - 0',
+            'status' => $f['event_status'] ?? '',
+            'live'   => ($f['event_live'] == '1')
+        ];
+    }
+    unset($res);
 
-            $res = $apiResult['response'] ?? [];
-            foreach ($res as $f) {
-                $apiId = (string)$f['fixture']['id'];
-                foreach ($allMatches as &$m) {
-                    if ((string)$m['id'] === $apiId) {
-                        $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
-                        $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
-                        if (isset($f['fixture']['timestamp'])) $m['timestamp'] = $f['fixture']['timestamp'];
-                        $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
-                        if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
-                        elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
-                        else $m['status'] = 'upcoming';
-                        $updatedMatchesCount++;
-                    }
-                }
+    $updatedCount = 0;
+    foreach ($allMatches as &$m) {
+        if (isset($apiUpdates[$m['id']])) {
+            $up = $apiUpdates[$m['id']];
+            $scoreParts = explode('-', $up['score']);
+            $newH = trim($scoreParts[0] ?? '0');
+            $newA = trim($scoreParts[1] ?? '0');
+            $newStatus = $up['status'];
+
+            if ($m['homeScore'] != $newH || $m['awayScore'] != $newA || $m['status_text'] != $newStatus) {
+                $m['homeScore'] = $newH;
+                $m['awayScore'] = $newA;
+                $m['status_text'] = $newStatus ?: 'مباشر';
+                if ($up['live']) $m['status'] = 'live';
+                elseif (strpos($newStatus, 'Finished') !== false) $m['status'] = 'finished';
+                $updatedCount++;
             }
         }
-        if ($updatedMatchesCount > 0) {
-            writeJson($matchesFile, array_values($allMatches));
-        }
-        writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedMatchesCount]);
     }
 
-    if ($errorMessage) {
-        echo json_encode(['success' => false, 'error' => "خطأ من الـ API: $errorMessage"]);
-    } else {
-        echo json_encode([
-            'success'       => true,
-            'updated'       => $updatedMatchesCount,
-            'ids_sent'      => count($idsToUpdate),
-            'total_in_file' => $totalMatches,
-            'time'          => date('h:i A', time())
-        ]);
-    }
+    if ($updatedCount > 0) writeJson($matchesFile, $allMatches);
+    writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedCount]);
+
+    echo json_encode([
+        'success'       => true,
+        'updated'       => $updatedCount,
+        'ids_sent'      => 'Today Batch',
+        'total_in_file' => $totalMatches,
+        'time'          => date('h:i A')
+    ]);
     exit;
 }
 
