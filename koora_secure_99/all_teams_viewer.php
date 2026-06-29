@@ -12,7 +12,7 @@ if (empty($apiKey)) die("خطأ: مفتاح الـ API غير موجود!");
 
 // استخراج قائمة الدول من القسم الجديد في ملف التعريب
 $countries = $arMap['countries'] ?? [];
-asort($countries); // ترتيب أبجدي للعرض
+ksort($countries); // ترتيب أبجدي إنجليزي (A, B, C) للعرض
 
 function callApi($endpoint, $apiKey) {
     $url = "https://v3.football.api-sports.io/$endpoint";
