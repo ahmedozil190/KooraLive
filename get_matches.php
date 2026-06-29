@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // المفتاح الخاص بك من لوحة تحكم API-Football
-$apiKey = '757f2fdd5505850e862a81f8569790bf';
+$apiKey = '3daf97f21a7b1545d6180b7ca9f05533';
 
 // رابط API-Football (v3) لجلب جميع مباريات يوم معين مع كافة التفاصيل
 $apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
