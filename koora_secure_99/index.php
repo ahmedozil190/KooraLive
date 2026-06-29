@@ -798,18 +798,31 @@ if ($auth) {
                     <button onclick="document.getElementById('add-league-form').style.display='none'" style="background:transparent; color:var(--text-dim); border:none; cursor:pointer; font-weight:700;">إلغاء</button>
                 </div>
                 
-                <div id="leagues-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:500px; overflow-y:auto; padding:10px; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-body);">
-                    <?php foreach($allLeagues as $id => $name): ?>
-                        <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
-                            <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
-                            <span class="check-box"><i class="fa-solid fa-check"></i></span>
-                            <span class="league-name"><?php echo $name; ?></span>
-                            <span class="league-id"><?php echo $id; ?></span>
-                        </label>
-                    <?php endforeach; ?>
+                <div id="leagues-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:500px; overflow-y:auto; padding:10px; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-body); position:relative;">
+                    <?php if(empty($allLeagues)): ?>
+                        <div id="no-leagues-msg" style="grid-column: 1 / -1; padding:50px; text-align:center; color:var(--text-dim);">
+                            <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.5;"></i>
+                            <p style="font-weight:700;">لا توجد بطولات مضافة حتى الآن</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach($allLeagues as $id => $name): ?>
+                            <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
+                                <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
+                                <span class="check-box"><i class="fa-solid fa-check"></i></span>
+                                <span class="league-name"><?php echo $name; ?></span>
+                                <span class="league-id"><?php echo $id; ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                        
+                        <!-- رسالة البحث (مخفية) -->
+                        <div id="search-empty" style="display:none; grid-column: 1 / -1; padding:50px; text-align:center; color:var(--text-dim);">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size:40px; margin-bottom:15px; opacity:0.5;"></i>
+                            <p style="font-weight:700;">عذراً، لم نجد أي بطولة بهذا الاسم..</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
-                        <button onclick="saveFavLeagues(this)" style="margin-top:25px; width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
+                <button onclick="saveFavLeagues(this)" style="margin-top:25px; width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
                     <i class="fa-solid fa-save"></i> حفظ التفضيلات
                 </button>
             </div>
@@ -832,10 +845,16 @@ if ($auth) {
             <script>
                 function filterLeagues() {
                     const q = document.getElementById('league-search').value.toLowerCase();
+                    let count = 0;
                     document.querySelectorAll('.league-check').forEach(el => {
                         const name = el.dataset.name.toLowerCase();
-                        el.style.display = name.includes(q) ? 'flex' : 'none';
+                        const show = name.includes(q);
+                        el.style.display = show ? 'flex' : 'none';
+                        if(show) count++;
                     });
+                    
+                    const emptyMsg = document.getElementById('search-empty');
+                    if(emptyMsg) emptyMsg.style.display = (count === 0 && q !== '') ? 'block' : 'none';
                 }
 
                 async function saveFavLeagues(btn) {
