@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الخاص بك من لوحة تحكم API-Football
 $apiKey = '757f2fdd5505850e862a81f8569790bf';
 
-// رابط API-Football (v3) لجلب جميع مباريات يوم معين (29 يونيو 2026)
+// رابط API-Football (v3) لجلب جميع مباريات يوم معين مع كافة التفاصيل
 $apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
 
 $ch = curl_init();
@@ -21,7 +21,7 @@ $err = curl_error($ch);
 curl_close($ch);
 
 if ($err) {
-    echo json_encode(['error' => 'خطأ في الاتصال بـ API-Football: ' . $err], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'خطأ في الاتصال: ' . $err], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -31,22 +31,28 @@ if (isset($data['response']) && is_array($data['response'])) {
     $matches = [];
     foreach ($data['response'] as $f) {
         $matches[] = [
-            'id'           => $f['fixture']['id'],
-            'homeTeam'     => $f['teams']['home']['name'],
-            'awayTeam'     => $f['teams']['away']['name'],
-            'homeScore'    => $f['goals']['home'],
-            'awayScore'    => $f['goals']['away'],
-            'status_short' => $f['fixture']['status']['short'], // مثل FT (انتهت), NS (لم تبدأ)
-            'status_long'  => $f['fixture']['status']['long'],
-            'time'         => $f['fixture']['date'],
-            'league'       => $f['league']['name'],
-            'country'      => $f['league']['country'],
-            'homeLogo'     => $f['teams']['home']['logo'],
-            'awayLogo'     => $f['teams']['away']['logo']
+            'fixture' => [
+                'id'        => $f['fixture']['id'],
+                'referee'   => $f['fixture']['referee'],
+                'timezone'  => $f['fixture']['timezone'],
+                'date'      => $f['fixture']['date'],
+                'venue'     => $f['fixture']['venue'], // يشمل اسم الملعب والمدينة
+                'status'    => $f['fixture']['status'], // يشمل الحالة المختصرة والطويلة والدقائق
+            ],
+            'league' => $f['league'], // يشمل اسم الدوري، البلد، الموسم، وشعار الدوري
+            'teams'  => $f['teams'],  // يشمل الفرق وشعاراتها والـ IDs الخاصة بها
+            'goals'  => $f['goals'],  // الأهداف الإجمالية
+            'score'  => [
+                'halftime'  => $f['score']['halftime'],
+                'fulltime'  => $f['score']['fulltime'],
+                'extratime' => $f['score']['extratime'],
+                'penalty'   => $f['score']['penalty'], // هنا ستجد نتيجة ضربات الترجيح 3 - 4
+            ]
         ];
     }
+    // عرض كل التفاصيل بدون استثناء
     echo json_encode($matches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
-    echo json_encode(['info' => 'لا توجد بيانات متاحة لهذا التاريخ أو المفتاح غير صالـح'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['info' => 'لا توجد بيانات'], JSON_UNESCAPED_UNICODE);
 }
 ?>
