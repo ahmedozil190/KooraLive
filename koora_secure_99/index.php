@@ -748,7 +748,7 @@ if ($auth) {
                 const arMap = <?php echo json_encode($arMap); ?>;
 
                 function openApiModal(id) {
-                    const match = apiFixturesData.find(m => m.id == id);
+                    const match = apiBank.find(m => m.id == id);
                     if(!match) return;
 
                     document.getElementById('add-api-id').value = id;
