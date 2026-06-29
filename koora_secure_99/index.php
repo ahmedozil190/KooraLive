@@ -399,8 +399,6 @@ if ($auth) {
                     });
                 }
             </script>
-        <?php elseif($sec == 'news'): ?>
-        <?php elseif($sec == 'news'): ?>
 
             <!-- Modal المتقدم للبحث -->
             <div id="searchModal" class="modal-overlay">
@@ -1011,11 +1009,11 @@ if ($auth) {
             </div>
             <?php if($totalPages > 1): ?>
             <div style="display:flex; justify-content:center; gap:8px; margin-top:25px;">
-                <?php if($page > 1): ?><a href="/admin/index.php?section=news&p=<?php echo $page-1; ?>" class="p-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
+                <?php if($page > 1): ?><a href="index.php?section=news&p=<?php echo $page-1; ?>" class="p-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
                 <?php for($i=1; $i<=$totalPages; $i++): ?>
-                    <a href="/admin/index.php?section=news&p=<?php echo $i; ?>" class="p-btn <?php echo $i==$page?'active':''; ?>"><?php echo $i; ?></a>
+                    <a href="index.php?section=news&p=<?php echo $i; ?>" class="p-btn <?php echo $i==$page?'active':''; ?>"><?php echo $i; ?></a>
                 <?php endfor; ?>
-                <?php if($page < $totalPages): ?><a href="/admin/index.php?section=news&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
+                <?php if($page < $totalPages): ?><a href="index.php?section=news&p=<?php echo $page+1; ?>" class="p-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
             </div>
             <?php endif; ?>
 
@@ -1036,7 +1034,7 @@ if ($auth) {
         <div id="edit-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header">
             <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</h3>
             <div class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></div></div>
-            <form method="POST" action="/admin/index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
+            <form method="POST" action="index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                     <div class="form-group"><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input" placeholder="beIN Sports 1"></div>
                     <div class="form-group"><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input" placeholder="اسم المعلق"></div>
