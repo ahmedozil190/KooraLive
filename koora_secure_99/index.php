@@ -809,6 +809,7 @@ if ($auth) {
                             <p style="font-weight:700;">لا توجد بطولات مضافة حتى الآن</p>
                         </div>
                     <?php else: ?>
+                        <?php foreach($allLeagues as $id => $name): ?>
                             <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
                                 <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
                                 <span class="check-box"><i class="fa-solid fa-check"></i></span>
@@ -818,7 +819,7 @@ if ($auth) {
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </label>
-<?php endforeach; ?>
+                        <?php endforeach; ?>
                         
                         <!-- رسالة البحث (مخفية) -->
                         <div id="search-empty" style="display:none; grid-column: 1 / -1; padding:50px; text-align:center; color:var(--text-dim);">
