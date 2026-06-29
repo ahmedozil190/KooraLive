@@ -1,29 +1,52 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// مسار ملف المباريات
-$matchesFile = 'data/matches.json';
+// المفتاح الخاص بك من لوحة تحكم API-Football
+$apiKey = '757f2fdd5505850e862a81f8569790bf';
 
-if (file_exists($matchesFile)) {
-    $matches = json_decode(file_get_contents($matchesFile), true) ?: [];
-    
-    $result = [];
-    foreach ($matches as $m) {
-        $result[] = [
-            'id'           => $m['id'] ?? '',
-            'homeTeam'     => $m['homeTeam'] ?? '',
-            'awayTeam'     => $m['awayTeam'] ?? '',
-            'homeScore'    => $m['homeScore'] ?? '0',
-            'awayScore'    => $m['awayScore'] ?? '0',
-            'status'       => $m['status'] ?? '',
-            'status_text'  => $m['status_text'] ?? 'لم تبدأ بعد',
-            'time'         => $m['time'] ?? '--:--',
-            'league'       => $m['league'] ?? ''
+// رابط API-Football (v3) لجلب جميع المباريات المباشرة
+$apiUrl = "https://v3.football.api-sports.io/fixtures?live=all";
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $apiUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "x-apisports-key: $apiKey"
+]);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+
+$response = curl_exec($ch);
+$err = curl_error($ch);
+curl_close($ch);
+
+if ($err) {
+    echo json_encode(['error' => 'خطأ في الاتصال بـ API-Football: ' . $err], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$data = json_decode($response, true);
+
+if (isset($data['response']) && is_array($data['response'])) {
+    $matches = [];
+    foreach ($data['response'] as $f) {
+        $matches[] = [
+            'id'           => $f['fixture']['id'],
+            'homeTeam'     => $f['teams']['home']['name'],
+            'awayTeam'     => $f['teams']['away']['name'],
+            'homeScore'    => $f['goals']['home'],
+            'awayScore'    => $f['goals']['away'],
+            'status'       => $f['fixture']['status']['short'], // مثل 1H, 2H, HT
+            'minute'       => $f['fixture']['status']['elapsed'], // الدقيقة الحالية
+            'league'       => $f['league']['name'],
+            'country'      => $f['league']['country'],
+            'homeLogo'     => $f['teams']['home']['logo'],
+            'awayLogo'     => $f['teams']['away']['logo']
         ];
     }
-
-    echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    echo json_encode($matches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
-    echo json_encode(['error' => 'ملف البيانات غير موجود'], JSON_UNESCAPED_UNICODE);
+    $errorMsg = $data['errors']['token'] ?? ($data['errors']['requests'] ?? 'لا توجد مباريات مباشرة حالياً');
+    echo json_encode(['info' => $errorMsg], JSON_UNESCAPED_UNICODE);
 }
 ?>
