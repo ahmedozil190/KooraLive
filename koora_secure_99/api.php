@@ -18,7 +18,18 @@ $settingsFile = $baseDir . 'api_settings.json';
 $cacheDir     = $baseDir . 'api_cache/';
 $dailyCacheF  = $cacheDir . 'daily_fetch.json';
 $liveCacheF   = $cacheDir . 'live_update.json';
-$fixturesBank = $baseDir . 'api_fixtures.json'; // بنك المباريات الخام
+$fixturesBank = $baseDir . 'api_fixtures.json';
+$arMapFile    = $baseDir . 'ar_map.json';
+
+// ========== دوال التعريب ==========
+function getArName($engName) {
+    global $arMapFile;
+    static $map = null;
+    if ($map === null) {
+        $map = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), true) : [];
+    }
+    return $map[$engName] ?? $engName;
+}
 
 // إنشاء المجلدات
 if (!is_dir($cacheDir)) mkdir($cacheDir, 0777, true);
@@ -86,11 +97,11 @@ function mapApiMatch($f, $dayLabel) {
 
     return [
         'id' => (string)$f['fixture']['id'],
-        'homeTeam' => $f['teams']['home']['name'] ?? '',
-        'awayTeam' => $f['teams']['away']['name'] ?? '',
+        'homeTeam' => getArName($f['teams']['home']['name'] ?? ''),
+        'awayTeam' => getArName($f['teams']['away']['name'] ?? ''),
         'homeLogo' => $f['teams']['home']['logo'] ?? '',
         'awayLogo' => $f['teams']['away']['logo'] ?? '',
-        'league' => $f['league']['name'] ?? '',
+        'league' => getArName($f['league']['name'] ?? ''),
         'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
         'timestamp' => $f['fixture']['timestamp'] ?? 0,
         'day' => $dayLabel,
@@ -182,6 +193,9 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
             // تحديث البيانات الحية إذا وجدت في نتائج اليوم
             if (isset($apiUpdates[$m['id']])) {
                 $f = $apiUpdates[$m['id']];
+                $m['homeTeam']  = getArName($f['teams']['home']['name'] ?? $m['homeTeam']);
+                $m['awayTeam']  = getArName($f['teams']['away']['name'] ?? $m['awayTeam']);
+                $m['league']    = getArName($f['league']['name'] ?? $m['league']);
                 $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
                 $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
                 $m['time'] = date('H:i', $f['fixture']['timestamp'] ?? time());
@@ -200,6 +214,9 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
         foreach ($bank as &$bm) {
             if (isset($apiUpdates[$bm['id']])) {
                 $f = $apiUpdates[$bm['id']];
+                $bm['homeTeam']  = getArName($f['teams']['home']['name'] ?? $bm['homeTeam']);
+                $bm['awayTeam']  = getArName($f['teams']['away']['name'] ?? $bm['awayTeam']);
+                $bm['league']    = getArName($f['league']['name'] ?? $bm['league']);
                 $bm['homeScore'] = (string)($f['goals']['home'] ?? '0');
                 $bm['awayScore'] = (string)($f['goals']['away'] ?? '0');
                 $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
