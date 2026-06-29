@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الخاص بك من لوحة تحكم API-Football
 $apiKey = '3daf97f21a7b1545d6180b7ca9f05533';
 
-// رابط API-Football (v3) لجلب جميع مباريات يوم معين مع كافة التفاصيل
+// رابط API-Football (v3) ليوم 29 يونيو 2026
 $apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
 
 $ch = curl_init();
@@ -21,7 +21,7 @@ $err = curl_error($ch);
 curl_close($ch);
 
 if ($err) {
-    echo json_encode(['error' => 'خطأ في الاتصال: ' . $err], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Connection Error: ' . $err], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -30,29 +30,52 @@ $data = json_decode($response, true);
 if (isset($data['response']) && is_array($data['response'])) {
     $matches = [];
     foreach ($data['response'] as $f) {
+        // فك تشفير التاريخ والوقت
+        $dateTime = new DateTime($f['fixture']['date']);
+        $dateStr  = $dateTime->format('Y-m-d');
+        $timeStr  = $dateTime->format('H:i');
+
+        // تجهيز النتائج بتنسيق ALLSportsAPI
+        $htScore = ($f['score']['halftime']['home'] !== null) ? $f['score']['halftime']['home'] . " - " . $f['score']['halftime']['away'] : "";
+        $ftScore = ($f['score']['fulltime']['home'] !== null) ? $f['score']['fulltime']['home'] . " - " . $f['score']['fulltime']['away'] : "";
+        $penaltyScore = ($f['score']['penalty']['home'] !== null) ? $f['score']['penalty']['home'] . " - " . $f['score']['penalty']['away'] : "";
+        $finalScore = ($f['goals']['home'] !== null) ? $f['goals']['home'] . " - " . $f['goals']['away'] : "";
+
         $matches[] = [
-            'fixture' => [
-                'id'        => $f['fixture']['id'],
-                'referee'   => $f['fixture']['referee'],
-                'timezone'  => $f['fixture']['timezone'],
-                'date'      => $f['fixture']['date'],
-                'venue'     => $f['fixture']['venue'], // يشمل اسم الملعب والمدينة
-                'status'    => $f['fixture']['status'], // يشمل الحالة المختصرة والطويلة والدقائق
-            ],
-            'league' => $f['league'], // يشمل اسم الدوري، البلد، الموسم، وشعار الدوري
-            'teams'  => $f['teams'],  // يشمل الفرق وشعاراتها والـ IDs الخاصة بها
-            'goals'  => $f['goals'],  // الأهداف الإجمالية
-            'score'  => [
-                'halftime'  => $f['score']['halftime'],
-                'fulltime'  => $f['score']['fulltime'],
-                'extratime' => $f['score']['extratime'],
-                'penalty'   => $f['score']['penalty'], // هنا ستجد نتيجة ضربات الترجيح 3 - 4
-            ]
+            "event_key"             => $f['fixture']['id'],
+            "event_date"            => $dateStr,
+            "event_time"            => $timeStr,
+            "event_home_team"       => $f['teams']['home']['name'],
+            "home_team_key"         => $f['teams']['home']['id'],
+            "event_away_team"       => $f['teams']['away']['name'],
+            "away_team_key"         => $f['teams']['away']['id'],
+            "event_halftime_result" => $htScore,
+            "event_final_result"    => $finalScore,
+            "event_ft_result"       => $ftScore,
+            "event_penalty_result"  => $penaltyScore,
+            "event_status"          => $f['fixture']['status']['long'],
+            "country_name"          => $f['league']['country'],
+            "league_name"           => $f['league']['name'],
+            "league_key"            => $f['league']['id'],
+            "league_round"          => $f['league']['round'] ?? "",
+            "league_season"         => $f['league']['season'],
+            "event_live"            => in_array($f['fixture']['status']['short'], ['1H', '2H', 'HT', 'ET', 'P', 'BT']) ? "1" : "0",
+            "event_stadium"         => $f['fixture']['venue']['name'] ?? "",
+            "event_referee"         => $f['fixture']['referee'] ?? "",
+            "home_team_logo"        => $f['teams']['home']['logo'],
+            "away_team_logo"        => $f['teams']['away']['logo'],
+            "event_country_key"     => null, // غير متوفر مباشرة بتنسيق رقمي في الاستعلام
+            "league_logo"           => $f['league']['logo'],
+            "country_logo"          => "",
+            "event_home_formation"  => "", // يحتاج لطلب lineups منفصل
+            "event_away_formation"  => "", // يحتاج لطلب lineups منفصل
+            "fk_stage_key"          => null,
+            "stage_name"            => $f['league']['round'] ?? "",
+            "league_group"          => null
         ];
     }
-    // عرض كل التفاصيل بدون استثناء
     echo json_encode($matches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
-    echo json_encode(['info' => 'لا توجد بيانات'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['info' => 'No Data Found'], JSON_UNESCAPED_UNICODE);
 }
 ?>
