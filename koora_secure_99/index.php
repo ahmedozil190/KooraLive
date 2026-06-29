@@ -670,12 +670,13 @@ if ($auth) {
                     let html = '';
                     for (const league in grouped) {
                         // إضافة سطر عنوان الدوري
+                        const leagueId = grouped[league][0].league_id || '-';
                         html += `
                         <tr class="league-group-header">
                             <td colspan="5" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
-                                    <span style="font-weight:800; font-size:14px; color:#6366f1;">${league}</span>
+                                    <span style="font-weight:800; font-size:14px; color:#6366f1;">${league} <span style="font-size:11px; opacity:0.6; margin-right:5px;">(ID: ${leagueId})</span></span>
                                     <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:800; margin-right:auto;">${grouped[league].length} مباريات</span>
                                 </div>
                             </td>
