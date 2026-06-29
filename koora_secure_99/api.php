@@ -10,6 +10,10 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 
 date_default_timezone_set('Asia/Riyadh');
 
+// رفع حدود السيرفر لمعالجة البيانات الضخمة من AllSportsAPI
+ini_set('memory_limit', '512M');
+set_time_limit(120);
+
 // ========== مسارات الملفات ==========
 $baseDir      = __DIR__ . '/../data/';
 $matchesFile  = $baseDir . 'matches.json';
@@ -224,39 +228,52 @@ function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cache
 
     // 1. تحديث مباريات الموقع
     $matches = readJson($matchesFile);
-    $twoDaysAgo = strtotime('-2 days');
+    if (empty($matches)) return; // لا يوجد مباريات للمتابعة
     
-    // تنظيف
-    $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
-        return ($m['timestamp'] ?? 0) > $twoDaysAgo;
-    }));
+    $twoDaysAgo = strtotime('-2 days');
+    $matchesUpdated = false;
 
     foreach ($matches as &$m) {
+        // حذف الماتشات القديمة جداً
+        if (($m['timestamp'] ?? 0) < $twoDaysAgo) continue;
+
         if (isset($apiUpdates[$m['id']])) {
             $f = $apiUpdates[$m['id']];
             $score = $f['event_final_result'] ?? '0 - 0';
-            $parts = explode('-', $score);
-            $m['homeScore'] = trim($parts[0] ?? '0');
-            $m['awayScore'] = trim($parts[1] ?? '0');
-            $status = trim($f['event_status'] ?? '');
-            $m['status_text'] = $status ?: 'مباشر';
-            if ($f['event_live'] == '1') $m['status'] = 'live';
-            elseif (strpos($status, 'Finished') !== false) $m['status'] = 'finished';
+            $scoreParts = explode('-', $score);
+            
+            $newH = trim($scoreParts[0] ?? '0');
+            $newA = trim($scoreParts[1] ?? '0');
+            $newStatus = trim($f['event_status'] ?? '');
+            
+            // تحديث إذا تغيرت البيانات فقط
+            if ($m['homeScore'] != $newH || $m['awayScore'] != $newA || $m['status_text'] != $newStatus) {
+                $m['homeScore'] = $newH;
+                $m['awayScore'] = $newA;
+                $m['status_text'] = $newStatus ?: 'مباشر';
+                if ($f['event_live'] == '1') $m['status'] = 'live';
+                elseif (strpos($newStatus, 'Finished') !== false) $m['status'] = 'finished';
+                $matchesUpdated = true;
+            }
         }
     }
-    writeJson($matchesFile, $matches);
+    if ($matchesUpdated) writeJson($matchesFile, $matches);
 
-    // 2. تحديث البنك
+    // 2. تحديث البنك بشكل سريع (لأول 50 مباراة فقط مثلاً لتوفير الوقت)
     $bank = readJson($fixturesBank);
+    $bankUpdated = false;
+    $count = 0;
     foreach ($bank as &$bm) {
+        if ($count++ > 200) break; // تحديث أول 200 مباراة في البنك لتجنب البطء
         if (isset($apiUpdates[$bm['id']])) {
             $f = $apiUpdates[$bm['id']];
             $score = $f['event_final_result'] ?? '0 - 0';
-            $parts = explode('-', $score);
-            $bm['homeScore'] = trim($parts[0] ?? '0');
-            $bm['awayScore'] = trim($parts[1] ?? '0');
+            $scoreParts = explode('-', $score);
+            $bm['homeScore'] = trim($scoreParts[0] ?? '0');
+            $bm['awayScore'] = trim($scoreParts[1] ?? '0');
             $bm['status_text'] = $f['event_status'] ?? 'مباشر';
             if ($f['event_live'] == '1') $bm['status'] = 'live';
+            $bankUpdated = true;
         }
     }
     writeJson($fixturesBank, $bank);
