@@ -1,6 +1,7 @@
 {
-    "api_key": "e39e7a6fe1141aeddaf7a66b42e6cd9a",
-    "cache_seconds": 900,
+    "api_key": "fbb4019de921813f22de0298cd00e46f",
+    "auto_fetch": true,
+    "cache_minutes": 15,
     "fetch_hour": 0,
-    "auto_fetch": true
+    "cache_seconds": 900
 }
