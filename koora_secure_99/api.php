@@ -29,20 +29,25 @@ function getArName($engName, $id = '', $type = 'league') {
         $map = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), true) : [];
     }
 
-    $section = 'countries';
-    if ($type === 'league') $section = 'leagues';
-    if ($type === 'team')   $section = 'teams';
+    $engName = trim($engName);
+    $id = (string)$id;
 
-    if (!isset($map[$section])) return $engName;
-
-    // 1. البحث بالـ ID (للبرمجيات والبطولات)
-    if (!empty($id) && isset($map[$section][(string)$id])) {
-        return $map[$section][(string)$id];
+    // 1. إذا كان النوع "دوري"
+    if ($type === 'league') {
+        if (!empty($id) && isset($map['leagues'][$id])) return $map['leagues'][$id];
+        if (isset($map['leagues'][$engName])) return $map['leagues'][$engName];
     }
-    
-    // 2. البحث بالاسم الإنجليزي (للفرق والدول)
-    if (isset($map[$section][$engName])) {
-        return $map[$section][$engName];
+
+    // 2. إذا كان النوع "فريق" (نبحث في الفرق ثم الدول لأن المنتخبات تعتبر فرقاً)
+    if ($type === 'team') {
+        if (!empty($id) && isset($map['teams'][$id])) return $map['teams'][$id];
+        if (isset($map['teams'][$engName])) return $map['teams'][$engName];
+        if (isset($map['countries'][$engName])) return $map['countries'][$engName];
+    }
+
+    // 3. إذا كان النوع "دولة" فقط
+    if ($type === 'country') {
+        if (isset($map['countries'][$engName])) return $map['countries'][$engName];
     }
     
     return $engName;
