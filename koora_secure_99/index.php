@@ -124,21 +124,7 @@ if ($auth) {
             }
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
-        if (isset($_POST['save_api_mgr'])) {
-            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
-            if (!empty($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
-            $s['cache_seconds'] = max(5, intval($_POST['cache_seconds']));
-            
-            $h12 = intval($_POST['fetch_hour_12'] ?? 12);
-            $ampm = $_POST['fetch_ampm'] ?? 'AM';
-            $h24 = $h12;
-            if ($ampm === 'PM' && $h12 < 12) $h24 += 12;
-            if ($ampm === 'AM' && $h12 === 12) $h24 = 0;
-            $s['fetch_hour'] = $h24;
-            
-            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            header("Location: index.php?section=api_mgr&success=1"); exit;
-        }
+        // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
     }
 }
 ?>
@@ -257,8 +243,8 @@ if ($auth) {
                         <?php foreach($dayM as $m): 
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                             $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
+                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
+                            $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
@@ -280,7 +266,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
+                             <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -369,8 +355,8 @@ if ($auth) {
                         <?php foreach($dayM as $m):
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
+                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
+                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
@@ -392,7 +378,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                            <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
+                            <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
@@ -644,6 +630,10 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
+                .status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-block; }
+                .status-live { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
+                .status-final { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+                .status-up { background:var(--bg-main); color:var(--text-dim); border:1px solid var(--border-color); }
             </style>
 
             <script>
@@ -700,7 +690,6 @@ if ($auth) {
                             let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
                             if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
                             else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
-                            else { stClass = 'status-up'; stTxt = 'لم تبدأ بعد'; }
 
                             return `
                             <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
@@ -972,11 +961,11 @@ if ($auth) {
                     <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
                     <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
                 </div>
-                <form method="POST" style="padding:25px;">
+                <div style="padding:25px;">
                     <div class="form-group">
                         <label>مفتاح API-Football</label>
                         <div style="position:relative;">
-                            <input type="password" name="api_key" id="api-key-input" class="form-input"
+                            <input type="password" id="api-key-input" class="form-input"
                                 value="<?php echo $apiSettings['api_key'] ?? ''; ?>"
                                 placeholder="أدخل المفتاح هنا..."
                                 style="padding-left:45px;">
@@ -984,28 +973,64 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:25px; flex-wrap:wrap;">
+                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
                             <label>تحديث النتائج بالثواني</label>
-                            <input type="number" name="cache_seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
+                            <input type="number" id="cache-seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
                         </div>
                         <div style="flex:1; min-width:200px;">
                             <label>وقت تحديث المباريات اليومي</label>
                             <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                <input type="number" name="fetch_hour_12" class="form-input" style="flex:1; text-align:right;" 
+                                <input type="number" id="fetch-h-12" class="form-input" style="flex:1; text-align:right;" 
                                     value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                <select name="fetch_ampm" class="form-input" style="flex:1; height:45px;">
-                                    <option value="AM" <?php echo $fetchHour < 12 ? 'selected' : ''; ?>>AM</option>
-                                    <option value="PM" <?php echo $fetchHour >= 12 ? 'selected' : ''; ?>>PM</option>
-                                </select>
+                                <div class="time-toggle" id="ampm-toggle" style="flex:1; display:flex;">
+                                    <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" data-val="AM" style="flex:1; text-align:center;">AM</div>
+                                    <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" data-val="PM" style="flex:1; text-align:center;">PM</div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:25px; align-items: flex-end;">
+                            </div>
+                        </div>
+                        <!-- الدوريات المفضلة -->
+                        <div style="grid-column: span 2;">
+                            <label>IDs الدوريات المفضلة (اختياري)</label>
+                            <input type="text" id="fav-leagues-input" class="form-input" 
+                                value="<?php echo htmlspecialchars($apiSettings['fav_leagues'] ?? ''); ?>" 
+                                placeholder="مثال: 233, 4, 39, 140 (اتركه فارغاً لعرض الكل)">
+                            <small style="color:var(--text-dim); margin-top:5px; display:block;">أدخل أرقام IDs الدوريات التي تريد ظهورها فقط في بنك المباريات، مفصولة بفاصلة.</small>
+                        </div>
+                        <!-- جلب يدوي -->
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="forceFetch()" id="btn-force-fetch" class="p-btn" style="flex:1; height:48px; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة
+                            </button>
+                            <button onclick="triggerLiveUpdate()" id="btn-live-update" class="p-btn" style="flex:1; height:48px; background:rgba(99,102,241,0.1); color:#6366f1; border:1px solid #6366f1; border-radius:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fa-solid fa-rotate"></i> تحديث النتائج الآن
+                            </button>
+                        </div>
+                    </div>
+
+                    <style>
+                        .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
+                        .t-opt { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; }
+                        .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
+                    </style>
+                    <script>
+                        document.querySelectorAll('.t-opt').forEach(opt => {
+                            opt.onclick = function() {
+                                this.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
+                                this.classList.add('active');
+                            }
+                        });
+                    </script>
+
+                    <button onclick="saveApiSettings()" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px;">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
                     </button>
-                </form>
+                </div>
             </div>
 
             <script>
@@ -1031,8 +1056,90 @@ if ($auth) {
                 }
             }
 
+            async function saveApiSettings() {
+                const keyInput = document.getElementById('api-key-input').value.trim();
+                const sec = document.getElementById('cache-seconds').value;
+                const h12 = parseInt(document.getElementById('fetch-h-12').value);
+                const ampm = document.querySelector('#ampm-toggle .t-opt.active').dataset.val;
+                const auto = document.querySelector('#auto-fetch-toggle .t-opt.active').dataset.val === "1";
 
-            // تم حذف وظائف forceFetch و triggerLiveUpdate لعدم الحاجة إليها بعد تنفيذ الأتمتة
+                // تحويل الوقت من 12h إلى 24h
+                let hour24 = h12;
+                if (ampm === 'PM' && h12 < 12) hour24 += 12;
+                if (ampm === 'AM' && h12 === 12) hour24 = 0;
+
+                // بناء البيانات — لا نُرسل api_key إلا إذا أدخل المستخدم قيمة جديدة
+                const payload = {
+                    cache_seconds: parseInt(sec),
+                    fetch_hour: hour24,
+                    auto_fetch: auto,
+                    fav_leagues: document.getElementById('fav-leagues-input').value.trim()
+                };
+                if (keyInput.length > 0) {
+                    payload.api_key = keyInput;
+                }
+
+                const r = await fetch('api.php?action=save_api_settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const d = await r.json();
+                if (d.success) { 
+                    showToast('تم حفظ الإعدادات بنجاح ✅', 'success'); 
+                    setTimeout(()=>location.reload(), 1000); 
+                } else {
+                    showToast('خطأ في الحفظ', 'error');
+                }
+            }
+
+            async function forceFetch() {
+                const btn = document.getElementById('btn-force-fetch');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
+                try {
+                    const r = await fetch('api.php?action=force_fetch');
+                    const d = await r.json();
+                    if (d.success) {
+                        showToast('✅ بدأ الجلب في الخلفية، انتظر 30 ثانية ثم حدّث الصفحة', 'success');
+                        // إعادة تحميل الصفحة بعد 35 ثانية تلقائياً
+                        setTimeout(() => location.reload(), 35000);
+                    } else {
+                        showToast(d.error || 'حدث خطأ أثناء الجلب', 'error');
+                    }
+                } catch(e) {
+                    showToast('تعذر الاتصال بالسيرفر', 'error');
+                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> جلب مباريات جديدة';
+            }
+
+            async function triggerLiveUpdate() {
+                const btn = document.getElementById('btn-live-update');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
+                try {
+                    const r = await fetch('api.php?action=trigger_live_update');
+                    const d = await r.json();
+                    if (d.success) {
+                        // عرض تفاصيل التشخيص في الرسالة
+                        let msg = `✅ تم التحديث: ${d.updated} مباراة`;
+                        msg += ` | المرسل للـ API: ${d.ids_sent}`;
+                        msg += ` | الإجمالي بالملف: ${d.total_in_file}`;
+                        
+                        showToast(msg, 'success');
+                        
+                        const el = document.getElementById('st-live-update');
+                        if (el) el.textContent = d.time;
+                    } else {
+                        showToast(d.error || 'فشل التحديث', 'error');
+                    }
+                } catch(e) {
+                    showToast('تعذر الاتصال بالسيرفر', 'error');
+                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث النتائج الآن';
+            }
             </script>
 
         <?php elseif($sec == 'news'):

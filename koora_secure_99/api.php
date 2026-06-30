@@ -8,29 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 
-// منع السيرفر من إرسال أخطاء HTML وقبضها برمجياً
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
-
-// دالة لالتقاط الأخطاء القاتلة (مثل تجاوز الذاكرة) وعرضها كـ JSON
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-        // تنظيف أي مخرجات سابقة لإرسال JSON نظيف
-        if (ob_get_length()) ob_clean();
-        echo json_encode([
-            'success' => false,
-            'error' => "Server Internal Error: " . $error['message'] . " (Line: " . $error['line'] . ")"
-        ]);
-        exit;
-    }
-});
-
 date_default_timezone_set('Asia/Riyadh');
-
-// رفع حدود السيرفر لمعالجة البيانات الضخمة من AllSportsAPI
-ini_set('memory_limit', '1024M'); // ضاعفنا الذاكرة لـ 1 جيجا للأمان التام
-set_time_limit(180);
 
 // ========== مسارات الملفات ==========
 $baseDir      = __DIR__ . '/../data/';
@@ -99,169 +77,86 @@ function writeJson($path, $data) {
     file_put_contents($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 }
 
-// ========== دوال جلب البيانات من API-Football (v3) ==========
-function callApiFootball($endpoint, $apiKey) {
+function callApi($endpoint, $apiKey) {
     if (empty($apiKey)) return ['error' => 'No API Key'];
     $url = "https://v3.football.api-sports.io/$endpoint";
-    
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER     => ["x-apisports-key: $apiKey", "Accept: application/json"],
+        CURLOPT_HTTPHEADER     => ["x-apisports-key: $apiKey"],
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30
+        CURLOPT_TIMEOUT        => 20,
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
-    if ($httpCode !== 200) return ['error' => "API Error $httpCode"];
-    return json_decode($response, true) ?: ['error' => 'Invalid Response'];
-}
-
-function updateAutomatedScores($apiKey, &$settings, $settingsFile, $matchesFile) {
-    $currentTime = time();
-    $lastLiveFetch = (int)($settings['last_live_fetch'] ?? 0);
-    $lastFullFetch = $settings['last_full_fetch'] ?? '';
-    $today = date('Y-m-d');
+    if ($httpCode !== 200) return ['error' => "HTTP Error $httpCode"];
     
-    // هل نحتاج لتحديث؟ (كل 20 دقيقة أو إذا كان يوماً جديداً)
-    $needsFull = ($lastFullFetch !== $today);
-    $needsLive = ($currentTime - $lastLiveFetch >= 1200); // 20 min
+    $data = json_decode($response, true);
+    if (!empty($data['errors'])) {
+        // جمع كل الأخطاء في رسالة واحدة
+        $errStr = is_array($data['errors']) ? implode(', ', array_map(function($k, $v) { return "$k: $v"; }, array_keys($data['errors']), $data['errors'])) : 'Unknown API Error';
+        return ['error' => $errStr];
+    }
     
-    if (!$needsFull && !$needsLive) return;
-
-    // جلب بيانات اليوم
-    $data = callApiFootball("fixtures?date=$today", $apiKey);
-    if (!isset($data['response'])) return;
-
-    $allFixtures = $data['response'];
-
-    // في أول ساعة من اليوم، نجلب أمس أيضاً لضمان نتائج مباريات منتصف الليل
-    if (date('H') == '00') {
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $yData = callApiFootball("fixtures?date=$yesterday", $apiKey);
-        if (isset($yData['response'])) $allFixtures = array_merge($allFixtures, $yData['response']);
-    }
-
-    // تحديث ملف matches.json
-    $currentMatches = readJson($matchesFile);
-    $updatedCount = 0;
-
-    foreach ($currentMatches as &$m) {
-        if (empty($m['id'])) continue; 
-        
-        foreach ($allFixtures as $f) {
-            if ($f['fixture']['id'] == $m['id']) {
-                // تحديث النتيجة
-                $homeScore = $f['goals']['home'] ?? 0;
-                $awayScore = $f['goals']['away'] ?? 0;
-                $m['score'] = $homeScore . ' - ' . $awayScore;
-                
-                // تحديث ركلات الترجيح إذا وجدت
-                if (isset($f['score']['penalty']['home']) && $f['score']['penalty']['home'] !== null) {
-                    $m['score'] .= ' (' . $f['score']['penalty']['home'] . '-' . $f['score']['penalty']['away'] . ')';
-                }
-
-                // تحديث الحالة
-                $sS = $f['fixture']['status']['short'];
-                if (in_array($sS, ['NS', 'TBD'])) {
-                    $m['status'] = 'upcoming';
-                    $m['status_text'] = 'لم تبدأ بعد';
-                } elseif (in_array($sS, ['FT', 'AET', 'PEN'])) {
-                    $m['status'] = 'finished';
-                    $m['status_text'] = 'انتهت المباراة';
-                } else {
-                    $m['status'] = 'live';
-                    $m['status_text'] = $f['fixture']['status']['elapsed'] . "'";
-                    if ($sS === 'HT') $m['status_text'] = 'استراحة';
-                    if ($sS === 'BT') $m['status_text'] = 'وقت مستقطع';
-                }
-                
-                // تحديث الموعد (في حال تغير)
-                $m['time'] = date('H:i', strtotime($f['fixture']['date']));
-                $updatedCount++;
-                break;
-            }
-        }
-    }
-
-    if ($updatedCount > 0) writeJson($matchesFile, $currentMatches);
-
-    // حفظ طابع الوقت
-    $settings['last_live_fetch'] = $currentTime;
-    $settings['last_full_fetch'] = $today;
-    writeJson($settingsFile, $settings);
+    return ['response' => $data['response'] ?? []];
 }
 
-// تنفيذ التحديث التلقائي عند كل طلب لـ api.php
-if (!empty($apiKey)) {
-    updateAutomatedScores($apiKey, $settings, $settingsFile, $matchesFile);
-}
 
 function mapApiMatch($f, $dayLabel) {
-    // API-Football v3 format mapping
-    $sS = $f['fixture']['status']['short'];
+    $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
     $statusType = 'upcoming';
-    $statusText = 'لم تبدأ بعد';
+    if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $statusType = 'finished';
+    elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'])) $statusType = 'live';
 
-    if (in_array($sS, ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'])) {
-        $statusType = 'live';
-        $statusText = $f['fixture']['status']['elapsed'] . "'";
-        if ($sS === 'HT') $statusText = 'استراحة';
-    } elseif (in_array($sS, ['FT', 'AET', 'PEN'])) {
-        $statusType = 'finished';
-        $statusText = 'انتهت';
-    }
-
-    $dt = new DateTime($f['fixture']['date']);
-    $time = $dt->format('H:i');
-
-    $homeLogo = $f['teams']['home']['logo'] ?? '';
-    $awayLogo = $f['teams']['away']['logo'] ?? '';
-    
-    // النتيجة
-    $hG = $f['goals']['home'] ?? 0;
-    $aG = $f['goals']['away'] ?? 0;
-    $score = "$hG - $aG";
-    if (isset($f['score']['penalty']['home']) && $f['score']['penalty']['home'] !== null) {
-        $score .= ' (' . $f['score']['penalty']['home'] . '-' . $f['score']['penalty']['away'] . ')';
-    }
+    $elapsed = $f['fixture']['status']['elapsed'] ?? 0;
+    $statusTextMap = [
+        '1H' => 'مباشر الآن', '2H' => 'مباشر الآن', 'HT' => 'استراحة', 'ET' => 'وقت إضافي', 'P' => 'ركلات ترجيح', 'FT' => 'انتهت', 'NS' => 'قادمة'
+    ];
+    $statusText = $statusTextMap[$rawStatus] ?? 'قادمة';
+    if (in_array($rawStatus, ['1H', '2H', 'ET', 'LIVE']) && $elapsed > 0) $statusText .= " {$elapsed}'";
 
     return [
         'id' => (string)$f['fixture']['id'],
-        'homeTeam' => getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'], 'team'),
-        'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'], 'team'),
+        'homeTeam' => getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', 'team'),
+        'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', 'team'),
         'homeTeamEng' => $f['teams']['home']['name'] ?? '',
         'awayTeamEng' => $f['teams']['away']['name'] ?? '',
-        'homeLogo' => $homeLogo,
-        'awayLogo' => $awayLogo,
-        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'], 'league'),
+        'homeLogo' => $f['teams']['home']['logo'] ?? '',
+        'awayLogo' => $f['teams']['away']['logo'] ?? '',
+        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league') . ' - ' . getArName($f['league']['country'] ?? '', '', 'country'),
         'leagueEng' => $f['league']['name'] ?? '',
+        'countryEng' => $f['league']['country'] ?? '',
         'league_id' => (string)($f['league']['id'] ?? ''),
-        'time' => $time,
-        'timestamp' => $dt->getTimestamp(),
+        'time' => date('H:i', $f['fixture']['timestamp'] ?? time()),
+        'timestamp' => $f['fixture']['timestamp'] ?? 0,
         'day' => $dayLabel,
         'status' => $statusType,
         'status_text' => $statusText,
-        'homeScore' => (string)$hG,
-        'awayScore' => (string)$aG,
-        'score' => $score,
+        'homeScore' => (string)($f['goals']['home'] ?? '0'),
+        'awayScore' => (string)($f['goals']['away'] ?? '0'),
         'source' => 'api'
     ];
 }
 
 // ========== 1. الجلب اليومي للبنك (مع دعم الفلترة) ==========
-function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank) {
+function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
     if (empty($apiKey)) return;
     global $settingsFile;
     set_time_limit(300);
+    ini_set('memory_limit', '256M');
 
     $today = date('Y-m-d');
+    $currentHour = (int)date('H');
+    if ($currentHour < $fetchHour) return;
+
     $dailyCache = readJson($dailyCacheF);
     if (($dailyCache['date'] ?? '') === $today) return;
 
-    // جلب أمس واليوم وغداً من API-Football
+    $settings = readJson($settingsFile);
+    $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
+
     $dates = [
         'yesterday' => date('Y-m-d', strtotime('-1 day')),
         'today' => $today,
@@ -270,9 +165,15 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank) {
 
     $fetchedMatches = [];
     foreach ($dates as $dayLabel => $dateStr) {
-        $result = callApiFootball("fixtures?date=$dateStr", $apiKey);
+        $result = callApi("fixtures?date=$dateStr&timezone=Asia/Riyadh", $apiKey);
         if (isset($result['response']) && is_array($result['response'])) {
             foreach ($result['response'] as $f) {
+                // إذا كانت القائمة المفضلة غير فارغة، نتحقق من وجود الدوري فيها
+                if (!empty($favLeagues)) {
+                    if (isset($f['league']['id']) && !in_array((string)$f['league']['id'], $favLeagues)) {
+                        continue; // تخطي الدوري غير المفضل
+                    }
+                }
                 $fetchedMatches[] = mapApiMatch($f, $dayLabel);
             }
         }
@@ -284,70 +185,95 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank) {
     }
 }
 
-// ========== 2. تحديث النتائج الحية لمباريات الموقع والبنك ==========
+// ========== 2. تحديث النتائج الحية لمباريات الموقع ==========
+// ========== 2. تحديث النتائج الحية لمباريات الموقع والبنك (جلب اليوم كاملاً) ==========
 function runLiveUpdate($apiKey, $liveCacheF, $matchesFile, $fixturesBank, $cacheSeconds) {
     if (empty($apiKey)) return;
     $liveCache = readJson($liveCacheF);
     if ((time() - ($liveCache['time'] ?? 0)) < $cacheSeconds) return;
 
-    // 1. جلب المباريات المضافة في الموقع أولاً لنعرف ماذا نحتاج
-    $matches = readJson($matchesFile);
-    if (empty($matches)) return; 
-
-    // 2. طلب نتائج (أمس + اليوم + غداً) لضمان تغطية كل الماتشات المضافة
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
-    $tomorrow  = date('Y-m-d', strtotime('+1 day'));
-    $apiResult = callApi("met=Fixtures&from=$yesterday&to=$tomorrow", $apiKey);
+    // جلب كل مباريات اليوم بطلب واحد (لتوفير الطلبات ودعم الخطة المجانية)
+    $todayStr = date('Y-m-d');
+    $apiResult = callApi("fixtures?date=$todayStr&timezone=Asia/Riyadh", $apiKey);
     $res = $apiResult['response'] ?? [];
-    
-    // إذا فشل طلب اليوم، نحاول Livescore كملاذ أخير
-    if (empty($res)) {
-        $apiResult = callApi("met=Livescore", $apiKey);
-        $res = $apiResult['response'] ?? [];
-    }
-    
-    if (empty($res)) return;
 
-    // 3. فلترة البيانات: نأخذ فقط ما نحتاجه (IDs والأهداف) لتوفير الذاكرة
-    $apiUpdates = [];
-    foreach ($res as $f) {
-        $id = (string)$f['event_key'];
-        $apiUpdates[$id] = [
-            'score' => $f['event_final_result'] ?? '0 - 0',
-            'status' => trim($f['event_status'] ?? ''),
-            'live' => ($f['event_live'] == '1')
-        ];
-    }
-    unset($res); // مسح المصفوفة الضخمة الأصلية فوراً لتحرير الذاكرة
-
-    // 4. تحديث مباريات الموقع
-    $twoDaysAgo = strtotime('-2 days');
-    $matchesUpdated = false;
-
-    foreach ($matches as &$m) {
-        if (($m['timestamp'] ?? 0) < $twoDaysAgo) continue;
-
-        if (isset($apiUpdates[$m['id']])) {
-            $update = $apiUpdates[$m['id']];
-            $scoreParts = explode('-', $update['score']);
-            
-            $newH = trim($scoreParts[0] ?? '0');
-            $newA = trim($scoreParts[1] ?? '0');
-            $newStatus = $update['status'];
-            
-            if ($m['homeScore'] != $newH || $m['awayScore'] != $newA || $m['status_text'] != $newStatus) {
-                $m['homeScore'] = $newH;
-                $m['awayScore'] = $newA;
-                $m['status_text'] = $newStatus ?: 'مباشر';
-                if ($update['live']) $m['status'] = 'live';
-                elseif (strpos($newStatus, 'Finished') !== false) $m['status'] = 'finished';
-                $matchesUpdated = true;
+    if (!empty($res)) {
+        $apiUpdates = [];
+        $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
+        
+        foreach ($res as $f) {
+            $leagueId = (string)($f['league']['id'] ?? '');
+            // أضف للتحديثات فقط إذا كان من المفضلات أو إذا كانت المفضلات فارغة
+            if (empty($favLeagues) || in_array($leagueId, $favLeagues)) {
+                $apiUpdates[(string)$f['fixture']['id']] = $f;
             }
         }
+
+        $todayStr     = date('Y-m-d');
+        $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
+        $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
+
+        // 1. تحديث مباريات الموقع (matches.json)
+        $matches = readJson($matchesFile);
+        $twoDaysAgo = strtotime('-2 days');
+        
+        // تنظيف المباريات القديمة
+        $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
+            if (empty($m['timestamp'])) return true;
+            return (int)$m['timestamp'] > $twoDaysAgo;
+        }));
+
+        foreach ($matches as &$m) {
+            // تحديث حقل day
+            if (!empty($m['timestamp'])) {
+                $matchDate = date('Y-m-d', $m['timestamp']);
+                $matchStatus = $m['status'] ?? 'upcoming';
+                if ($matchDate === $tomorrowStr) $m['day'] = 'tomorrow';
+                elseif ($matchDate === $todayStr) $m['day'] = 'today';
+                elseif ($matchDate === $yesterdayStr) {
+                    $m['day'] = ($matchStatus === 'finished') ? 'yesterday' : 'today';
+                }
+            }
+
+            // تحديث البيانات الحية إذا وجدت في نتائج اليوم
+            if (isset($apiUpdates[$m['id']])) {
+                $f = $apiUpdates[$m['id']];
+                $m['homeTeam']  = getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', 'team');
+                $m['awayTeam']  = getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', 'team');
+                $m['league']    = getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league');
+                $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                $m['time'] = date('H:i', $f['fixture']['timestamp'] ?? time());
+                $m['timestamp'] = $f['fixture']['timestamp'] ?? 0;
+                $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
+                elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+                else $m['status'] = 'upcoming';
+            }
+        }
+        writeJson($matchesFile, $matches);
+
+        // 2. تحديث البنك (fixturesBank) لضمان بيانات حية عند الإضافة اليدوية
+        $bank = readJson($fixturesBank);
+        $bankUpdated = false;
+        foreach ($bank as &$bm) {
+            if (isset($apiUpdates[$bm['id']])) {
+                $f = $apiUpdates[$bm['id']];
+                $bm['homeTeam']  = getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'] ?? '', 'team');
+                $bm['awayTeam']  = getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'] ?? '', 'team');
+                $bm['league']    = getArName($f['league']['name'] ?? '', $f['league']['id'] ?? '', 'league');
+                $bm['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                $bm['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $bm['status'] = 'finished';
+                elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $bm['status'] = 'live';
+                else $bm['status'] = 'upcoming';
+                $bankUpdated = true;
+            }
+        }
+        if ($bankUpdated) writeJson($fixturesBank, $bank);
     }
-    
-    if ($matchesUpdated) writeJson($matchesFile, $matches);
-    writeJson($liveCacheF, ['time' => time(), 'updated' => count($apiUpdates)]);
+    writeJson($liveCacheF, ['time' => time(), 'updated' => count($res)]);
 }
 
 if ($autoFetch) {
@@ -434,9 +360,91 @@ if ($action === 'delete_league') {
     echo json_encode(['success' => false, 'error' => 'البطولة غير موجودة']); exit;
 }
 
-// تم حذف نظام الجلب اليدوي لتعويضه بنظام الأتمتة
+// لوحة التحكم - جلب فوري للبنك (مع تجاوز مهلة الـ Proxy)
+if ($action === 'force_fetch') {
+    if (empty($apiKey)) {
+        echo json_encode(['success' => false, 'error' => 'مفتاح API غير موجود']); exit;
+    }
+    // إرسال استجابة فورية للمتصفح قبل بدء الجلب الذي قد يطول
+    echo json_encode(['success' => true, 'message' => 'جاري الجلب في الخلفية...']);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request(); // إغلاق الاتصال مع المتصفح
+    } else {
+        @ob_flush(); flush();
+    }
+    ignore_user_abort(true);
+    set_time_limit(300);
+    // حذف كاش اليوم لإجبار إعادة الجلب
+    if (file_exists($dailyCacheF)) unlink($dailyCacheF);
+    $fetchHour = (int)($settings['fetch_hour'] ?? 0);
+    runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour);
+    exit;
+}
 
-// تم حذف نظام تحديث النتائج اليدوي
+// تحديث النتائج الحية يدوياً من اللوحة
+if ($action === 'trigger_live_update') {
+    if (empty($apiKey)) {
+        echo json_encode(['success' => false, 'error' => 'مفتاح API غير موجود']); exit;
+    }
+
+    $allMatches = readJson($matchesFile);
+    $totalMatches = count($allMatches);
+    $idsToUpdate = [];
+    foreach ($allMatches as $m) {
+        $notFinished = ($m['status'] ?? '') !== 'finished';
+        $hasId = !empty($m['id']) && (is_numeric($m['id']) || preg_match('/^[0-9]+$/', $m['id']));
+        if ($notFinished && $hasId) $idsToUpdate[] = $m['id'];
+    }
+
+    $updatedMatchesCount = 0;
+    $errorMessage = null;
+
+    if (!empty($idsToUpdate)) {
+        $chunks = array_chunk($idsToUpdate, 20);
+        foreach ($chunks as $chunk) {
+            $apiResult = callApi("fixtures?ids=" . implode('-', $chunk), $apiKey);
+            
+            if (isset($apiResult['error'])) {
+                $errorMessage = $apiResult['error'];
+                break;
+            }
+
+            $res = $apiResult['response'] ?? [];
+            foreach ($res as $f) {
+                $apiId = (string)$f['fixture']['id'];
+                foreach ($allMatches as &$m) {
+                    if ((string)$m['id'] === $apiId) {
+                        $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
+                        $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
+                        if (isset($f['fixture']['timestamp'])) $m['timestamp'] = $f['fixture']['timestamp'];
+                        $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
+                        if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
+                        elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
+                        else $m['status'] = 'upcoming';
+                        $updatedMatchesCount++;
+                    }
+                }
+            }
+        }
+        if ($updatedMatchesCount > 0) {
+            writeJson($matchesFile, array_values($allMatches));
+        }
+        writeJson($liveCacheF, ['time' => time(), 'updated' => $updatedMatchesCount]);
+    }
+
+    if ($errorMessage) {
+        echo json_encode(['success' => false, 'error' => "خطأ من الـ API: $errorMessage"]);
+    } else {
+        echo json_encode([
+            'success'       => true,
+            'updated'       => $updatedMatchesCount,
+            'ids_sent'      => count($idsToUpdate),
+            'total_in_file' => $totalMatches,
+            'time'          => date('h:i A', time())
+        ]);
+    }
+    exit;
+}
 
 // لوحة التحكم - جلب قائمة البنك للاختيار (مع دعم الفلترة والترجمة اللحظية)
 if ($action === 'get_bank') {

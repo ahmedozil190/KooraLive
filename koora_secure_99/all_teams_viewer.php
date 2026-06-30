@@ -15,10 +15,11 @@ $countries = $arMap['countries'] ?? [];
 ksort($countries); // ترتيب أبجدي إنجليزي (A, B, C) للعرض
 
 function callApi($endpoint, $apiKey) {
-    $url = "https://apiv2.allsportsapi.com/football/?APIkey=$apiKey&$endpoint";
+    $url = "https://v3.football.api-sports.io/$endpoint";
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ["x-apisports-key: $apiKey"],
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_TIMEOUT        => 30,
     ]);
@@ -35,28 +36,26 @@ $apiError = '';
 
 // إذا تم اختيار دولة، جلب دورياتها
 if (!empty($selectedCountry)) {
-    // AllSportsAPI uses countryId for leagues filtering if we want, or we can fetch all and filter
-    // But usually it's met=Leagues
-    $lData = callApi("met=Leagues", $apiKey);
-    if (!empty($lData['result'])) {
-        foreach($lData['result'] as $league) {
-            if ($league['country_name'] === $selectedCountry) {
-                $leagues[] = $league;
-            }
-        }
-        if (empty($leagues)) $apiError = "لم يتم العثور على بطولات لهذه الدولة.";
+    $lData = callApi("leagues?country=" . urlencode($selectedCountry), $apiKey);
+    if (!empty($lData['errors'])) {
+        $apiError = is_array($lData['errors']) ? implode(', ', $lData['errors']) : 'خطأ غير معروف من الـ API';
     } else {
-        $apiError = "خطأ في جلب البطولات.";
+        $leagues = $lData['response'] ?? [];
+        if (empty($leagues)) $apiError = "لا توجد دوريات مسجلة لهذه الدولة في الـ API حالياً.";
     }
 }
 
 // إذا تم اختيار دوري، جلب فرقه
 if (!empty($selectedLeague)) {
-    $tData = callApi("met=Teams&leagueId=" . $selectedLeague, $apiKey);
-    if (!empty($tData['result'])) {
-        $teams = $tData['result'];
+    $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2024", $apiKey);
+    if (empty($tData['response'])) {
+        $tData = callApi("teams?league=" . urlencode($selectedLeague) . "&season=2023", $apiKey);
+    }
+    
+    if (!empty($tData['errors'])) {
+        $apiError = is_array($tData['errors']) ? implode(', ', $tData['errors']) : 'خطأ في جلب الفرق';
     } else {
-        $apiError = "لا توجد فرق متاحة لهذا الدوري.";
+        $teams = $tData['response'] ?? [];
     }
 }
 
@@ -109,8 +108,8 @@ if (!empty($selectedLeague)) {
                 <select name="league" <?= empty($leagues) ? 'disabled' : '' ?> onchange="this.form.submit()">
                     <option value="">-- اختر البطولة --</option>
                     <?php foreach ($leagues as $l): ?>
-                        <option value="<?= $l['league_key'] ?>" <?= ($selectedLeague == $l['league_key']) ? 'selected' : '' ?>>
-                            <?= $l['league_name'] ?>
+                        <option value="<?= $l['league']['id'] ?>" <?= ($selectedLeague == $l['league']['id']) ? 'selected' : '' ?>>
+                            <?= $l['league']['name'] ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -134,9 +133,9 @@ if (!empty($selectedLeague)) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($teams as $t): $name = $t['team_name']; $id = $t['team_key']; ?>
+                    <?php foreach ($teams as $t): $name = $t['team']['name']; $id = $t['team']['id']; ?>
                         <tr>
-                            <td><img src="<?= $t['team_logo'] ?>" class="team-logo"></td>
+                            <td><img src="<?= $t['team']['logo'] ?>" class="team-logo"></td>
                             <td><strong><?= $name ?></strong></td>
                             <td><span class="copy-code">"<?= $id ?>": "..."</span></td>
                             <td><span class="copy-code">"<?= $name ?>": "..."</span></td>

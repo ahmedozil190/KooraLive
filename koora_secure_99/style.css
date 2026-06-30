@@ -105,34 +105,10 @@ td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); font-size
 .mini-remove { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background: #ef4444; color: #fff; border: none; border-radius: 50%; font-size: 10px; cursor: pointer; }
 .upload-btn-icon { width: 50px; height: 50px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); cursor: pointer; }
 
-/* Status Badges Unified Style */
-.status-badge { 
-    min-width: 105px; 
-    padding: 6px 12px; 
-    border-radius: 8px; 
-    font-size: 12px; 
-    font-weight: 800; 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center;
-    text-align: center;
-    line-height: 1;
-}
-.status-live { 
-    background: rgba(239, 68, 68, 0.15); 
-    color: #ef4444; 
-    border: 1px solid rgba(239, 68, 68, 0.2); 
-}
-.status-final { 
-    background: rgba(16, 185, 129, 0.15); 
-    color: #10b981; 
-    border: 1px solid rgba(16, 185, 129, 0.2); 
-}
-.status-up { 
-    background: rgba(156, 163, 175, 0.1); 
-    color: var(--text-sub); 
-    border: 1px solid var(--border-color); 
-}
+/* Badges */
+.badge-live { color: var(--color-success); background: rgba(16, 185, 129, 0.1); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.badge-upcoming { color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.badge-finished { color: #9ca3af; background: rgba(156, 163, 175, 0.1); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; }
 
 /* Toast */
 .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
