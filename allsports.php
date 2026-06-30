@@ -9,8 +9,9 @@ header('Content-Type: application/json; charset=utf-8');
 // 1. إعدادات الاتصال
 $apiKey = 'e7a82e673ef25fa08ec5198811fc2f223a7accf5fde7bc4b5a8e7d402593ebdf';
 
-// 2. تحديد التاريخ (يمكنك تغييره من هنا يدويًا أو عبر GET)
-$targetDate = isset($_GET['6/28/2026']) ? $_GET['6/28/2026'] : date('Y-m-d'); 
+// 2. تحديد التاريخ المطلوب
+// إذا كتبت في الرابط ?date=2026-06-28 سيتم عرضه، وإلا سيعرض تاريخ اليوم
+$targetDate = isset($_GET['date']) ? $_GET['date'] : '2026-06-29'; // يمكنك تغيير 2026-06-30 هنا لتثبيت تاريخ معين يدوياً
 
 // 3. بناء رابط الطلب (نجلب من وإلى نفس التاريخ لجلب مباريات يوم محدد)
 $apiUrl = "https://apiv2.allsportsapi.com/football/?met=Fixtures&APIkey=$apiKey&from=$targetDate&to=$targetDate";
