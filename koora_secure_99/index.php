@@ -1010,48 +1010,28 @@ if ($auth) {
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
                     </button>
                 </form>
-            </div>
-            </div>
-
-                    <script>
-                        function setAMPM(val, el) {
-                            document.getElementById('ampm-val').value = val;
-                            el.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
-                            el.classList.add('active');
+                <style>
+                    .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
+                    .t-opt { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; flex:1; text-align:center; }
+                    .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
+                </style>
+                <script>
+                    function setAMPM(val, el) {
+                        document.getElementById('ampm-val').value = val;
+                        el.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
+                        el.classList.add('active');
+                    }
+                    function toggleApiKey() {
+                        const inp = document.getElementById('api-key-input');
+                        const icon = inp.nextElementSibling;
+                        if (inp.type === 'password') {
+                            inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash';
+                        } else {
+                            inp.type = 'password'; icon.className = 'fa-solid fa-eye';
                         }
-                    </script>
-
-        <?php elseif($sec == 'news'):
-            $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
-            usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
-            $limit = 10;
-            $totalNews = count($allNOriginal);
-            $totalPages = ceil($totalNews / $limit);
-            $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
-            $start = ($page - 1) * $limit;
-            $displayNews = array_slice($allNOriginal, $start, $limit);
-        ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">إدارة الأخبار</h2>
-            <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
-            <div class="recent-card" style="margin-bottom:30px;">
-                <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
-                    <i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة خبر جديد
-                </div>
-                <form method="POST" enctype="multipart/form-data" style="padding:25px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
-                        <div class="form-group"><label>العنوان</label><input type="text" name="t" class="form-input" placeholder="عنوان الخبر..." required></div>
-                        <div class="form-group"><label>الصورة</label>
-                            <div class="image-input-group">
-                                <div id="mini-preview" class="mini-preview"><button type="button" class="mini-remove" onclick="removeImg(event)"><i class="fa-solid fa-xmark"></i></button></div>
-                                <input type="text" name="i" id="img-url-backup" class="form-input" style="flex:1;" placeholder="رابط خارجي...">
-                                <div class="upload-btn-icon" onclick="document.getElementById('news-img').click()"><i class="fa-solid fa-camera"></i></div>
-                                <input type="file" name="img_file" id="news-img" accept="image/*" hidden onchange="previewImg(this)">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group"><label>المحتوى (يدعم [H2] و [H3])</label><textarea name="c" class="form-input" rows="5" required style="resize:vertical;"></textarea></div>
-                    <button type="submit" name="add_n" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;">نشر الخبر الآن</button>
-                </form>
+                    }
+                </script>
+            </div>
             </div>
 
             <div class="recent-card">
