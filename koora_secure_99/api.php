@@ -99,103 +99,169 @@ function writeJson($path, $data) {
     file_put_contents($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 }
 
-// ========== دوار جلب البيانات من AllSportsAPI ==========
-function callApi($endpoint, $apiKey) {
+// ========== دوال جلب البيانات من API-Football (v3) ==========
+function callApiFootball($endpoint, $apiKey) {
     if (empty($apiKey)) return ['error' => 'No API Key'];
-    
-    // تعديل الرابط ليكون أكثر استقراراً مع إضافة بارامترات لضمان جودة الرد
-    $url = "https://apiv2.allsportsapi.com/football/?APIkey=$apiKey&$endpoint";
+    $url = "https://v3.football.api-sports.io/$endpoint";
     
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ["x-apisports-key: $apiKey", "Accept: application/json"],
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) KooraLive/1.0'
+        CURLOPT_TIMEOUT        => 30
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
     curl_close($ch);
     
-    if ($curlError) return ['error' => "CURL Error: $curlError"];
-    if ($httpCode !== 200) {
-        $msg = "HTTP Error $httpCode";
-        // إذا كان هناك رد من السيرفر حتى مع الخطأ، نحاول قراءته
-        $temp = json_decode($response, true);
-        if (isset($temp['error'])) $msg .= " - " . (is_array($temp['error']) ? json_encode($temp['error']) : $temp['error']);
-        return ['error' => $msg];
-    }
+    if ($httpCode !== 200) return ['error' => "API Error $httpCode"];
+    return json_decode($response, true) ?: ['error' => 'Invalid Response'];
+}
+
+function updateAutomatedScores($apiKey, &$settings, $settingsFile, $matchesFile) {
+    $currentTime = time();
+    $lastLiveFetch = (int)($settings['last_live_fetch'] ?? 0);
+    $lastFullFetch = $settings['last_full_fetch'] ?? '';
+    $today = date('Y-m-d');
     
-    $data = json_decode($response, true);
-    if (!isset($data['result']) && isset($data['error'])) {
-        return ['error' => $data['error']];
-    }
+    // هل نحتاج لتحديث؟ (كل 20 دقيقة أو إذا كان يوماً جديداً)
+    $needsFull = ($lastFullFetch !== $today);
+    $needsLive = ($currentTime - $lastLiveFetch >= 1200); // 20 min
     
-    return ['response' => $data['result'] ?? []];
+    if (!$needsFull && !$needsLive) return;
+
+    // جلب بيانات اليوم
+    $data = callApiFootball("fixtures?date=$today", $apiKey);
+    if (!isset($data['response'])) return;
+
+    $allFixtures = $data['response'];
+
+    // في أول ساعة من اليوم، نجلب أمس أيضاً لضمان نتائج مباريات منتصف الليل
+    if (date('H') == '00') {
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $yData = callApiFootball("fixtures?date=$yesterday", $apiKey);
+        if (isset($yData['response'])) $allFixtures = array_merge($allFixtures, $yData['response']);
+    }
+
+    // تحديث ملف matches.json
+    $currentMatches = readJson($matchesFile);
+    $updatedCount = 0;
+
+    foreach ($currentMatches as &$m) {
+        if (empty($m['id'])) continue; 
+        
+        foreach ($allFixtures as $f) {
+            if ($f['fixture']['id'] == $m['id']) {
+                // تحديث النتيجة
+                $homeScore = $f['goals']['home'] ?? 0;
+                $awayScore = $f['goals']['away'] ?? 0;
+                $m['score'] = $homeScore . ' - ' . $awayScore;
+                
+                // تحديث ركلات الترجيح إذا وجدت
+                if (isset($f['score']['penalty']['home']) && $f['score']['penalty']['home'] !== null) {
+                    $m['score'] .= ' (' . $f['score']['penalty']['home'] . '-' . $f['score']['penalty']['away'] . ')';
+                }
+
+                // تحديث الحالة
+                $sS = $f['fixture']['status']['short'];
+                if (in_array($sS, ['NS', 'TBD'])) {
+                    $m['status'] = 'upcoming';
+                    $m['status_text'] = 'لم تبدأ بعد';
+                } elseif (in_array($sS, ['FT', 'AET', 'PEN'])) {
+                    $m['status'] = 'finished';
+                    $m['status_text'] = 'انتهت المباراة';
+                } else {
+                    $m['status'] = 'live';
+                    $m['status_text'] = $f['fixture']['status']['elapsed'] . "'";
+                    if ($sS === 'HT') $m['status_text'] = 'استراحة';
+                    if ($sS === 'BT') $m['status_text'] = 'وقت مستقطع';
+                }
+                
+                // تحديث الموعد (في حال تغير)
+                $m['time'] = date('H:i', strtotime($f['fixture']['date']));
+                $updatedCount++;
+                break;
+            }
+        }
+    }
+
+    if ($updatedCount > 0) writeJson($matchesFile, $currentMatches);
+
+    // حفظ طابع الوقت
+    $settings['last_live_fetch'] = $currentTime;
+    $settings['last_full_fetch'] = $today;
+    writeJson($settingsFile, $settings);
+}
+
+// تنفيذ التحديث التلقائي عند كل طلب لـ api.php
+if (!empty($apiKey)) {
+    updateAutomatedScores($apiKey, $settings, $settingsFile, $matchesFile);
 }
 
 function mapApiMatch($f, $dayLabel) {
-    // AllSportsAPI format mapping
-    $status = trim($f['event_status'] ?? '');
-    $isLive = ($f['event_live'] == '1');
-    
+    // API-Football v3 format mapping
+    $sS = $f['fixture']['status']['short'];
     $statusType = 'upcoming';
-    if ($isLive) $statusType = 'live';
-    elseif (strpos($status, 'Finished') !== false || strpos($status, 'FT') !== false) $statusType = 'finished';
+    $statusText = 'لم تبدأ بعد';
 
-    $statusText = $status;
-    if (empty($status) && $statusType === 'upcoming') $statusText = 'قادمة';
-    if ($statusType === 'finished') $statusText = 'انتهت';
-    if ($status === 'Half Time') $statusText = 'استراحة';
+    if (in_array($sS, ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'])) {
+        $statusType = 'live';
+        $statusText = $f['fixture']['status']['elapsed'] . "'";
+        if ($sS === 'HT') $statusText = 'استراحة';
+    } elseif (in_array($sS, ['FT', 'AET', 'PEN'])) {
+        $statusType = 'finished';
+        $statusText = 'انتهت';
+    }
 
-    // استخراج الأهداف
-    $score = $f['event_final_result'] ?? '0 - 0';
-    $parts = explode('-', $score);
-    $hScore = trim($parts[0] ?? '0');
-    $aScore = trim($parts[1] ?? '0');
+    $dt = new DateTime($f['fixture']['date']);
+    $time = $dt->format('H:i');
 
-    $ts = !empty($f['event_date']) ? strtotime($f['event_date'] . ' ' . ($f['event_time'] ?? '00:00')) : time();
+    $homeLogo = $f['teams']['home']['logo'] ?? '';
+    $awayLogo = $f['teams']['away']['logo'] ?? '';
+    
+    // النتيجة
+    $hG = $f['goals']['home'] ?? 0;
+    $aG = $f['goals']['away'] ?? 0;
+    $score = "$hG - $aG";
+    if (isset($f['score']['penalty']['home']) && $f['score']['penalty']['home'] !== null) {
+        $score .= ' (' . $f['score']['penalty']['home'] . '-' . $f['score']['penalty']['away'] . ')';
+    }
 
     return [
-        'id' => (string)$f['event_key'],
-        'homeTeam' => getArName($f['event_home_team'] ?? '', $f['home_team_key'] ?? '', 'team'),
-        'awayTeam' => getArName($f['event_away_team'] ?? '', $f['away_team_key'] ?? '', 'team'),
-        'homeTeamEng' => $f['event_home_team'] ?? '',
-        'awayTeamEng' => $f['event_away_team'] ?? '',
-        'homeLogo' => $f['home_team_logo'] ?? '',
-        'awayLogo' => $f['away_team_logo'] ?? '',
-        'league' => getArName($f['league_name'] ?? '', $f['league_key'] ?? '', 'league') . ' - ' . getArName($f['country_name'] ?? '', '', 'country'),
-        'leagueEng' => $f['league_name'] ?? '',
-        'countryEng' => $f['country_name'] ?? '',
-        'league_id' => (string)($f['league_key'] ?? ''),
-        'time' => $f['event_time'] ?? '00:00',
-        'timestamp' => $ts,
+        'id' => (string)$f['fixture']['id'],
+        'homeTeam' => getArName($f['teams']['home']['name'] ?? '', $f['teams']['home']['id'], 'team'),
+        'awayTeam' => getArName($f['teams']['away']['name'] ?? '', $f['teams']['away']['id'], 'team'),
+        'homeTeamEng' => $f['teams']['home']['name'] ?? '',
+        'awayTeamEng' => $f['teams']['away']['name'] ?? '',
+        'homeLogo' => $homeLogo,
+        'awayLogo' => $awayLogo,
+        'league' => getArName($f['league']['name'] ?? '', $f['league']['id'], 'league'),
+        'leagueEng' => $f['league']['name'] ?? '',
+        'league_id' => (string)($f['league']['id'] ?? ''),
+        'time' => $time,
+        'timestamp' => $dt->getTimestamp(),
         'day' => $dayLabel,
         'status' => $statusType,
         'status_text' => $statusText,
-        'homeScore' => $hScore,
-        'awayScore' => $aScore,
+        'homeScore' => (string)$hG,
+        'awayScore' => (string)$aG,
+        'score' => $score,
         'source' => 'api'
     ];
 }
 
 // ========== 1. الجلب اليومي للبنك (مع دعم الفلترة) ==========
-function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
+function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank) {
     if (empty($apiKey)) return;
     global $settingsFile;
     set_time_limit(300);
 
     $today = date('Y-m-d');
-    $currentHour = (int)date('H');
-    if ($currentHour < $fetchHour) return;
-
     $dailyCache = readJson($dailyCacheF);
     if (($dailyCache['date'] ?? '') === $today) return;
 
-    $settings = readJson($settingsFile);
-    $favLeagues = !empty($settings['fav_leagues']) ? array_map('trim', explode(',', $settings['fav_leagues'])) : [];
-
+    // جلب أمس واليوم وغداً من API-Football
     $dates = [
         'yesterday' => date('Y-m-d', strtotime('-1 day')),
         'today' => $today,
@@ -204,15 +270,9 @@ function runDailyFetch($apiKey, $dailyCacheF, $fixturesBank, $fetchHour) {
 
     $fetchedMatches = [];
     foreach ($dates as $dayLabel => $dateStr) {
-        // AllSportsAPI uses met=Fixtures & from=X & to=X
-        $result = callApi("met=Fixtures&from=$dateStr&to=$dateStr", $apiKey);
+        $result = callApiFootball("fixtures?date=$dateStr", $apiKey);
         if (isset($result['response']) && is_array($result['response'])) {
             foreach ($result['response'] as $f) {
-                if (!empty($favLeagues)) {
-                    if (isset($f['league_key']) && !in_array((string)$f['league_key'], $favLeagues)) {
-                        continue;
-                    }
-                }
                 $fetchedMatches[] = mapApiMatch($f, $dayLabel);
             }
         }
