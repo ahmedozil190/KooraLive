@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=utf-8');
 $apiKey = 'cb73b0e4f340baf984ad40fc1894328b';
 
 // رقم المباراة المحدد
-$fixtureId = '1525172';
+$fixtureId = '1562345';
 
 // رابط API-Football جلب تفاصيل مباراة واحدة كاملة
 $apiUrl = "https://v3.football.api-sports.io/fixtures?id=$fixtureId";
