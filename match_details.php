@@ -4,11 +4,11 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الخاص بك
 $apiKey = 'fbcca31c5f3f9f2638659f404dc62463';
 
-// التاريخ المطلوب
-$targetDate = '2026-06-30';
+// رقم المباراة المحدد
+$fixtureId = '1562345';
 
-// رابط API-Football جلب مباريات يوم محدد بالتفصيل
-$apiUrl = "https://v3.football.api-sports.io/fixtures?date=$targetDate";
+// رابط API-Football جلب تفاصيل مباراة واحدة كاملة
+$apiUrl = "https://v3.football.api-sports.io/fixtures?id=$fixtureId";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
@@ -31,17 +31,9 @@ if ($err) {
 
 $data = json_decode($response, true);
 
-// إخراج كل المباريات لهذا اليوم بكامل تفاصيلها الخام
-if (isset($data['response']) && !empty($data['response'])) {
-    echo json_encode([
-        'date' => $targetDate,
-        'matches_count' => count($data['response']),
-        'matches' => $data['response']
-    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+if (isset($data['response'][0])) {
+    echo json_encode($data['response'][0], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
-    echo json_encode([
-        'info' => 'No matches found for this date',
-        'raw_response' => $data
-    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    echo json_encode(['info' => 'Fixture Not Found', 'raw_response' => $data], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 }
 ?>

@@ -4,8 +4,11 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الجديد الخاص بك
 $apiKey = 'fbcca31c5f3f9f2638659f404dc62463';
 
-// رابط API-Football (v3) مع جلب الأحداث (الأهداف، البطاقات، إلخ)
-$apiUrl = "https://v3.football.api-sports.io/fixtures?date=2026-06-29";
+// التاريخ المطلوب
+$targetDate = '2026-06-30';
+
+// رابط API-Football جلب مباريات يوم محدد بالتفصيل
+$apiUrl = "https://v3.football.api-sports.io/fixtures?date=$targetDate";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
