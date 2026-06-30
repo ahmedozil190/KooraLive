@@ -4,17 +4,18 @@ header('Content-Type: application/json; charset=utf-8');
 // المفتاح الخاص بك
 $apiKey = 'fbcca31c5f3f9f2638659f404dc62463';
 
-// رقم المباراة المحدد
-$fixtureId = '1565176';
+// التاريخ المطلوب
+$targetDate = '2026-06-30';
 
-// رابط API-Football (v3) مع طلب كل البيانات المتاحة (Events, Lineups, Statistics, Players)
-$apiUrl = "https://v3.football.api-sports.io/fixtures?id=$fixtureId";
+// رابط API-Football جلب مباريات يوم محدد بالتفصيل
+$apiUrl = "https://v3.football.api-sports.io/fixtures?date=$targetDate";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "x-apisports-key: $apiKey"
+    "x-apisports-key: $apiKey",
+    "Accept: application/json"
 ]);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_TIMEOUT, 20);
@@ -30,14 +31,17 @@ if ($err) {
 
 $data = json_decode($response, true);
 
-// إذا كان هناك رد، سنقوم بطباعة المصفوفة الكاملة للمباراة دون حذف أي حرف
-if (isset($data['response'][0])) {
-    // سنعيد لك الرد بالكامل كما هو من المصدر لضمان وجود كل المعلومات (حكم، ملعب، أهداف، كروت، تبديلات، إحصائيات عامة، إحصائيات لاعبين، تشكيلات، مدربين)
-    echo json_encode($data['response'][0], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+// إخراج كل المباريات لهذا اليوم بكامل تفاصيلها الخام
+if (isset($data['response']) && !empty($data['response'])) {
+    echo json_encode([
+        'date' => $targetDate,
+        'matches_count' => count($data['response']),
+        'matches' => $data['response']
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } else {
     echo json_encode([
-        'info' => 'Fixture Not Found',
-        'raw_api_data' => $data // لعرض الخطأ القادم من الـ API إن وجد
+        'info' => 'No matches found for this date',
+        'raw_response' => $data
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 }
 ?>
