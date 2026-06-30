@@ -79,6 +79,7 @@ if (isset($data['response']) && is_array($data['response'])) {
             "id"             => $f['fixture']['id'],
             "date"           => $dateStr,
             "time"           => $timeStr,
+            "timestamp"      => $f['fixture']['timestamp'],
             "homeName"       => $f['teams']['home']['name'],
             "homeId"         => $f['teams']['home']['id'],
             "homeLogo"       => $f['teams']['home']['logo'],
