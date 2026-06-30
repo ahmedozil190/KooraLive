@@ -124,21 +124,21 @@ if ($auth) {
             }
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
-        if (isset($_POST['save_api_settings_btn'])) {
-            $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
-            if(!empty($_POST['api_key'])) $apiS['api_key'] = trim($_POST['api_key']);
-            $apiS['cache_seconds'] = (int)$_POST['cache_seconds'];
+        if (isset($_POST['save_api_mgr'])) {
+            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            if (!empty($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
+            $s['cache_seconds'] = max(5, intval($_POST['cache_seconds']));
             
-            // تحويل الوقت لـ 24 ساعة
-            $h12 = (int)$_POST['h12'];
-            $ampm = $_POST['ampm'];
-            $h24 = ($ampm === 'PM' && $h12 < 12) ? ($h12 + 12) : (($ampm === 'AM' && $h12 === 12) ? 0 : $h12);
-            $apiS['fetch_hour'] = $h24;
+            $h12 = intval($_POST['fetch_hour_12'] ?? 12);
+            $ampm = $_POST['fetch_ampm'] ?? 'AM';
+            $h24 = $h12;
+            if ($ampm === 'PM' && $h12 < 12) $h24 += 12;
+            if ($ampm === 'AM' && $h12 === 12) $h24 = 0;
+            $s['fetch_hour'] = $h24;
             
-            file_put_contents($settingsFile, json_encode($apiS, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: index.php?section=api_mgr&success=1"); exit;
         }
-        // (تم نقل كود الحذف للأعلى لضمان التنفيذ)
     }
 }
 ?>
@@ -257,8 +257,8 @@ if ($auth) {
                         <?php foreach($dayM as $m): 
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
-                            $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
+                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                             $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
@@ -280,7 +280,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $stTxt; ?></span></td>
+                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -369,8 +369,8 @@ if ($auth) {
                         <?php foreach($dayM as $m):
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
-                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'قادمة';
+                            $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
@@ -392,7 +392,7 @@ if ($auth) {
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                            <td><span class="status-badge <?php echo $badgeClass; ?>" style="width:80px; text-align:center; display:inline-block;"><?php echo $badgeText; ?></span></td>
+                            <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
@@ -644,10 +644,6 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
-                .status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-block; }
-                .status-live { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
-                .status-final { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
-                .status-up { background:var(--bg-main); color:var(--text-dim); border:1px solid var(--border-color); }
             </style>
 
             <script>
@@ -704,6 +700,7 @@ if ($auth) {
                             let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
                             if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
                             else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
+                            else { stClass = 'status-up'; stTxt = 'لم تبدأ بعد'; }
 
                             return `
                             <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
@@ -987,7 +984,7 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:25px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:150px;">
                             <label>تحديث النتائج بالثواني</label>
                             <input type="number" name="cache_seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
@@ -995,44 +992,49 @@ if ($auth) {
                         <div style="flex:1; min-width:200px;">
                             <label>وقت تحديث المباريات اليومي</label>
                             <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                <input type="number" name="h12" class="form-input" style="flex:1; text-align:right;" 
+                                <input type="number" name="fetch_hour_12" class="form-input" style="flex:1; text-align:right;" 
                                     value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                <input type="hidden" name="ampm" id="ampm-val" value="<?php echo $fetchHour < 12 ? 'AM' : 'PM'; ?>">
-                                <div class="time-toggle" style="flex:1; display:flex;">
-                                    <div class="t-opt <?php echo $fetchHour < 12 ? 'active' : ''; ?>" onclick="setAMPM('AM', this)" style="flex:1; text-align:center;">AM</div>
-                                    <div class="t-opt <?php echo $fetchHour >= 12 ? 'active' : ''; ?>" onclick="setAMPM('PM', this)" style="flex:1; text-align:center;">PM</div>
-                                </div>
+                                <select name="fetch_ampm" class="form-input" style="flex:1; height:45px;">
+                                    <option value="AM" <?php echo $fetchHour < 12 ? 'selected' : ''; ?>>AM</option>
+                                    <option value="PM" <?php echo $fetchHour >= 12 ? 'selected' : ''; ?>>PM</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" name="save_api_settings_btn" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
+                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
                     </button>
                 </form>
-                <style>
-                    .time-toggle { display:flex; background:var(--bg-main); padding:4px; border-radius:10px; border:1px solid var(--border-color); }
-                    .t-opt { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-size:13px; color:var(--text-dim); transition:0.3s; flex:1; text-align:center; }
-                    .t-opt.active { background:#6366f1; color:#fff; box-shadow:0 4px 10px rgba(99,102,241,0.3); }
-                </style>
-                <script>
-                    function setAMPM(val, el) {
-                        document.getElementById('ampm-val').value = val;
-                        el.parentElement.querySelectorAll('.t-opt').forEach(o => o.classList.remove('active'));
-                        el.classList.add('active');
-                    }
-                    function toggleApiKey() {
-                        const inp = document.getElementById('api-key-input');
-                        const icon = inp.nextElementSibling;
-                        if (inp.type === 'password') {
-                            inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash';
-                        } else {
-                            inp.type = 'password'; icon.className = 'fa-solid fa-eye';
-                        }
-                    }
-                </script>
             </div>
-            
+
+            <script>
+            (async function loadApiStatus() {
+                try {
+                    const r = await fetch('api.php?action=api_status');
+                    const d = await r.json();
+                    document.getElementById('st-fetch-date').textContent  = d.last_daily_date  || '--';
+                    document.getElementById('st-live-update').textContent = d.last_live_update || '--';
+                    document.getElementById('st-requests').textContent    = d.requests_used != null ? d.requests_used + ' / ' + d.requests_limit : 'غير متاح';
+                } catch(e) { console.error('API Status Error:', e); }
+            })();
+
+            function toggleApiKey() {
+                const inp = document.getElementById('api-key-input');
+                const icon = inp.nextElementSibling;
+                if (inp.type === 'password') {
+                    inp.type = 'text';
+                    icon.className = 'fa-solid fa-eye-slash';
+                } else {
+                    inp.type = 'password';
+                    icon.className = 'fa-solid fa-eye';
+                }
+            }
+
+
+            // تم حذف وظائف forceFetch و triggerLiveUpdate لعدم الحاجة إليها بعد تنفيذ الأتمتة
+            </script>
+
         <?php elseif($sec == 'news'):
             $allNOriginal = json_decode(@file_get_contents($newsFile), true) ?: [];
             usort($allNOriginal, function($a, $b) { return (isset($b['id'])?$b['id']:0) - (isset($a['id'])?$a['id']:0); });
@@ -1044,7 +1046,7 @@ if ($auth) {
             $displayNews = array_slice($allNOriginal, $start, $limit);
         ?>
             <h2 style="font-weight:800; margin-bottom:25px;">إدارة الأخبار</h2>
-            <!-- استمارة إضافة خبر جديد -->
+            <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
             <div class="recent-card" style="margin-bottom:30px;">
                 <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
                     <i class="fa-solid fa-plus-circle" style="color:#6366f1;"></i> إضافة خبر جديد
@@ -1065,6 +1067,8 @@ if ($auth) {
                     <button type="submit" name="add_n" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;">نشر الخبر الآن</button>
                 </form>
             </div>
+
+            <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
                     <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف كافة الصور غير المستخدمة في الموقع؟')">
