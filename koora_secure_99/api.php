@@ -105,11 +105,12 @@ function formatMatchData($m) {
     $hId   = $m['home_team_key'];
     $aId   = $m['away_team_key'];
     $lId   = $m['league_key'];
+    $countryId   = $m['country_key'] ?? '';
     $countryName = $m['country_name'] ?? '';
 
     // ترجمة الأسماء
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryName, $hName));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryName, $aName));
+    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
+    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
     $translatedLeagueName = $translate('leagues', $lId, $lName);
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
