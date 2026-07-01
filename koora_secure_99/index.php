@@ -667,7 +667,15 @@ if ($auth) {
                         const data = await r.json();
                         if (data.error) {
                             showToast(data.error, 'error');
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:#ef4444; font-weight:700;">${data.error}</td></tr>`;
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:100px 20px;">
+                                <div style="display:inline-flex; flex-direction:column; align-items:center; gap:15px;">
+                                    <div style="width:70px; height:70px; background:rgba(239,68,68,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                        <i class="fa-solid fa-triangle-exclamation" style="font-size:30px; color:#ef4444;"></i>
+                                    </div>
+                                    <div style="font-weight:700; color:var(--text-main); font-size:16px;">${data.error}</div>
+                                    <a href="index.php?section=api_mgr" style="color:#6366f1; font-weight:800; text-decoration:none; font-size:14px;"><i class="fa-solid fa-arrow-right"></i> اذهب للإعدادات من هنا</a>
+                                </div>
+                            </td></tr>`;
                             return;
                         }
                         apiBank = data;
@@ -835,12 +843,12 @@ if ($auth) {
                             <?php foreach($allLeagues as $lid => $lname): $isChecked = in_array($lid, $favs); ?>
                                 <label class="league-card-item <?php echo $isChecked ? 'active' : ''; ?>" style="display:flex; align-items:center; gap:12px; padding:15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; cursor:pointer; transition:0.2s;">
                                     <input type="checkbox" name="favs[]" value="<?php echo $lid; ?>" <?php echo $isChecked ? 'checked' : ''; ?> onchange="this.parentElement.classList.toggle('active', this.checked)" style="display:none;">
-                                    <div class="custom-chk" style="width:20px; height:20px; border:2px solid var(--border-color); border-radius:5px; display:flex; align-items:center; justify-content:center; color:transparent; font-size:10px; transition:0.2s;">
+                                    <div class="custom-chk" style="width:20px; height:20px; border:2px solid var(--border-color); border-radius:5px; display:flex; align-items:center; justify-content:center; color:transparent; font-size:10px; transition:0.2s; flex-shrink:0;">
                                         <i class="fa-solid fa-check"></i>
                                     </div>
-                                    <div style="display:flex; flex-direction:column;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                                         <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $lname; ?></span>
-                                        <span style="font-size:11px; opacity:0.5; font-weight:700;">ID: <?php echo $lid; ?></span>
+                                        <span style="font-size:11px; opacity:0.6; font-weight:800; background:var(--bg-card); padding:3px 8px; border-radius:6px;">ID: <?php echo $lid; ?></span>
                                     </div>
                                 </label>
                             <?php endforeach; ?>

@@ -12,7 +12,7 @@ $liveFile     = __DIR__ . '/../data/matches.json';
 $bankFile     = __DIR__ . '/../data/api_fixtures.json';
 
 if (!file_exists($settingsFile)) {
-    echo json_encode(['error' => 'Settings file not found']);
+    echo json_encode(['error' => 'يرجى وضع مفتاح الـ API أولاً في صفحة الإعدادات']);
     exit;
 }
 
