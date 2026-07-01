@@ -80,23 +80,35 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
 }
 
 
+// 1.5 تحميل قاموس الترجمة العربية
+$arMapFile = __DIR__ . '/../data/ar_map.json';
+$arMap = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), true) : [];
+
 // 3. دالة معالجة وتنسيق البيانات (Mapping)
 function formatMatchData($match) {
+    global $arMap;
+    
+    // دالة مساعدة للترجمة حسب القسم
+    $tr = function($txt, $cat) use ($arMap) {
+        return isset($arMap[$cat][$txt]) ? $arMap[$cat][$txt] : $txt;
+    };
+
     return [
         "id"                  => $match['event_key'],
         "event_key"           => $match['event_key'],
         "timestamp"           => strtotime($match['event_date'] . ' ' . $match['event_time']),
         "day"                 => "today",
-        "homeTeam"            => $match['event_home_team'],
-        "event_home_team"     => $match['event_home_team'],
+        "homeTeam"            => $tr($match['event_home_team'], 'teams'),
+        "event_home_team"     => $tr($match['event_home_team'], 'teams'),
         "homeLogo"            => $match['home_team_logo'],
         "home_team_logo"      => $match['home_team_logo'],
-        "awayTeam"            => $match['event_away_team'],
-        "event_away_team"     => $match['event_away_team'],
+        "awayTeam"            => $tr($match['event_away_team'], 'teams'),
+        "event_away_team"     => $tr($match['event_away_team'], 'teams'),
         "awayLogo"            => $match['away_team_logo'],
         "away_team_logo"      => $match['away_team_logo'],
-        "league"              => $match['league_name'],
-        "league_name"         => $match['league_name'],
+        "league"              => $tr($match['league_name'], 'leagues'),
+        "league_name"         => $tr($match['league_name'], 'leagues'),
+        "country"             => $tr($match['country_name'] ?? '', 'countries'),
         "leagueId"            => $match['league_key'],
         "league_key"          => $match['league_key'],
         "score"               => !empty($match['event_final_result']) ? $match['event_final_result'] : "0 - 0",
@@ -105,8 +117,8 @@ function formatMatchData($match) {
         "event_status"        => $match['event_status'],
         "live"                => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
         "event_live"          => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
-        "channel"             => "",
-        "commentator"         => "",
+        "channel"             => "غير معروف",
+        "commentator"         => "غير معروف",
         "streamUrl"           => ""
     ];
 }
