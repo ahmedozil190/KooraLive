@@ -64,6 +64,12 @@ function formatMatchData($m) {
     $status = $m['event_status'] ?? 'upcoming';
     $isLive = (strpos($status, ':') === false && !empty($status) && !in_array($status, ['Finished', 'FT', 'After Extra Time']));
 
+    // معالجة النتيجة لفصلها
+    $fullScore = !empty($m['event_final_result']) ? $m['event_final_result'] : "0 - 0";
+    $scoreParts = explode('-', $fullScore);
+    $hScore = trim($scoreParts[0] ?? '0');
+    $aScore = trim($scoreParts[1] ?? '0');
+
     return [
         "id"                  => (string)($m['event_key'] ?? ''),
         "event_key"           => (string)($m['event_key'] ?? ''),
@@ -75,9 +81,11 @@ function formatMatchData($m) {
         "awayLogo"            => $m['away_team_logo'] ?? '',
         "league"              => $tr($m['league_name'] ?? '', 'leagues'),
         "country"             => $tr($m['country_name'] ?? '', 'countries'),
-        "score"               => !empty($m['event_final_result']) ? $m['event_final_result'] : "0 - 0",
+        "score"               => $fullScore,
+        "homeScore"           => $hScore,
+        "awayScore"           => $aScore,
         "status"              => $status,
-        "live"                => $isLive ? "1" : "0",
+        "isLive"              => $isLive ? "1" : "0",
         "channel"             => "غير معروف",
         "commentator"         => "غير معروف",
         "streamUrl"           => ""
