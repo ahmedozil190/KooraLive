@@ -104,7 +104,7 @@ function formatMatchData($match) {
     // ترجمة البيانات
     $translatedLeagueName = $translate('leagues', $l['id'], $l['name']);
     
-    // محرك ترجمة الفرق المزدوج (ID أولاً ثم الاسم كبديل للمنتخبات)
+    // محرك ترجمة الفرق (ID للأندية و الاسم للمنتخبات)
     $homeId = $t['home']['id']; $homeName = $t['home']['name'];
     $translatedHomeName = $arMap['teams'][$homeId] ?? $arMap['countries'][$homeName] ?? $homeName;
     
