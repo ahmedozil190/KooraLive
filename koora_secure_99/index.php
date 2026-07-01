@@ -666,14 +666,19 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank');
                         const data = await r.json();
                         if (data.error) {
-                            showToast(data.error, 'error');
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:100px 20px;">
-                                <div style="display:inline-flex; flex-direction:column; align-items:center; gap:15px;">
-                                    <div style="width:70px; height:70px; background:rgba(239,68,68,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                                        <i class="fa-solid fa-triangle-exclamation" style="font-size:30px; color:#ef4444;"></i>
+                            // تم إلغاء showToast بناءً على طلبك
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:120px 20px;">
+                                <div style="display:inline-flex; flex-direction:column; align-items:center; gap:20px;">
+                                    <div style="width:80px; height:80px; background:rgba(99,102,241,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                        <i class="fa-solid fa-key" style="font-size:35px; color:#6366f1;"></i>
                                     </div>
-                                    <div style="font-weight:700; color:var(--text-main); font-size:16px;">${data.error}</div>
-                                    <a href="index.php?section=api_mgr" style="color:#6366f1; font-weight:800; text-decoration:none; font-size:14px;"><i class="fa-solid fa-arrow-right"></i> اذهب للإعدادات من هنا</a>
+                                    <div style="text-align:center;">
+                                        <div style="font-weight:800; color:var(--text-main); font-size:18px; margin-bottom:8px;">مفتاح API غير مفعل</div>
+                                        <div style="font-weight:700; color:var(--text-dim); font-size:14px; max-width:350px;">${data.error}</div>
+                                    </div>
+                                    <a href="index.php?section=api_mgr" style="padding:12px 25px; background:#6366f1; color:#fff; border-radius:10px; font-weight:800; text-decoration:none; font-size:13px; box-shadow:0 8px 16px rgba(99,102,241,0.2);">
+                                        <i class="fa-solid fa-arrow-pointer"></i> انتقل لصفحة الإعدادات
+                                    </a>
                                 </div>
                             </td></tr>`;
                             return;
