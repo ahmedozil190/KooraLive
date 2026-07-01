@@ -80,36 +80,47 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
 }
 
 
-// 4. دالة تنسيق البيانات (Mapping) لتناسب API-Football
+// 4. دالة تنسيق البيانات (Mapping) لتناسب API-Football مع نظام الترجمة
 function formatMatchData($match) {
+    static $arMap = null;
+    if ($arMap === null) {
+        $mapFile = __DIR__ . '/../ar_map.json';
+        $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
+    }
+
     $f = $match['fixture'];
     $l = $match['league'];
     $t = $match['teams'];
     $g = $match['goals'];
     
+    // دالة مساعدة للترجمة
+    $translate = function($type, $key, $default) use ($arMap) {
+        return $arMap[$type][$key] ?? $default;
+    };
+
     $homeScore = ($g['home'] !== null) ? $g['home'] : 0;
     $awayScore = ($g['away'] !== null) ? $g['away'] : 0;
     
-    $statusShort = $f['status']['short'];
+    // ترجمة البيانات
+    $translatedLeagueName = $translate('leagues', $l['id'], $l['name']);
+    $translatedHomeName   = $translate('teams', $t['home']['id'], $t['home']['name']);
+    $translatedAwayName   = $translate('teams', $t['away']['id'], $t['away']['name']);
     
-    // خريطة ترجمة الحالات للعربية
+    // معالجة وترجمة الدور (Round)
+    $rawRound = $l['round'] ?? '';
+    $cleanRound = preg_replace('/ - \d+$/', '', $rawRound); // حذف رقم الجولة إذا وجد للترجمة
+    $translatedRound = $translate('rounds', $cleanRound, $rawRound);
+    // إذا كانت جولة دوري، نعيد رقم الجولة
+    if (strpos($rawRound, 'Regular Season - ') !== false) {
+        $translatedRound = str_replace('Regular Season - ', 'الجولة ', $rawRound);
+    }
+
+    $statusShort = $f['status']['short'];
     $statusMap = [
-        'TBD' => 'يحدد لاحقاً',
-        'NS'  => 'لم تبدأ',
-        '1H'  => 'الشوط الأول',
-        'HT'  => 'استراحة',
-        '2H'  => 'الشوط الثاني',
-        'ET'  => 'وقت إضافي',
-        'P'   => 'ركلات ترجيح',
-        'FT'  => 'انتهت',
-        'AET' => 'انتهت (إضافي)',
-        'PEN' => 'انتهت (ركلات)',
-        'PST' => 'مؤجلة',
-        'CANC'=> 'ملغاة',
-        'ABD' => 'متوقفة',
-        'AWD' => 'نتيجة اعتبارية',
-        'WO'  => 'انسحاب',
-        'LIVE'=> 'مباشر'
+        'TBD' => 'يحدد لاحقاً', 'NS' => 'لم تبدأ', '1H' => 'الشوط الأول', 'HT' => 'استراحة',
+        '2H' => 'الشوط الثاني', 'ET' => 'وقت إضافي', 'P' => 'ركلات ترجيح', 'FT' => 'انتهت',
+        'AET' => 'انتهت (إضافي)', 'PEN' => 'انتهت (ركلات)', 'PST' => 'مؤجلة', 'CANC' => 'ملغاة',
+        'ABD' => 'متوقفة', 'AWD' => 'نتيجة اعتبارية', 'WO' => 'انسحاب', 'LIVE' => 'مباشر'
     ];
     
     $statusAr = $statusMap[$statusShort] ?? $statusShort;
@@ -120,19 +131,19 @@ function formatMatchData($match) {
         "event_key"           => $f['id'],
         "timestamp"           => $f['timestamp'],
         "day"                 => "today",
-        "homeTeam"            => $t['home']['name'],
-        "event_home_team"     => $t['home']['name'],
+        "homeTeam"            => $translatedHomeName,
+        "event_home_team"     => $translatedHomeName,
         "homeLogo"            => $t['home']['logo'],
         "home_team_logo"      => $t['home']['logo'],
-        "awayTeam"            => $t['away']['name'],
-        "event_away_team"     => $t['away']['name'],
+        "awayTeam"            => $translatedAwayName,
+        "event_away_team"     => $translatedAwayName,
         "awayLogo"            => $t['away']['logo'],
         "away_team_logo"      => $t['away']['logo'],
-        "league"              => $l['name'],
-        "league_name"         => $l['name'],
+        "league"              => $translatedLeagueName,
+        "league_name"         => $translatedLeagueName,
         "leagueId"            => $l['id'],
         "league_key"          => $l['id'],
-        "round"               => $l['round'] ?? '',
+        "round"               => $translatedRound,
         "score"               => "$homeScore - $awayScore",
         "event_final_result"  => "$homeScore - $awayScore",
         "status"              => $statusShort,
