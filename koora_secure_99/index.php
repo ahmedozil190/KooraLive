@@ -647,6 +647,17 @@ if ($auth) {
             </style>
 
             <script>
+                // دالة تحويل الطابع الزمني لتوقيت محلي
+                function formatLocalTime(timestamp) {
+                    if (!timestamp) return '--:--';
+                    const date = new Date(timestamp * 1000);
+                    return date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                }
+
                 let apiBank = [];
                 async function loadBank() {
                     try {

@@ -124,12 +124,29 @@ if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
     if (empty($current)) {
-        $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
-        if (isset($data['result']) && is_array($data['result'])) {
-            foreach ($data['result'] as $m) $current[] = formatMatchData($m);
-            file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $days = [
+            'yesterday' => date('Y-m-d', strtotime('-1 day')),
+            'today'     => date('Y-m-d'),
+            'tomorrow'  => date('Y-m-d', strtotime('+1 day'))
+        ];
+        
+        $allFetched = [];
+        foreach ($days as $label => $dateVal) {
+            $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $dateVal, 'to' => $dateVal]);
+            if (isset($data['result']) && is_array($data['result'])) {
+                foreach ($data['result'] as $m) {
+                    $formatted = formatMatchData($m);
+                    $formatted['day'] = $label; // تحديد اليوم بدقة
+                    $allFetched[] = $formatted;
+                }
+            }
+        }
+        
+        if (!empty($allFetched)) {
+            file_put_contents($bankFile, json_encode($allFetched, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $current = $allFetched;
         }
     }
     
