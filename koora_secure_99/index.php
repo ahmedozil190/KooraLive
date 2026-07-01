@@ -853,33 +853,21 @@ if ($auth) {
                     </div>
                 </form>
             </div>
-                        if(res.success) {
-                            showToast('تم إضافة البطولة بنجاح! سيتم تحديث الصفحة', 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            showToast(res.error || 'حدث خطأ ما', 'error');
-                        }
-                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
-                    btn.disabled = false; btn.innerHTML = originalText;
-                }
+            
+            <style>
+                .league-card-item.active { border-color:#6366f1 !important; background:rgba(99,102,241,0.05) !important; }
+                .league-card-item.active .custom-chk { background:#6366f1 !important; border-color:#6366f1 !important; color:#fff !important; }
+                #leagues-grid::-webkit-scrollbar { width: 6px; }
+                #leagues-grid::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+            </style>
 
-                async function deleteLeague(id, event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    if(!confirm('هل أنت متأكد من حذف هذه البطولة من القائمة نهائياً؟')) return;
-
-                    try {
-                        const r = await fetch('api.php?action=delete_league', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ id })
-                        });
-                        const res = await r.json();
-                        if(res.success) {
-                            showToast('تم حذف البطولة بنجاح ✅', 'success');
-                            location.reload();
-                        }
-                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+            <script>
+                function filterLeagues() {
+                    const q = document.getElementById('league-search').value.toLowerCase();
+                    document.querySelectorAll('.league-card-item').forEach(item => {
+                        const txt = item.innerText.toLowerCase();
+                        item.style.display = txt.includes(q) ? 'flex' : 'none';
+                    });
                 }
             </script>
 
