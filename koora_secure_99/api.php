@@ -68,6 +68,7 @@ function formatMatchData($match) {
         "away_team_logo"        => $match['away_team_logo'],
         "league_logo"           => $match['league_logo'],
         "timestamp"             => strtotime($match['event_date'] . ' ' . $match['event_time']),
+        "day"                   => "today",
         // حقول الموقع الإضافية
         "channel"               => "",
         "commentator"           => "",
