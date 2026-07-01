@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // المفتاح الجديد الخاص بك
-$apiKey = 'e4625c4a7aed0620286bd50920c54d63';
+$apiKey = 'fbcca31c5f3f9f2638659f404dc62463';
 
 // التاريخ المطلوب
 $targetDate = '2026-07-1';
