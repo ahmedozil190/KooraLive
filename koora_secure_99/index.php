@@ -647,17 +647,6 @@ if ($auth) {
             </style>
 
             <script>
-                // دالة تحويل الطابع الزمني لتوقيت محلي
-                function formatLocalTime(timestamp) {
-                    if (!timestamp) return '--:--';
-                    const date = new Date(timestamp * 1000);
-                    return date.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-                }
-
                 let apiBank = [];
                 async function loadBank() {
                     try {
@@ -680,27 +669,7 @@ if ($auth) {
                         return;
                     }
 
-                async function renderBank(targetDay) {
-                    const tbody = document.getElementById('api-bank-body');
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px;">جاري الفلترة والتحميل...</td></tr>';
-                    
-                    // 1. جلب المباريات المضافة حالياً للموقع
-                    let addedIds = [];
-                    try {
-                        const res = await fetch('../get_data.php?action=get_matches');
-                        const liveMatches = await res.json();
-                        addedIds = liveMatches.map(m => String(m.id));
-                    } catch(e) { console.error("Filter Fetch Error:", e); }
-
-                    // 2. تصفية مباريات البنك بناءً على اليوم المختار وعدم وجودها في الموقع
-                    const filtered = apiBank.filter(m => (m.day == targetDay || (!m.day && targetDay == 'today')) && !addedIds.includes(String(m.id)));
-                    
-                    if (filtered.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px; color:var(--text-dim);">لا توجد مباريات جديدة متاحة حالياً لهذا اليوم (أو تمت إضافة جميع المباريات)</td></tr>';
-                        return;
-                    }
-
-                    // 3. تجميع المباريات المفلترة حسب الدوري
+                    // تجميع المباريات حسب الدوري
                     const grouped = filtered.reduce((acc, match) => {
                         const league = match.league || 'بطولات أخرى';
                         if (!acc[league]) acc[league] = [];
@@ -710,8 +679,8 @@ if ($auth) {
 
                     let html = '';
                     for (const league in grouped) {
-                        // عنوان الدوري مع المعرف
-                        const leagueId = grouped[league][0].league_key || grouped[league][0].leagueId || '-';
+                        // إضافة سطر عنوان الدوري
+                        const leagueId = grouped[league][0].league_id || '-';
                         html += `
                         <tr class="league-group-header">
                             <td colspan="5" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
@@ -726,37 +695,40 @@ if ($auth) {
                             </td>
                         </tr>`;
 
-                        // تفاصيل المباريات
-                        grouped[league].forEach(m => {
+                        // إضافة المباريات التابعة لهذا الدوري
+                        html += grouped[league].map(m => {
                             let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
-                            if(m.status === 'live' || m.live === "1") { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
-                            else if(m.status === 'Finished' || m.status === 'FT') { stClass = 'status-final'; stTxt = 'منتهية'; }
+                            if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
+                            else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
+                            else { stClass = 'status-up'; stTxt = 'لم تبدأ بعد'; }
 
-                            html += `
+                            return `
                             <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
-                                <td style="padding:15px 25px;">
+                                <td style="padding:18px 25px;">
                                     <div style="display:flex; align-items:center; gap:12px;">
-                                        <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:13px;">${m.homeTeam}</span>
-                                            <img src="${m.homeLogo}" style="width:24px; height:24px; object-fit:contain;">
+                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
+                                            <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
+                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
                                         </div>
-                                        <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:10px; font-weight:800;">VS</span>
-                                        <div style="display:flex; align-items:center; gap:8px; flex:1;">
-                                            <img src="${m.awayLogo}" style="width:24px; height:24px; object-fit:contain;">
-                                            <span style="font-weight:700; font-size:13px;">${m.awayTeam}</span>
+                                        <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
+                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                            <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td style="padding:15px; color:var(--text-sub); font-size:12px; font-weight:600;">${m.league}</td>
+                                <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
                                 <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
-                                <td style="padding:15px;"><span class="status-badge ${stClass}">${stTxt}</span></td>
+                                <td style="padding:15px;">
+                                    <span class="status-badge ${stClass}">${stTxt}</span>
+                                </td>
                                 <td style="padding:15px 25px; text-align:left;">
-                                    <button class="api-add-btn" onclick="openApiModal('${m.id}')" style="background:#6366f1; color:#fff; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight:700; font-size:12px;">
-                                        <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة
+                                    <button class="api-add-btn" onclick="openApiModal('${m.id}')">
+                                        <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
                                     </button>
                                 </td>
                             </tr>`;
-                        });
+                        }).join('');
                     }
                     tbody.innerHTML = html;
                 }
