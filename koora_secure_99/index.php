@@ -145,6 +145,12 @@ if ($auth) {
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: index.php?section=api_mgr&success=1"); exit;
         }
+        if (isset($_POST['save_fav_leagues'])) {
+            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            $s['fav_leagues'] = isset($_POST['favs']) ? implode(',', $_POST['favs']) : '';
+            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            header("Location: index.php?section=fav_leagues&success=1"); exit;
+        }
     }
 }
 ?>
@@ -819,6 +825,40 @@ if ($auth) {
             </div>
 
             <div style="background:var(--bg-card); padding:25px; border-radius:20px; border:1px solid var(--border-color); margin-bottom:30px;">
+                <form method="POST">
+                    <div id="leagues-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:15px; max-height:600px; overflow-y:auto; padding:10px;">
+                        <?php if(empty($allLeagues)): ?>
+                            <p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-dim);">لا توجد بطولات مترجمة في ملف ar_map.json</p>
+                        <?php else: ?>
+                            <?php 
+                            foreach($allLeagues as $lid => $lname): 
+                                $isChecked = in_array($lid, $favs);
+                            ?>
+                                <label class="league-item" style="display:flex; align-items:center; gap:15px; background:var(--bg-body); padding:15px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; <?php echo $isChecked ? 'border-color:#6366f1; background:rgba(99,102,241,0.05);' : ''; ?>">
+                                    <input type="checkbox" name="favs[]" value="<?php echo $lid; ?>" <?php echo $isChecked ? 'checked' : ''; ?> style="width:20px; height:20px; accent-color:#6366f1;">
+                                    <span style="font-weight:700; color:var(--text-main);"><?php echo $lname; ?></span>
+                                    <span style="margin-right:auto; font-size:11px; opacity:0.5;">ID: <?php echo $lid; ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    <div style="margin-top:25px; display:flex; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:20px;">
+                        <button type="submit" name="save_fav_leagues" class="btn-api" style="padding:12px 35px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:10px;">
+                            <i class="fa-solid fa-save"></i> حفظ الدوريات المفضلة
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <script>
+                function filterLeagues() {
+                    const q = document.getElementById('league-search').value.toLowerCase();
+                    document.querySelectorAll('.league-item').forEach(item => {
+                        const name = item.textContent.toLowerCase();
+                        item.style.display = name.includes(q) ? 'flex' : 'none';
+                    });
+                }
+            </script>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
                     <p style="color:var(--text-sub); margin:0; font-weight:700;">اختر الدوريات التي تريد جلب مبارياتها فقط. (إذا لم تختر شيئاً سيتم جلب كل الدوريات)</p>
                     <button onclick="document.getElementById('add-league-form').style.display='flex'" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid #10b981; padding:8px 15px; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px;">
@@ -836,19 +876,6 @@ if ($auth) {
                 
                 <div id="leagues-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:500px; overflow-y:auto; padding:10px; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-body); position:relative;">
                     <?php if(empty($allLeagues)): ?>
-                        <div id="no-leagues-msg" style="grid-column: 1 / -1; padding:50px; text-align:center; color:var(--text-dim);">
-                            <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.5;"></i>
-                            <p style="font-weight:700;">لا توجد بطولات مضافة حتى الآن</p>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach($allLeagues as $id => $name): ?>
-                            <label class="league-check" data-name="<?php echo htmlspecialchars($name); ?>">
-                                <input type="checkbox" value="<?php echo $id; ?>" <?php echo in_array($id, $favs) ? 'checked' : ''; ?>>
-                                <span class="check-box"><i class="fa-solid fa-check"></i></span>
-                                <span class="league-name"><?php echo $name; ?></span>
-                                <span class="league-id"><?php echo $id; ?></span>
-                                <button onclick="deleteLeague('<?php echo $id; ?>', event)" class="delete-league-btn" title="حذف البطولة">
-                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </label>
                         <?php endforeach; ?>

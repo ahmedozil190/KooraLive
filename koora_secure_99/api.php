@@ -103,8 +103,13 @@ function formatMatchData($match) {
     
     // ترجمة البيانات
     $translatedLeagueName = $translate('leagues', $l['id'], $l['name']);
-    $translatedHomeName   = $translate('teams', $t['home']['id'], $t['home']['name']);
-    $translatedAwayName   = $translate('teams', $t['away']['id'], $t['away']['name']);
+    
+    // محرك ترجمة الفرق المزدوج (ID أولاً ثم الاسم كبديل للمنتخبات)
+    $homeId = $t['home']['id']; $homeName = $t['home']['name'];
+    $translatedHomeName = $arMap['teams'][$homeId] ?? $arMap['countries'][$homeName] ?? $homeName;
+    
+    $awayId = $t['away']['id']; $awayName = $t['away']['name'];
+    $translatedAwayName = $arMap['teams'][$awayId] ?? $arMap['countries'][$awayName] ?? $awayName;
     
     // معالجة وترجمة الدور (Round)
     $rawRound = $l['round'] ?? '';
