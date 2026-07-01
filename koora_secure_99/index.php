@@ -12,6 +12,9 @@ $clubsFile = '../data/clubs.json';
 $leaguesFile = '../data/leagues.json';
 $settingsFile = '../data/api_settings.json';
 $fixturesBank = '../data/api_fixtures.json';
+
+// تأكد من وجود المجلد
+if (!is_dir('../data')) mkdir('../data', 0777, true);
 $arMapFile      = '../ar_map.json'; // خارج مجلد data
 
 if (isset($_POST['login'])) {
@@ -125,8 +128,11 @@ if ($auth) {
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
         if (isset($_POST['save_api_mgr'])) {
+            $dir = dirname($settingsFile);
+            if (!is_dir($dir)) mkdir($dir, 0777, true);
+            
             $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
-            if (!empty($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
+            if (isset($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
             $s['cache_seconds'] = max(5, intval($_POST['cache_seconds']));
             
             $h12 = intval($_POST['fetch_hour_12'] ?? 12);
