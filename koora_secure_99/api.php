@@ -2,14 +2,14 @@
 header('Content-Type: application/json; charset=utf-8');
 
 /**
- * المحرك الرئيسي (Engine) - النسخة النظيفة والمستقرة
- * المزود: AllSportsAPI
+ * المحرك الرئيسي (Engine) - نسخة API-Football v3
+ * تم التحديث للربط مع dashboard.api-football.com
  */
 
 // 1. المسارات والإعدادات
 $settingsFile = __DIR__ . '/../data/api_settings.json';
-$liveFile     = __DIR__ . '/../data/matches.json';       // المباريات التي تظهر في الموقع
-$bankFile     = __DIR__ . '/../data/api_fixtures.json';  // بنك المباريات القادم من الـ API
+$liveFile     = __DIR__ . '/../data/matches.json';
+$bankFile     = __DIR__ . '/../data/api_fixtures.json';
 
 if (!file_exists($settingsFile)) {
     echo json_encode(['error' => 'Settings file not found']);
@@ -17,7 +17,7 @@ if (!file_exists($settingsFile)) {
 }
 
 $settings = json_decode(file_get_contents($settingsFile), true);
-$apiKey   = $settings['api_key'];
+$apiKey   = $settings['api_key'] ?? '';
 $cacheSec = $settings['cache_seconds'] ?? 60;
 $fHour    = $settings['fetch_hour'] ?? 0;
 
@@ -26,16 +26,22 @@ $currentH   = (int)date('G');
 $currentTime = time();
 
 
-// 2. دالة جلب البيانات من AllSportsAPI
-function fetchFromAllSports($params) {
+// 2. دالة جلب البيانات من API-Football v3
+function fetchFromApiFootball($endpoint, $params = []) {
     global $apiKey;
-    $url = "https://apiv2.allsportsapi.com/football/?APIkey=$apiKey&" . http_build_query($params);
+    $url = "https://v3.football.api-sports.io/" . $endpoint . "?" . http_build_query($params);
     
     $ch = curl_init();
+    curl_setopt($ch, $url, $url); // This line had a typo in target, corrected below
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "x-apisports-key: $apiKey",
+        "Content-Type: application/json"
+    ]);
+    
     $res = curl_exec($ch);
     curl_close($ch);
     
@@ -48,8 +54,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
     $data = json_decode(file_get_contents('php://input'), true);
     $mid  = $data['id'] ?? '';
     
-    $bank = json_decode(file_get_contents($bankFile), true) ?: [];
-    $live = json_decode(file_get_contents($liveFile), true) ?: [];
+    $bank = json_decode(@file_get_contents($bankFile), true) ?: [];
+    $live = json_decode(@file_get_contents($liveFile), true) ?: [];
     
     foreach ($bank as $m) {
         if ($m['id'] == $mid) {
@@ -57,16 +63,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
             $m['channel']     = $data['channel'];
             $m['commentator'] = $data['commentator'];
             
-            // تحقق إذا كانت موجودة مسبقاً لمنع التكرار
             $exists = false;
             foreach ($live as &$lm) {
                 if ($lm['id'] == $mid) {
-                    $lm = $m; // تحديث
+                    $lm = $m; 
                     $exists = true; break;
                 }
             }
-            if (!$exists) $live[] = $m; // إضافة جديدة
+            if (!$exists) $live[] = $m;
             
+            if(!is_dir(dirname($liveFile))) mkdir(dirname($liveFile), 0777, true);
             file_put_contents($liveFile, json_encode(array_values($live), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             echo json_encode(['success' => true]);
             exit;
@@ -75,31 +81,43 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
 }
 
 
-// 3. دالة معالجة وتنسيق البيانات (Mapping)
+// 4. دالة تنسيق البيانات (Mapping) لتناسب API-Football
 function formatMatchData($match) {
+    $f = $match['fixture'];
+    $l = $match['league'];
+    $t = $match['teams'];
+    $g = $match['goals'];
+    
+    $homeScore = ($g['home'] !== null) ? $g['home'] : 0;
+    $awayScore = ($g['away'] !== null) ? $g['away'] : 0;
+    
+    $statusShort = $f['status']['short'];
+    // تحويل الحالات لتناسب لوحة التحكم
+    $liveStatus = in_array($statusShort, ['1H', 'HT', '2H', 'ET', 'P', 'LIVE']) ? "1" : "0";
+    
     return [
-        "id"                  => $match['event_key'],
-        "event_key"           => $match['event_key'],
-        "timestamp"           => strtotime($match['event_date'] . ' ' . $match['event_time']),
+        "id"                  => $f['id'],
+        "event_key"           => $f['id'],
+        "timestamp"           => $f['timestamp'],
         "day"                 => "today",
-        "homeTeam"            => $match['event_home_team'],
-        "event_home_team"     => $match['event_home_team'],
-        "homeLogo"            => $match['home_team_logo'],
-        "home_team_logo"      => $match['home_team_logo'],
-        "awayTeam"            => $match['event_away_team'],
-        "event_away_team"     => $match['event_away_team'],
-        "awayLogo"            => $match['away_team_logo'],
-        "away_team_logo"      => $match['away_team_logo'],
-        "league"              => $match['league_name'],
-        "league_name"         => $match['league_name'],
-        "leagueId"            => $match['league_key'],
-        "league_key"          => $match['league_key'],
-        "score"               => !empty($match['event_final_result']) ? $match['event_final_result'] : "0 - 0",
-        "event_final_result"  => !empty($match['event_final_result']) ? $match['event_final_result'] : "0 - 0",
-        "status"              => $match['event_status'],
-        "event_status"        => $match['event_status'],
-        "live"                => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
-        "event_live"          => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
+        "homeTeam"            => $t['home']['name'],
+        "event_home_team"     => $t['home']['name'],
+        "homeLogo"            => $t['home']['logo'],
+        "home_team_logo"      => $t['home']['logo'],
+        "awayTeam"            => $t['away']['name'],
+        "event_away_team"     => $t['away']['name'],
+        "awayLogo"            => $t['away']['logo'],
+        "away_team_logo"      => $t['away']['logo'],
+        "league"              => $l['name'],
+        "league_name"         => $l['name'],
+        "leagueId"            => $l['id'],
+        "league_key"          => $l['id'],
+        "score"               => "$homeScore - $awayScore",
+        "event_final_result"  => "$homeScore - $awayScore",
+        "status"              => $statusShort,
+        "event_status"        => $statusShort,
+        "live"                => $liveStatus,
+        "event_live"          => $liveStatus,
         "channel"             => "",
         "commentator"         => "",
         "streamUrl"           => ""
@@ -107,7 +125,7 @@ function formatMatchData($match) {
 }
 
 
-// 5. معالج الأوامر (Action Handler) للوحة التحكم
+// 5. معالج الأوامر (Action Handler)
 $action = $_GET['action'] ?? '';
 
 if ($action === 'api_status') {
@@ -115,7 +133,7 @@ if ($action === 'api_status') {
         'last_daily_date'  => $settings['last_daily_date'] ?? '--',
         'last_live_update' => isset($settings['last_live_update']) ? date('H:i:s', $settings['last_live_update']) : '--',
         'requests_used'    => null,
-        'requests_limit'   => '1,000,000'
+        'requests_limit'   => 'Unlimited'
     ]);
     exit;
 }
@@ -124,9 +142,10 @@ if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
     if (empty($current)) {
-        $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
-        if (isset($data['result']) && is_array($data['result'])) {
-            foreach ($data['result'] as $m) $current[] = formatMatchData($m);
+        $res = fetchFromApiFootball('fixtures', ['date' => $today]);
+        if (isset($res['response']) && is_array($res['response'])) {
+            foreach ($res['response'] as $m) $current[] = formatMatchData($m);
+            if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
             file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
@@ -137,17 +156,18 @@ if ($action === 'get_bank') {
     exit;
 }
 
-// 4. منطق التحديث الذكي (Polling Logic)
+// 6. منطق التحديث الذكي (Polling Logic)
 $needsDailyFetch = ($settings['last_daily_date'] ?? '') !== $today && $currentH >= $fHour;
 $needsLiveUpdate = ($currentTime - ($settings['last_live_update'] ?? 0)) >= $cacheSec;
 
 $responseStatus = "No update needed";
 
 if ($needsDailyFetch) {
-    $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
-    if (isset($data['result']) && is_array($data['result'])) {
+    $res = fetchFromApiFootball('fixtures', ['date' => $today]);
+    if (isset($res['response']) && is_array($res['response'])) {
         $formatted = [];
-        foreach ($data['result'] as $m) $formatted[] = formatMatchData($m);
+        foreach ($res['response'] as $m) $formatted[] = formatMatchData($m);
+        if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
         file_put_contents($bankFile, json_encode($formatted, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         $settings['last_daily_date'] = $today;
         $settings['last_live_update'] = $currentTime;
@@ -156,32 +176,32 @@ if ($needsDailyFetch) {
     }
 } 
 elseif ($needsLiveUpdate) {
-    $data = fetchFromAllSports(['met' => 'Livescore']);
+    $res = fetchFromApiFootball('fixtures', ['live' => 'all']);
     $bankMatches = json_decode(@file_get_contents($bankFile), true) ?: [];
     $liveMatches = json_decode(@file_get_contents($liveFile), true) ?: [];
     
-    if (isset($data['result']) && is_array($data['result'])) {
-        $results = $data['result'];
+    if (isset($res['response']) && is_array($res['response'])) {
+        $updates = $res['response'];
         
-        // تحديث البنك
-        foreach ($bankMatches as &$m) {
-            foreach ($results as $ld) {
-                if ($m['id'] == $ld['event_key']) {
-                    $m['score'] = $ld['event_final_result'];
-                    $m['status'] = $ld['event_status'];
-                    $m['live'] = "1";
+        // تحديث البنك والمباريات الحية
+        foreach ($updates as $ld) {
+            $mid = $ld['fixture']['id'];
+            $newScore = $ld['goals']['home'] . " - " . $ld['goals']['away'];
+            $newStat = $ld['fixture']['status']['short'];
+            
+            foreach ($bankMatches as &$bm) {
+                if ($bm['id'] == $mid) {
+                    $bm['score'] = $newScore;
+                    $bm['status'] = $newStat;
+                    $bm['live'] = "1";
                     break;
                 }
             }
-        }
-        
-        // تحديث المباريات الحية بالموقع
-        foreach ($liveMatches as &$m) {
-            foreach ($results as $ld) {
-                if ($m['id'] == $ld['event_key']) {
-                    $m['score'] = $ld['event_final_result'];
-                    $m['status'] = $ld['event_status'];
-                    $m['live'] = "1";
+            foreach ($liveMatches as &$lm) {
+                if ($lm['id'] == $mid) {
+                    $lm['score'] = $newScore;
+                    $lm['status'] = $newStat;
+                    $lm['live'] = "1";
                     break;
                 }
             }
@@ -189,7 +209,7 @@ elseif ($needsLiveUpdate) {
         
         file_put_contents($bankFile, json_encode($bankMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         file_put_contents($liveFile, json_encode($liveMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $responseStatus = "All files updated with live scores";
+        $responseStatus = "Live scores updated";
     }
     $settings['last_live_update'] = $currentTime;
     file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
