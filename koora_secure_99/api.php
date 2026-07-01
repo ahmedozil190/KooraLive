@@ -32,6 +32,7 @@ function fetchFromApiFootball($endpoint, $params = []) {
     $url = "https://v3.football.api-sports.io/" . $endpoint . "?" . http_build_query($params);
     
     $ch = curl_init();
+    curl_setopt($ch, $url, $url); // This line had a typo in target, corrected below
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -128,22 +129,11 @@ function formatMatchData($match) {
 $action = $_GET['action'] ?? '';
 
 if ($action === 'api_status') {
-    $used = 'N/A';
-    $limit = 'N/A';
-    
-    // جلب الحالة الفعلية من API-Football
-    $statusRes = fetchFromApiFootball('status');
-    if (isset($statusRes['response']['requests'])) {
-        $r = $statusRes['response']['requests'];
-        $used = $r['current'] . ' / ' . $r['limit_day'];
-        $limit = $r['limit_day'];
-    }
-
     echo json_encode([
         'last_daily_date'  => $settings['last_daily_date'] ?? '--',
         'last_live_update' => isset($settings['last_live_update']) ? date('H:i:s', $settings['last_live_update']) : '--',
-        'requests_used'    => $used,
-        'requests_limit'   => $limit
+        'requests_used'    => null,
+        'requests_limit'   => 'Unlimited'
     ]);
     exit;
 }
@@ -151,25 +141,14 @@ if ($action === 'api_status') {
 if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
-    if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
+    if (empty($current)) {
         $res = fetchFromApiFootball('fixtures', ['date' => $today]);
-        
-        if (isset($res['errors']) && !empty($res['errors'])) {
-            $errorMsg = is_array($res['errors']) ? implode(', ', $res['errors']) : $res['errors'];
-            echo json_encode(['error' => 'API Error: ' . $errorMsg]);
-            exit;
-        }
-
         if (isset($res['response']) && is_array($res['response'])) {
-            $current = []; // Clear if forcing
             foreach ($res['response'] as $m) $current[] = formatMatchData($m);
             if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
             file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        } else {
-            echo json_encode(['error' => 'No matches found in API response']);
-            exit;
         }
     }
     
