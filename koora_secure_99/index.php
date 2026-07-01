@@ -666,8 +666,8 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank');
                         const data = await r.json();
                         if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
+                                <div style="font-size:55px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
                             return;
@@ -677,7 +677,7 @@ if ($auth) {
                         renderBank(activeTab);
                     } catch(e) { 
                         console.error(e); 
-                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
+                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:50px; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
                     }
                 }
 
@@ -686,7 +686,7 @@ if ($auth) {
                     const filtered = apiBank.filter(m => m.day === day);
                     
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:60px 0;">
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
                             <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
                             <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
                         </td></tr>`;
