@@ -84,14 +84,17 @@ function formatMatchData($m) {
         $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
     }
 
-    // دالة مساعدة للترجمة
+    // دالة مساعدة للترجمة مطورة
     $translate = function($type, $key, $default) use ($arMap) {
-        return $arMap[$type][$key] ?? $default;
+        $strKey = (string)$key;
+        return $arMap[$type][$strKey] ?? $default;
     };
 
     $lNameRaw = $m['league_name'];
     $extRound = $m['event_league_round'] ?? '';
-    
+    $countryId   = (string)($m['country_key'] ?? '');
+    $countryName = $m['country_name'] ?? '';
+
     // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
     if (strpos($lNameRaw, ' - ') !== false) {
         $parts = explode(' - ', $lNameRaw, 2);
@@ -105,13 +108,14 @@ function formatMatchData($m) {
     $hId   = $m['home_team_key'];
     $aId   = $m['away_team_key'];
     $lId   = $m['league_key'];
-    $countryId   = $m['country_key'] ?? '';
-    $countryName = $m['country_name'] ?? '';
+
+    // ترجمة الدول (محاولة بالـ ID ثم بالاسم كاحتياط)
+    $tCountry = $translate('countries', $countryId, $translate('countries', $countryName, $countryName));
 
     // ترجمة الأسماء
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
-    $translatedLeagueName = $translate('leagues', $lId, $lName);
+    $translatedHomeName   = $translate('teams', $hId, ($hName === $countryName ? $tCountry : $hName));
+    $translatedAwayName   = $translate('teams', $aId, ($aName === $countryName ? $tCountry : $aName));
+    $translatedLeagueName = $translate('leagues', $lId, ($lName === $countryName ? $tCountry : $lName));
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
     // معالجة الحالة
