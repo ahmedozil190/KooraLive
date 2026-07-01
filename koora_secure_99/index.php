@@ -657,10 +657,19 @@ if ($auth) {
                 async function loadBank() {
                     try {
                         const r = await fetch('api.php?action=get_bank');
-                        apiBank = await r.json();
+                        const data = await r.json();
+                        if (data.error) {
+                            showToast(data.error, 'error');
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:#ef4444; font-weight:700;">${data.error}</td></tr>`;
+                            return;
+                        }
+                        apiBank = data;
                         const activeTab = document.querySelector('.day-tab.active').dataset.day;
                         renderBank(activeTab);
-                    } catch(e) { console.error(e); }
+                    } catch(e) { 
+                        console.error(e); 
+                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
+                    }
                 }
 
                 function renderBank(day) {
