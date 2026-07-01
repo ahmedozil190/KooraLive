@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=utf-8');
 $apiKey = 'b43a888198855ac0fc14a8be8220db7b';
 
 // التاريخ المطلوب
-$targetDate = '2026-07-1';
+$targetDate = '2026-07-01';
 
 // رابط API-Football جلب مباريات يوم محدد بالتفصيل
 $apiUrl = "https://v3.football.api-sports.io/fixtures?date=$targetDate";
