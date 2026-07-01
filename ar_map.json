@@ -1,5 +1,10 @@
 {
-    "leagues": {},
+    "leagues": {
+        "World Cup":"كأس العالم"
+    },
     "teams": {},
-    "countries": {}
+    "countries": {
+        "Mexico":"المكسيك",
+        "Ecuador":"الإكوادور"
+    }
 }

@@ -91,7 +91,28 @@ function formatMatchData($match) {
     $awayScore = ($g['away'] !== null) ? $g['away'] : 0;
     
     $statusShort = $f['status']['short'];
-    // تحويل الحالات لتناسب لوحة التحكم
+    
+    // خريطة ترجمة الحالات للعربية
+    $statusMap = [
+        'TBD' => 'يحدد لاحقاً',
+        'NS'  => 'لم تبدأ',
+        '1H'  => 'الشوط الأول',
+        'HT'  => 'استراحة',
+        '2H'  => 'الشوط الثاني',
+        'ET'  => 'وقت إضافي',
+        'P'   => 'ركلات ترجيح',
+        'FT'  => 'انتهت',
+        'AET' => 'انتهت (إضافي)',
+        'PEN' => 'انتهت (ركلات)',
+        'PST' => 'مؤجلة',
+        'CANC'=> 'ملغاة',
+        'ABD' => 'متوقفة',
+        'AWD' => 'نتيجة اعتبارية',
+        'WO'  => 'انسحاب',
+        'LIVE'=> 'مباشر'
+    ];
+    
+    $statusAr = $statusMap[$statusShort] ?? $statusShort;
     $liveStatus = in_array($statusShort, ['1H', 'HT', '2H', 'ET', 'P', 'LIVE']) ? "1" : "0";
     
     return [
@@ -111,9 +132,11 @@ function formatMatchData($match) {
         "league_name"         => $l['name'],
         "leagueId"            => $l['id'],
         "league_key"          => $l['id'],
+        "round"               => $l['round'] ?? '',
         "score"               => "$homeScore - $awayScore",
         "event_final_result"  => "$homeScore - $awayScore",
         "status"              => $statusShort,
+        "status_ar"           => $statusAr,
         "event_status"        => $statusShort,
         "live"                => $liveStatus,
         "event_live"          => $liveStatus,

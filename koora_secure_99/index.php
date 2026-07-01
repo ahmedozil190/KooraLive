@@ -593,6 +593,7 @@ if ($auth) {
                             <tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub); font-size:13px;">
                                 <th style="padding:15px 25px;">المباراة</th>
                                 <th style="padding:15px;">البطولة</th>
+                                <th style="padding:15px;">الدور</th>
                                 <th style="padding:15px;">الوقت</th>
                                 <th style="padding:15px;">الحالة</th>
                                 <th style="padding:15px 25px; text-align:left;">التحكم</th>
@@ -712,10 +713,12 @@ if ($auth) {
 
                         // إضافة المباريات التابعة لهذا الدوري
                         html += grouped[league].map(m => {
-                            let stClass = 'status-up', stTxt = 'لم تبدأ بعد';
-                            if(m.status === 'live') { stClass = 'status-live'; stTxt = 'مباشر الآن'; }
-                            else if(m.status === 'finished') { stClass = 'status-final'; stTxt = 'انتهت المباراة'; }
-                            else { stClass = 'status-up'; stTxt = 'لم تبدأ بعد'; }
+                            let stClass = 'status-up';
+                            if(['1H', 'HT', '2H', 'ET', 'P', 'LIVE'].includes(m.status)) stClass = 'status-live';
+                            else if(['FT', 'AET', 'PEN'].includes(m.status)) stClass = 'status-final';
+                            
+                            let stTxt = m.status_ar || 'لم تبدأ';
+                            let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
 
                             return `
                             <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
@@ -733,6 +736,7 @@ if ($auth) {
                                     </div>
                                 </td>
                                 <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
+                                <td style="padding:15px; color:var(--text-dim); font-size:12px; font-weight:700;">${roundTxt}</td>
                                 <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
                                 <td style="padding:15px;">
                                     <span class="status-badge ${stClass}">${stTxt}</span>
