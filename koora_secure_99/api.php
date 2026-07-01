@@ -52,7 +52,12 @@ function formatMatchData($m) {
     global $arMap;
     
     $tr = function($txt, $cat) use ($arMap) {
+        $txt = trim($txt);
         if (isset($arMap[$cat][$txt])) return $arMap[$cat][$txt];
+        // بحث احتياطي في كافة الأقسام إذا لم يجد في القسم المحدد
+        foreach ($arMap as $section) {
+            if (isset($section[$txt])) return $section[$txt];
+        }
         return $txt;
     };
 
