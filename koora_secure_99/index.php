@@ -666,8 +666,8 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank');
                         const data = await r.json();
                         if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:80px 0;">
-                                <div style="font-size:50px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px 0;">
+                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
                             return;
