@@ -21,6 +21,9 @@ $apiKey   = $settings['api_key'];
 $cacheSec = $settings['cache_seconds'] ?? 60;
 $fHour    = $settings['fetch_hour'] ?? 0;
 
+// لضمان دقة الـ timestamp عالمياً وتحويله لتوكيت المستخدم المحلي بشكل صحيح
+date_default_timezone_set('UTC');
+
 $today      = date('Y-m-d');
 $currentH   = (int)date('G');
 $currentTime = time();
@@ -29,6 +32,8 @@ $currentTime = time();
 // 2. دالة جلب البيانات من AllSportsAPI
 function fetchFromAllSports($params) {
     global $apiKey;
+    // إضافة المنطقة الزمنية UTC للطلب لضمان توحيد المواعيد
+    $params['timezone'] = 'UTC';
     $url = "https://apiv2.allsportsapi.com/football/?APIkey=$apiKey&" . http_build_query($params);
     
     $ch = curl_init();
