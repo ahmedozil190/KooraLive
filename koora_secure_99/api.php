@@ -121,15 +121,17 @@ function formatMatchData($match) {
     }
 
     $statusShort = $f['status']['short'];
-    $statusMap = [
+    $statusMapAr = [
         'TBD' => 'يحدد لاحقاً', 'NS' => 'لم تبدأ', '1H' => 'الشوط الأول', 'HT' => 'استراحة',
         '2H' => 'الشوط الثاني', 'ET' => 'وقت إضافي', 'P' => 'ركلات ترجيح', 'FT' => 'انتهت',
         'AET' => 'انتهت (إضافي)', 'PEN' => 'انتهت (ركلات)', 'PST' => 'مؤجلة', 'CANC' => 'ملغاة',
         'ABD' => 'متوقفة', 'AWD' => 'نتيجة اعتبارية', 'WO' => 'انسحاب', 'LIVE' => 'مباشر'
     ];
+    $statusAr = $statusMapAr[$statusShort] ?? ($arMap['status'][$statusShort] ?? $statusShort);
     
-    $statusAr = $statusMap[$statusShort] ?? $statusShort;
-    $liveStatus = in_array($statusShort, ['1H', 'HT', '2H', 'ET', 'P', 'LIVE']) ? "1" : "0";
+    // تحديد الحالة الحية
+    $liveStatus = in_array($statusShort, ['1H', 'HT', '2H', 'ET', 'P', 'LIVE']) ? "live" : "upcoming";
+    if (in_array($statusShort, ['FT', 'AET', 'PEN', 'AWD', 'WO'])) $liveStatus = "finished";
     
     return [
         "id"                  => $f['id'],
@@ -151,11 +153,12 @@ function formatMatchData($match) {
         "round"               => $translatedRound,
         "score"               => "$homeScore - $awayScore",
         "event_final_result"  => "$homeScore - $awayScore",
-        "status"              => $statusShort,
+        "status"              => $liveStatus,
         "status_ar"           => $statusAr,
-        "event_status"        => $statusShort,
-        "live"                => $liveStatus,
-        "event_live"          => $liveStatus,
+        "event_status"        => $liveStatus,
+        "status_short"        => $statusShort,
+        "live"                => $liveStatus === 'live' ? "1" : "0",
+        "event_live"          => $liveStatus === 'live' ? "1" : "0",
         "channel"             => "",
         "commentator"         => "",
         "streamUrl"           => ""

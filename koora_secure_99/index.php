@@ -270,7 +270,7 @@ if ($auth) {
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                             $stTxt = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
+                             $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:15px; width:450px;">
@@ -382,7 +382,7 @@ if ($auth) {
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                            $badgeText = isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد';
+                            $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                             <td style="padding:15px; width:450px;">
