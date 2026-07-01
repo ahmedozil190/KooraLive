@@ -89,9 +89,19 @@ function formatMatchData($m) {
         return $arMap[$type][$key] ?? $default;
     };
 
+    $lNameRaw = $m['league_name'];
+    $extRound = $m['event_league_round'] ?? '';
+    
+    // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
+    if (strpos($lNameRaw, ' - ') !== false) {
+        $parts = explode(' - ', $lNameRaw, 2);
+        $lNameRaw = trim($parts[0]);
+        if (empty($extRound)) $extRound = trim($parts[1]);
+    }
+
+    $lName = $lNameRaw;
     $hName = $m['event_home_team'];
     $aName = $m['event_away_team'];
-    $lName = $m['league_name'];
     $hId   = $m['home_team_key'];
     $aId   = $m['away_team_key'];
     $lId   = $m['league_key'];
@@ -101,6 +111,7 @@ function formatMatchData($m) {
     $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryName, $hName));
     $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryName, $aName));
     $translatedLeagueName = $translate('leagues', $lId, $lName);
+    $translatedRound      = $translate('rounds', $extRound, $extRound);
 
     // معالجة الحالة
     $statusRaw = $m['event_status']; // AllSports يرسل مثل FT, Live, أو وقت المباراة
@@ -137,7 +148,7 @@ function formatMatchData($m) {
         "league_name"         => $translatedLeagueName,
         "leagueId"            => $lId,
         "league_key"          => $lId,
-        "round"               => $m['event_league_round'] ?? '',
+        "round"               => $translatedRound,
         "score"               => $m['event_final_result'] ?: "0 - 0",
         "event_final_result"  => $m['event_final_result'] ?: "0 - 0",
         "status"              => $liveStatus,
