@@ -81,15 +81,28 @@ if ($action === 'api_status') {
     echo json_encode([
         'last_daily_date'  => $settings['last_daily_date'] ?? '--',
         'last_live_update' => isset($settings['last_live_update']) ? date('H:i:s', $settings['last_live_update']) : '--',
-        'requests_used'    => null, // AllSportsAPI لا توفرها برمجياً
+        'requests_used'    => null,
         'requests_limit'   => '1,000,000'
     ]);
     exit;
 }
 
 if ($action === 'get_bank') {
-    // إرجاع محتوى matches.json للوحة التحكم
     $current = file_exists($matchesFile) ? json_decode(file_get_contents($matchesFile), true) : [];
+    
+    // إذا كان البنك فارغاً، قم بجلب البيانات فوراً بدلاً من الانتظار
+    if (empty($current)) {
+        $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
+        if (isset($data['result']) && is_array($data['result'])) {
+            foreach ($data['result'] as $m) {
+                $current[] = formatMatchData($m);
+            }
+            file_put_contents($matchesFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $settings['last_daily_date'] = $today;
+            file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        }
+    }
+    
     echo json_encode($current);
     exit;
 }
@@ -101,36 +114,23 @@ $needsLiveUpdate = ($currentTime - ($settings['last_live_update'] ?? 0)) >= $cac
 $responseStatus = "No update needed";
 
 if ($needsDailyFetch) {
-    // جلب جدول مباريات اليوم بالكامل
     $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
-    
     if (isset($data['result']) && is_array($data['result'])) {
         $formatted = [];
-        foreach ($data['result'] as $m) {
-            $formatted[] = formatMatchData($m);
-        }
+        foreach ($data['result'] as $m) $formatted[] = formatMatchData($m);
         file_put_contents($matchesFile, json_encode($formatted, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        
-        // تحديث الإعدادات
         $settings['last_daily_date'] = $today;
         $settings['last_live_update'] = $currentTime;
         file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        
-        $responseStatus = "Daily fetch completed: " . count($formatted) . " matches.";
+        $responseStatus = "Daily fetch completed";
     }
 } 
 elseif ($needsLiveUpdate) {
-    // تحديث النتائج المباشرة فقط
-    // ملاحظة: في AllSportsAPI نستخدم Live لمعرفة المباريات الجارية حالياً
     $data = fetchFromAllSports(['met' => 'Livescore']);
-    
+    $currentMatches = json_decode(file_get_contents($matchesFile), true) ?: [];
     if (isset($data['result']) && is_array($data['result'])) {
-        $currentMatches = json_decode(file_get_contents($matchesFile), true) ?: [];
-        $liveData = $data['result'];
-        
-        // تحديث البيانات الحية داخل المصفوفة الرئيسية
         foreach ($currentMatches as &$m) {
-            foreach ($liveData as $ld) {
+            foreach ($data['result'] as $ld) {
                 if ($m['id'] == $ld['event_key']) {
                     $m['score'] = $ld['event_final_result'];
                     $m['status'] = $ld['event_status'];
@@ -139,23 +139,11 @@ elseif ($needsLiveUpdate) {
                 }
             }
         }
-        
         file_put_contents($matchesFile, json_encode($currentMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        
-        $settings['last_live_update'] = $currentTime;
-        file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        
-        $responseStatus = "Live status updated.";
-    } else {
-        // إذا لم توجد مباريات مباشرة، نقوم بتحديث وقت آخر تحديث فقط لتجنب كثرة الطلبات الفارغة
-        $settings['last_live_update'] = $currentTime;
-        file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $responseStatus = "No live matches currently.";
+        $responseStatus = "Live updated";
     }
+    $settings['last_live_update'] = $currentTime;
+    file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 }
 
-echo json_encode([
-    'success' => true,
-    'status'  => $responseStatus,
-    'time'    => date('Y-m-d H:i:s')
-]);
+echo json_encode(['success' => true, 'status' => $responseStatus]);
