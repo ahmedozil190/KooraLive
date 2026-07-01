@@ -73,6 +73,26 @@ function formatMatchData($match) {
 }
 
 
+// 5. معالج الأوامر (Action Handler) للوحة التحكم
+$action = $_GET['action'] ?? '';
+
+if ($action === 'api_status') {
+    echo json_encode([
+        'last_daily_date'  => $settings['last_daily_date'] ?? '--',
+        'last_live_update' => isset($settings['last_live_update']) ? date('H:i:s', $settings['last_live_update']) : '--',
+        'requests_used'    => null, // AllSportsAPI لا توفرها برمجياً
+        'requests_limit'   => '1,000,000'
+    ]);
+    exit;
+}
+
+if ($action === 'match_bank') {
+    // إرجاع محتوى matches.json للوحة التحكم
+    $current = file_exists($matchesFile) ? json_decode(file_get_contents($matchesFile), true) : [];
+    echo json_encode($current);
+    exit;
+}
+
 // 4. منطق التحديث الذكي (Polling Logic)
 $needsDailyFetch = ($settings['last_daily_date'] ?? '') !== $today && $currentH >= $fHour;
 $needsLiveUpdate = ($currentTime - ($settings['last_live_update'] ?? 0)) >= $cacheSec;
