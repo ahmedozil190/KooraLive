@@ -89,7 +89,7 @@ if ($action === 'api_status') {
     exit;
 }
 
-if ($action === 'match_bank') {
+if ($action === 'get_bank') {
     // إرجاع محتوى matches.json للوحة التحكم
     $current = file_exists($matchesFile) ? json_decode(file_get_contents($matchesFile), true) : [];
     echo json_encode($current);
