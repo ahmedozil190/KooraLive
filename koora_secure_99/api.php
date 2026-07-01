@@ -135,7 +135,7 @@ if ($action === 'api_status') {
     $statusRes = fetchFromApiFootball('status');
     if (isset($statusRes['response']['requests'])) {
         $r = $statusRes['response']['requests'];
-        $used = $r['current'] . ' / ' . $r['limit_day'];
+        $used = $r['current'];
         $limit = $r['limit_day'];
     }
 
