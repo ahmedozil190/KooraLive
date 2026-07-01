@@ -1,0 +1,46 @@
+{
+    "leagues": {
+        "Premier League": "الدوري الإنجليزي",
+        "La Liga": "الدوري الإسباني",
+        "Serie A": "الدوري الإيطالي",
+        "Bundesliga": "الدوري الألماني",
+        "Ligue 1": "الدوري الفرنسي",
+        "Champions League": "دوري أبطال أوروبا",
+        "Europa League": "الدوري الأوروبي",
+        "Africa Cup of Nations": "كأس أمم أفريقيا",
+        "World Cup": "كأس العالم",
+        "Saudi Professional League": "الدوري السعودي للمحترفين",
+        "Egyptian Premier League": "الدوري المصري الممتاز",
+        "Euro": "بطولة أمم أوروبا",
+        "Copa America": "كوبا أمريكا"
+    },
+    "teams": {
+        "Real Madrid": "ريال مدريد",
+        "Barcelona": "برشلونة",
+        "Liverpool": "ليفربول",
+        "Manchester City": "مانشستر سيتي",
+        "Manchester United": "مانشستر يونايتد",
+        "Arsenal": "أرسنال",
+        "Chelsea": "تشيلسي",
+        "Bayern Munich": "بايرن ميونخ",
+        "Paris Saint Germain": "باريس سان جيرمان",
+        "Juventus": "يوفنتوس",
+        "AC Milan": "ميلان",
+        "Inter Milan": "إنتر ميلان",
+        "Al Ahly": "الأهلي",
+        "Zamalek": "الزمالك",
+        "Al-Ittihad": "الاتحاد",
+        "Al-Hilal": "الهلال",
+        "Al-Nassr": "النصر",
+        "Al-Ahli": "الأهلي السعودي"
+    },
+    "countries": {
+        "Egypt": "مصر",
+        "Saudi Arabia": "السعودية",
+        "Morocco": "المغرب",
+        "Algeria": "الجزائر",
+        "Mexico": "المكسيك",
+        "Ecuador": "الإكوادور",
+        "Tunisia": "تونس"
+    }
+}
