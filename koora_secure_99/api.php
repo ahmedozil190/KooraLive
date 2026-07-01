@@ -8,7 +8,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 // 1. المسارات والإعدادات
 $settingsFile = __DIR__ . '/../data/api_settings.json';
-$matchesFile  = __DIR__ . '/../data/matches.json';
+$liveFile     = __DIR__ . '/../data/matches.json';       // المباريات التي تظهر في الموقع
+$bankFile     = __DIR__ . '/../data/api_fixtures.json';  // بنك المباريات القادم من الـ API
 
 if (!file_exists($settingsFile)) {
     echo json_encode(['error' => 'Settings file not found']);
@@ -39,6 +40,38 @@ function fetchFromAllSports($params) {
     curl_close($ch);
     
     return json_decode($res, true);
+}
+
+
+// 3. إضافة مباراة من البنك إلى الموقع
+if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $mid  = $data['id'] ?? '';
+    
+    $bank = json_decode(file_get_contents($bankFile), true) ?: [];
+    $live = json_decode(file_get_contents($liveFile), true) ?: [];
+    
+    foreach ($bank as $m) {
+        if ($m['id'] == $mid) {
+            $m['streamUrl']   = $data['streamUrl'];
+            $m['channel']     = $data['channel'];
+            $m['commentator'] = $data['commentator'];
+            
+            // تحقق إذا كانت موجودة مسبقاً لمنع التكرار
+            $exists = false;
+            foreach ($live as &$lm) {
+                if ($lm['id'] == $mid) {
+                    $lm = $m; // تحديث
+                    $exists = true; break;
+                }
+            }
+            if (!$exists) $live[] = $m; // إضافة جديدة
+            
+            file_put_contents($liveFile, json_encode(array_values($live), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            echo json_encode(['success' => true]);
+            exit;
+        }
+    }
 }
 
 
@@ -88,16 +121,13 @@ if ($action === 'api_status') {
 }
 
 if ($action === 'get_bank') {
-    $current = file_exists($matchesFile) ? json_decode(file_get_contents($matchesFile), true) : [];
+    $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
-    // إذا كان البنك فارغاً، قم بجلب البيانات فوراً بدلاً من الانتظار
     if (empty($current)) {
         $data = fetchFromAllSports(['met' => 'Fixtures', 'from' => $today, 'to' => $today]);
         if (isset($data['result']) && is_array($data['result'])) {
-            foreach ($data['result'] as $m) {
-                $current[] = formatMatchData($m);
-            }
-            file_put_contents($matchesFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            foreach ($data['result'] as $m) $current[] = formatMatchData($m);
+            file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
@@ -118,7 +148,7 @@ if ($needsDailyFetch) {
     if (isset($data['result']) && is_array($data['result'])) {
         $formatted = [];
         foreach ($data['result'] as $m) $formatted[] = formatMatchData($m);
-        file_put_contents($matchesFile, json_encode($formatted, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents($bankFile, json_encode($formatted, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         $settings['last_daily_date'] = $today;
         $settings['last_live_update'] = $currentTime;
         file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
@@ -127,10 +157,15 @@ if ($needsDailyFetch) {
 } 
 elseif ($needsLiveUpdate) {
     $data = fetchFromAllSports(['met' => 'Livescore']);
-    $currentMatches = json_decode(file_get_contents($matchesFile), true) ?: [];
+    $bankMatches = json_decode(@file_get_contents($bankFile), true) ?: [];
+    $liveMatches = json_decode(@file_get_contents($liveFile), true) ?: [];
+    
     if (isset($data['result']) && is_array($data['result'])) {
-        foreach ($currentMatches as &$m) {
-            foreach ($data['result'] as $ld) {
+        $results = $data['result'];
+        
+        // تحديث البنك
+        foreach ($bankMatches as &$m) {
+            foreach ($results as $ld) {
                 if ($m['id'] == $ld['event_key']) {
                     $m['score'] = $ld['event_final_result'];
                     $m['status'] = $ld['event_status'];
@@ -139,8 +174,22 @@ elseif ($needsLiveUpdate) {
                 }
             }
         }
-        file_put_contents($matchesFile, json_encode($currentMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $responseStatus = "Live updated";
+        
+        // تحديث المباريات الحية بالموقع
+        foreach ($liveMatches as &$m) {
+            foreach ($results as $ld) {
+                if ($m['id'] == $ld['event_key']) {
+                    $m['score'] = $ld['event_final_result'];
+                    $m['status'] = $ld['event_status'];
+                    $m['live'] = "1";
+                    break;
+                }
+            }
+        }
+        
+        file_put_contents($bankFile, json_encode($bankMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents($liveFile, json_encode($liveMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $responseStatus = "All files updated with live scores";
     }
     $settings['last_live_update'] = $currentTime;
     file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
