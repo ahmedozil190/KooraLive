@@ -45,30 +45,33 @@ function fetchFromAllSports($params) {
 // 3. دالة معالجة وتنسيق البيانات (Mapping)
 function formatMatchData($match) {
     return [
-        "id"            => $match['event_key'],
-        "timestamp"     => strtotime($match['event_date'] . ' ' . $match['event_time']),
-        "date"          => $match['event_date'],
-        "time"          => $match['event_time'],
-        "homeName"      => $match['event_home_team'],
-        "homeId"        => $match['home_team_key'],
-        "homeLogo"      => $match['home_team_logo'],
-        "awayName"      => $match['event_away_team'],
-        "awayId"        => $match['away_team_key'],
-        "awayLogo"      => $match['away_team_logo'],
-        "score"         => !empty($match['event_final_result']) ? $match['event_final_result'] : "0 - 0",
-        "halftimeScore" => $match['event_halftime_result'],
-        "penaltyScore"  => $match['event_penalty_result'],
-        "status"        => $match['event_status'],
-        "statusShort"   => ($match['event_status'] == 'Finished') ? 'FT' : (($match['event_status'] == '') ? 'NS' : $match['event_status']),
-        "leagueName"    => $match['league_name'],
-        "leagueId"      => $match['league_key'],
-        "leagueLogo"    => $match['league_logo'],
-        "country"       => $match['country_name'],
-        "live"          => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
-        // حقول إضافية للموقع
-        "channel"       => "",
-        "commentator"   => "",
-        "streamUrl"     => ""
+        "event_key"             => $match['event_key'],
+        "id"                    => $match['event_key'], // للمطابقة مع ID الموقع
+        "event_date"            => $match['event_date'],
+        "event_time"            => $match['event_time'],
+        "event_home_team"       => $match['event_home_team'],
+        "home_team_key"         => $match['home_team_key'],
+        "event_away_team"       => $match['event_away_team'],
+        "away_team_key"         => $match['away_team_key'],
+        "event_halftime_result" => $match['event_halftime_result'],
+        "event_final_result"    => !empty($match['event_final_result']) ? $match['event_final_result'] : "0 - 0",
+        "event_ft_result"       => $match['event_ft_result'] ?? "",
+        "event_penalty_result"  => $match['event_penalty_result'] ?? "",
+        "event_status"          => $match['event_status'],
+        "country_name"          => $match['country_name'],
+        "league_name"           => $match['league_name'],
+        "league_key"            => $match['league_key'],
+        "league_round"          => $match['league_round'] ?? "",
+        "league_season"         => $match['league_season'] ?? "",
+        "event_live"            => (strpos($match['event_status'], ':') === false && !empty($match['event_status']) && $match['event_status'] != 'Finished') ? "1" : "0",
+        "home_team_logo"        => $match['home_team_logo'],
+        "away_team_logo"        => $match['away_team_logo'],
+        "league_logo"           => $match['league_logo'],
+        "timestamp"             => strtotime($match['event_date'] . ' ' . $match['event_time']),
+        // حقول الموقع الإضافية
+        "channel"               => "",
+        "commentator"           => "",
+        "streamUrl"             => ""
     ];
 }
 
