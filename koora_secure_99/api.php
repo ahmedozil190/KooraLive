@@ -128,14 +128,24 @@ function formatMatchData($m) {
 
     $statusAr = $statusMapAr[$statusRaw] ?? ($arMap['status'][$statusRaw] ?? $statusRaw);
 
-    // تحويل الوقت لـ Timestamp
-    $timestamp = strtotime($m['event_date'] . ' ' . $m['event_time']);
+    // تحويل الوقت لـ Timestamp وتحديد اليوم
+    $evDate = $m['event_date'];
+    $timestamp = strtotime($evDate . ' ' . $m['event_time']);
+    
+    $dayTag = 'today';
+    $serverToday = date('Y-m-d');
+    $serverYest  = date('Y-m-d', strtotime('-1 day'));
+    $serverTom   = date('Y-m-d', strtotime('+1 day'));
+
+    if ($evDate === $serverYest) $dayTag = 'yesterday';
+    elseif ($evDate === $serverTom) $dayTag = 'tomorrow';
+    elseif ($evDate !== $serverToday) $dayTag = 'other'; // لو تاريخ بعيد
 
     return [
         "id"                  => $m['event_key'],
         "event_key"           => $m['event_key'],
         "timestamp"           => $timestamp,
-        "day"                 => "today",
+        "day"                 => $dayTag,
         "homeTeam"            => $translatedHomeName,
         "event_home_team"     => $translatedHomeName,
         "homeLogo"            => $m['home_team_logo'] ?? '',
@@ -179,7 +189,9 @@ if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
     if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
-        $res = fetchFromAllSports('Fixtures', ['from' => $today, 'to' => $today]);
+        $from = date('Y-m-d', strtotime('-1 day'));
+        $to   = date('Y-m-d', strtotime('+1 day'));
+        $res  = fetchFromAllSports('Fixtures', ['from' => $from, 'to' => $to]);
         
         if (isset($res['result']) && is_array($res['result'])) {
             $current = [];
