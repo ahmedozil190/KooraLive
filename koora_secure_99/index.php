@@ -230,8 +230,9 @@ if ($auth) {
                     </div>
                 </div>
                 <div style="overflow-x:auto;">
-                    <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
+                    <table class="table">
+                        <thead><tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub); font-size:13px;">
+                            <th style="padding:15px 25px;">المباراة</th><th style="padding:15px;">البطولة</th><th style="padding:15px;">الوقت</th><th style="padding:15px;">الحالة</th><th style="padding:15px;">البث</th><th style="padding:15px; text-align:left;">التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
                         <?php 
                         // منطق التصفية الذكي والترتيب (مثل التطبيق)
@@ -272,19 +273,17 @@ if ($auth) {
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                              $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                             <td style="padding:15px; width:450px;">
-                                <div style="display:grid; grid-template-columns: 1fr 50px 1fr; align-items:center; width:100%; direction:rtl;">
-                                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; overflow:hidden;">
-                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['homeTeam']; ?></span>
+                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?> style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                             <td style="padding:18px 25px;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
+                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <div style="display:flex; justify-content:center;">
-                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border-color); white-space:nowrap;">VS</span>
-                                    </div>
-                                    <div style="display:flex; align-items:center; justify-content:flex-start; gap:10px; overflow:hidden;">
+                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -384,22 +383,20 @@ if ($auth) {
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                             $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                        <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
-                            <td style="padding:15px; width:450px;">
-                                <div style="display:grid; grid-template-columns: 1fr 50px 1fr; align-items:center; width:100%; direction:rtl;">
-                                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; overflow:hidden;">
-                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['homeTeam']; ?></span>
+                        <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?> style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                             <td style="padding:18px 25px;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
+                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <div style="display:flex; justify-content:center;">
-                                        <span style="background:var(--bg-body); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:900; color:var(--text-dim); border:1px solid var(--border-color); white-space:nowrap;">VS</span>
-                                    </div>
-                                    <div style="display:flex; align-items:center; justify-content:flex-start; gap:10px; overflow:hidden;">
+                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
-                            </td>
+                             </td>
                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
                              <td style="font-weight:800; color:#6366f1;">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
@@ -660,6 +657,7 @@ if ($auth) {
             </style>
 
             <script>
+                const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = [];
                 async function loadBank() {
                     try {
@@ -683,7 +681,11 @@ if ($auth) {
 
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
-                    const filtered = apiBank.filter(m => m.day === day);
+                    // فلترة بحسب اليوم وأيضاً بحسب الدوريات المفضلة (لو تم تفعيل الخيار)
+                    let filtered = apiBank.filter(m => m.day === day);
+                    if (favLeaguesIds.length > 0) {
+                        filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
+                    }
                     
                     if(filtered.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
