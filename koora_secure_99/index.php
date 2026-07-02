@@ -869,7 +869,7 @@ if ($auth) {
         <?php elseif($sec == 'api_mgr'):
             $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
-            $lastSync = isset($apiSettings['last_cron_sync']) ? date('Y-m-d H:i:s', $apiSettings['last_cron_sync']) : 'لم يتم المزامنة بعد';
+            $lastSync = isset($apiSettings['last_cron_sync']) ? date('Y-m-d h:i:s A', $apiSettings['last_cron_sync']) : 'لم يتم المزامنة بعد';
             $syncStatus = (isset($apiSettings['last_cron_sync']) && (time() - $apiSettings['last_cron_sync']) < 300) ? 'نشط الآن' : 'بانتظار المزامنة';
             $statusColor = ($syncStatus == 'نشط الآن') ? '#10b981' : '#f59e0b';
         ?>
