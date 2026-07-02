@@ -751,7 +751,7 @@ if ($auth) {
                             if(m.status === 'live') stClass = 'status-live';
                             else if(m.status === 'finished') stClass = 'status-final';
                             
-                            let stTxt = m.status_ar || 'لم تبدأ';
+                            let stTxt = m.status_ar || 'لم تبدأ بعد';
                             let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
 
                             return `
