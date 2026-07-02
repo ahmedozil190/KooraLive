@@ -590,19 +590,10 @@ if ($auth) {
                 </div>
                 
                 <div style="overflow-x:auto;">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>المباراة</th>
-                                <th>البطولة</th>
-                                <th>الدور</th>
-                                <th>الوقت</th>
-                                <th>الحالة</th>
-                                <th style="text-align:left;">التحكم</th>
-                            </tr>
-                        </thead>
+                    <table>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th style="text-align:left;">التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
-                            <tr><td colspan="5" style="text-align:center; padding:50px; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:100px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
