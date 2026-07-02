@@ -90,7 +90,7 @@ function formatMatchData($m) {
     };
 
     $lNameRaw = $m['league_name'];
-    $extRound = $m['event_league_round'] ?? '';
+    $extRound = $m['stage_name'] ?? ($m['event_league_round'] ?? '');
     
     // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
     if (strpos($lNameRaw, ' - ') !== false) {
@@ -105,7 +105,7 @@ function formatMatchData($m) {
     $hId   = $m['home_team_key'];
     $aId   = $m['away_team_key'];
     $lId   = $m['league_key'];
-    $countryId   = $m['country_key'] ?? '';
+    $countryId   = $m['event_country_key'] ?? ($m['country_key'] ?? '');
     $countryName = $m['country_name'] ?? '';
 
     // ترجمة الأسماء
