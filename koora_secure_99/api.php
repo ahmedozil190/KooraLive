@@ -84,17 +84,14 @@ function formatMatchData($m) {
         $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
     }
 
-    // دالة مساعدة للترجمة مطورة
+    // دالة مساعدة للترجمة
     $translate = function($type, $key, $default) use ($arMap) {
-        $strKey = (string)$key;
-        return $arMap[$type][$strKey] ?? $default;
+        return $arMap[$type][$key] ?? $default;
     };
 
     $lNameRaw = $m['league_name'];
     $extRound = $m['event_league_round'] ?? '';
-    $countryId   = (string)($m['country_key'] ?? '');
-    $countryName = $m['country_name'] ?? '';
-
+    
     // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
     if (strpos($lNameRaw, ' - ') !== false) {
         $parts = explode(' - ', $lNameRaw, 2);
@@ -108,19 +105,13 @@ function formatMatchData($m) {
     $hId   = $m['home_team_key'];
     $aId   = $m['away_team_key'];
     $lId   = $m['league_key'];
-
-    // ترجمة الدول (محاولة بالـ ID ثم بالاسم كاحتياط)
-    $tCountry = $translate('countries', $countryId, $translate('countries', $countryName, $countryName));
+    $countryId   = $m['country_key'] ?? '';
+    $countryName = $m['country_name'] ?? '';
 
     // ترجمة الأسماء
-    $translatedHomeName   = $translate('teams', $hId, ($hName === $countryName ? $tCountry : $hName));
-    $translatedAwayName   = $translate('teams', $aId, ($aName === $countryName ? $tCountry : $aName));
-    $translatedLeagueName = $translate('leagues', $lId, ($lName === $countryName ? $tCountry : $lName));
-
-    // لو اسم المنتخب هو نفسه اسم البلد بالإنجليزية ومازال لم يترجم، نترجمه
-    if($translatedHomeName === $hName && !empty($countryName)) $translatedHomeName = $tCountry;
-    if($translatedAwayName === $aName && !empty($countryName)) $translatedAwayName = $tCountry;
-
+    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
+    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
+    $translatedLeagueName = $translate('leagues', $lId, $lName);
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
     // معالجة الحالة
@@ -198,17 +189,9 @@ if ($action === 'api_status') {
 if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
-    // إجبار التحديث لو التاريخ تغير أو الملف قديم
-    $needsRefresh = ($settings['last_daily_date'] ?? '') !== $today;
-    
-    if (empty($current) || $needsRefresh || (isset($_GET['force']) && $_GET['force'] === '1')) {
-        if (empty($apiKey)) {
-            echo json_encode(['error' => 'يرجى وضع مفتاح AllSportsAPI في الإعدادات لتحديث البيانات']);
-            exit;
-        }
-        
+    if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
         $from = date('Y-m-d', strtotime('-1 day'));
-        $to   = date('Y-m-d', strtotime('+3 days')); // جلب مدى أوسع لضمان عدم الفراغ
+        $to   = date('Y-m-d', strtotime('+1 day'));
         $res  = fetchFromAllSports('Fixtures', ['from' => $from, 'to' => $to]);
         
         if (isset($res['result']) && is_array($res['result'])) {
@@ -216,12 +199,11 @@ if ($action === 'get_bank') {
             foreach ($res['result'] as $m) $current[] = formatMatchData($m);
             if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
             file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         } else {
-            // لو فشل الجلب والبيانات قديمة جداً، نمسح القديم
-            if ($needsRefresh) $current = []; 
+            echo json_encode(['error' => 'AllSportsAPI: لم نجد أي مباريات لليوم']);
+            exit;
         }
     }
     
