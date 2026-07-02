@@ -2,266 +2,69 @@
 header('Content-Type: application/json; charset=utf-8');
 
 /**
- * المحرك الرئيسي (Engine) - نسخة AllSportsAPI
- * تم التحديث للربط مع apiv2.allsportsapi.com
+ * KooraLive API Engine - Optimized for Cron Sync
  */
 
-// 1. المسارات والإعدادات
 $settingsFile = __DIR__ . '/../data/api_settings.json';
 $liveFile     = __DIR__ . '/../data/matches.json';
 $bankFile     = __DIR__ . '/../data/api_fixtures.json';
 
-if (!file_exists($settingsFile)) {
-    echo json_encode(['error' => 'يرجى وضع المفتاح أولاً في صفحة الإعدادات']);
-    exit;
-}
-
-$settings = json_decode(file_get_contents($settingsFile), true);
-$apiKey   = $settings['api_key'] ?? '';
-$cacheSec = $settings['cache_seconds'] ?? 60;
-$fHour    = $settings['fetch_hour'] ?? 0;
-
-$today      = date('Y-m-d');
-$currentH   = (int)date('G');
-$currentTime = time();
-
-// 2. دالة جلب البيانات من AllSportsAPI
-function fetchFromAllSports($met, $params = []) {
-    global $apiKey;
-    $params['met'] = $met;
-    $params['APIkey'] = $apiKey;
-    
-    $url = "https://apiv2.allsportsapi.com/football/?" . http_build_query($params);
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-    
-    $res = curl_exec($ch);
-    curl_close($ch);
-    
-    return json_decode($res, true);
-}
-
-// 3. إضافة مباراة من البنك إلى الموقع
+// 1. إضافة مباراة من البنك إلى الموقع
 if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
     $data = json_decode(file_get_contents('php://input'), true);
-    $mid  = $data['id'] ?? '';
+    if (!$data || !isset($data['event_key'])) {
+        echo json_encode(['error' => 'بيانات غير مكتملة']);
+        exit;
+    }
+
+    $ms = json_decode(@file_get_contents($liveFile), true) ?: [];
     
-    $bank = json_decode(@file_get_contents($bankFile), true) ?: [];
-    $live = json_decode(@file_get_contents($liveFile), true) ?: [];
-    
-    foreach ($bank as $m) {
-        if ($m['id'] == $mid) {
-            $m['streamUrl']   = $data['streamUrl'];
-            $m['channel']     = $data['channel'];
-            $m['commentator'] = $data['commentator'];
-            
-            $exists = false;
-            foreach ($live as &$lm) {
-                if ($lm['id'] == $mid) {
-                    $lm = $m; 
-                    $exists = true; break;
-                }
-            }
-            if (!$exists) $live[] = $m;
-            
-            if(!is_dir(dirname($liveFile))) mkdir(dirname($liveFile), 0777, true);
-            file_put_contents($liveFile, json_encode(array_values($live), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            echo json_encode(['success' => true]);
+    // منع التكرار
+    foreach ($ms as $existing) {
+        if ($existing['event_key'] == $data['event_key']) {
+            echo json_encode(['error' => 'المباراة مضافة بالفعل في جدول المباريات الحالية']);
             exit;
         }
     }
-}
 
-// 4. دالة تنسيق البيانات (Mapping) لتناسب AllSportsAPI مع نظام الترجمة
-function formatMatchData($m) {
-    static $arMap = null;
-    if ($arMap === null) {
-        $mapFile = __DIR__ . '/../ar_map.json';
-        $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
-    }
-
-    // دالة مساعدة للترجمة
-    $translate = function($type, $key, $default) use ($arMap) {
-        return $arMap[$type][(string)$key] ?? $default;
-    };
-
-    $lNameRaw = $m['league_name'];
-    $extRound = $m['stage_name'] ?? ($m['event_league_round'] ?? '');
-    
-    // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
-    if (strpos($lNameRaw, ' - ') !== false) {
-        $parts = explode(' - ', $lNameRaw, 2);
-        $lNameRaw = trim($parts[0]);
-        if (empty($extRound)) $extRound = trim($parts[1]);
-    }
-
-    $lName = $lNameRaw;
-    $hName = $m['event_home_team'];
-    $aName = $m['event_away_team'];
-    $hId   = $m['home_team_key'];
-    $aId   = $m['away_team_key'];
-    $lId   = $m['league_key'];
-    $countryId   = $m['event_country_key'] ?? ($m['country_key'] ?? '');
-    $countryName = $m['country_name'] ?? '';
-
-    // ترجمة الأسماء
-    // 1. نحاول ترجمة الفريق بالـ ID في قسم الـ teams
-    // 2. إذا فشل، نحاول ترجمة الفريق بنفس الـ ID في قسم الـ countries (للمنتخبات)
-    // 3. إذا فشل، نحاول الترجمة بالاسم كاحتياط
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
-    $translatedLeagueName = $translate('leagues', $lId, $lName);
-    $translatedRound      = $translate('rounds', $extRound, $extRound);
-
-    // معالجة الحالة
-    $statusRaw = $m['event_status']; // AllSports يرسل مثل FT, Live, أو وقت المباراة
-    $statusMapAr = [
-        'Finished' => 'انتهت', 'FT' => 'انتهت', 'After ET' => 'انتهت (إضافي)', 'After Pen.' => 'انتهت (ركلات)',
-        'Half Time' => 'استراحة', 'HT' => 'استراحة', 'Postponed' => 'مؤجلة', 'Cancelled' => 'ملغاة',
-        'Abandoned' => 'متوقفة', 'LIVE' => 'مباشر', '1st Half' => 'الشوط الأول', '2nd Half' => 'الشوط الثاني'
+    // تنظيف البيانات المضافة
+    $newMatch = [
+        "id"           => (string)$data['event_key'],
+        "event_key"    => (string)$data['event_key'],
+        "timestamp"    => $data['timestamp'] ?? time(),
+        "homeTeam"     => $data['homeTeam'] ?? '',
+        "homeLogo"     => $data['homeLogo'] ?? '',
+        "awayTeam"     => $data['awayTeam'] ?? '',
+        "awayLogo"     => $data['awayLogo'] ?? '',
+        "league"       => $data['league'] ?? '',
+        "leagueId"     => $data['leagueId'] ?? '',
+        "status"       => $data['status'] ?? 'upcoming',
+        "score"        => $data['score'] ?? 'vs',
+        "round"        => $data['round'] ?? '',
+        "streamUrl"    => $data['streamUrl'] ?? '#',
+        "channel"      => $data['channel'] ?? '',
+        "commentator"  => $data['commentator'] ?? ''
     ];
-    
-    // تحديد الحالة العامة (live/finished/upcoming) لـ Dashboard
-    $liveStatus = 'upcoming';
-    if (in_array($statusRaw, ['LIVE', '1st Half', '2nd Half', 'HT', 'Half Time'])) $liveStatus = 'live';
-    elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'After Pen.'])) $liveStatus = 'finished';
 
-    $statusAr = $statusMapAr[$statusRaw] ?? ($arMap['status'][$statusRaw] ?? $statusRaw);
-
-    // تحويل الوقت لـ Timestamp وتحديد اليوم
-    $evDate = $m['event_date'];
-    $timestamp = strtotime($evDate . ' ' . $m['event_time']);
-    
-    $dayTag = 'today';
-    $serverToday = date('Y-m-d');
-    $serverYest  = date('Y-m-d', strtotime('-1 day'));
-    $serverTom   = date('Y-m-d', strtotime('+1 day'));
-
-    if ($evDate === $serverYest) $dayTag = 'yesterday';
-    elseif ($evDate === $serverTom) $dayTag = 'tomorrow';
-    elseif ($evDate !== $serverToday) $dayTag = 'other'; // لو تاريخ بعيد
-
-    return [
-        "id"                  => $m['event_key'],
-        "event_key"           => $m['event_key'],
-        "timestamp"           => $timestamp,
-        "day"                 => $dayTag,
-        "homeTeam"            => $translatedHomeName,
-        "event_home_team"     => $translatedHomeName,
-        "homeLogo"            => $m['home_team_logo'] ?? '',
-        "home_team_logo"      => $m['home_team_logo'] ?? '',
-        "awayTeam"            => $translatedAwayName,
-        "event_away_team"     => $translatedAwayName,
-        "awayLogo"            => $m['away_team_logo'] ?? '',
-        "away_team_logo"      => $m['away_team_logo'] ?? '',
-        "league"              => $translatedLeagueName,
-        "league_name"         => $translatedLeagueName,
-        "leagueId"            => $lId,
-        "league_key"          => $lId,
-        "round"               => $translatedRound,
-        "score"               => $m['event_final_result'] ?: "0 - 0",
-        "event_final_result"  => $m['event_final_result'] ?: "0 - 0",
-        "status"              => $liveStatus,
-        "status_ar"           => $statusAr,
-        "event_status"        => $statusRaw,
-        "live"                => ($liveStatus === 'live' ? "1" : "0"),
-        "channel"             => "",
-        "commentator"         => "",
-        "streamUrl"           => ""
-    ];
-}
-
-// 5. معالج الأوامر (Action Handler)
-$action = $_GET['action'] ?? '';
-
-if ($action === 'api_status') {
-    // AllSportsAPI لا يرسل حقول الـ Limit في الهيدر، لذا سنرسل معلومات تقريبية
-    echo json_encode([
-        'last_daily_date'  => $settings['last_daily_date'] ?? '--',
-        'last_live_update' => isset($settings['last_live_update']) ? date('H:i:s', $settings['last_live_update']) : '--',
-        'requests_used'    => 'متوفر',
-        'requests_limit'   => 'AllSports'
-    ]);
+    $ms[] = $newMatch;
+    file_put_contents($liveFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    echo json_encode(['success' => true]);
     exit;
 }
 
-if ($action === 'get_bank') {
-    $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
-    
-    if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
-        $from = date('Y-m-d', strtotime('-1 day'));
-        $to   = date('Y-m-d', strtotime('+1 day'));
-        $res  = fetchFromAllSports('Fixtures', ['from' => $from, 'to' => $to]);
-        
-        if (isset($res['result']) && is_array($res['result'])) {
-            $current = [];
-            foreach ($res['result'] as $m) $current[] = formatMatchData($m);
-            if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
-            file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            $settings['last_daily_date'] = $today;
-            file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        } else {
-            echo json_encode(['error' => 'AllSportsAPI: لم نجد أي مباريات لليوم']);
-            exit;
-        }
+// 2. جلب بنك المباريات (الذي يحدثه الكرون كل 10 ثواني)
+if (isset($_GET['action']) && $_GET['action'] === 'get_bank') {
+    if (file_exists($bankFile)) {
+        echo file_get_contents($bankFile);
+    } else {
+        echo json_encode([]);
     }
-    
-    echo json_encode($current);
     exit;
 }
 
-// 6. منطق التحديث الذكي (Polling Logic - اختياري لو طلبت الصفحة الرئيسية تحديث)
-$needsDailyFetch = ($settings['last_daily_date'] ?? '') !== $today && $currentH >= $fHour;
-$needsLiveUpdate = ($currentTime - ($settings['last_live_update'] ?? 0)) >= $cacheSec;
-
-$responseStatus = "No update needed";
-
-if ($needsDailyFetch) {
-    $res = fetchFromAllSports('Fixtures', ['from' => $today, 'to' => $today]);
-    if (isset($res['result']) && is_array($res['result'])) {
-        $formatted = [];
-        foreach ($res['result'] as $m) $formatted[] = formatMatchData($m);
-        file_put_contents($bankFile, json_encode($formatted, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $settings['last_daily_date'] = $today;
-        $settings['last_live_update'] = $currentTime;
-        file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $responseStatus = "Daily fetch completed (AllSports)";
-    }
-} 
-elseif ($needsLiveUpdate) {
-    $res = fetchFromAllSports('Livescore');
-    $bankMatches = json_decode(@file_get_contents($bankFile), true) ?: [];
-    $liveMatches = json_decode(@file_get_contents($liveFile), true) ?: [];
-    
-    if (isset($res['result']) && is_array($res['result'])) {
-        $updates = $res['result'];
-        foreach ($updates as $ld) {
-            $mid = $ld['event_key'];
-            $newScore = $ld['event_final_result'] ?: "0 - 0";
-            $newStat = $ld['event_status'];
-            
-            // تحديث البنك والمباريات المضافة
-            foreach ([$bankMatches, $liveMatches] as &$list) {
-                foreach ($list as &$bm) {
-                    if ($bm['id'] == $mid) {
-                        $bm['score'] = $newScore;
-                        $bm['status_ar'] = $newStat; // سيتم ترجمتها في اللدورة القادمة أو تُترك كما هي
-                        $bm['status'] = (in_array($newStat, ['FT', 'Finished']) ? 'finished' : 'live');
-                        break;
-                    }
-                }
-            }
-        }
-        file_put_contents($bankFile, json_encode($bankMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        file_put_contents($liveFile, json_encode($liveMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        $responseStatus = "Live scores updated (AllSports)";
-    }
-    $settings['last_live_update'] = $currentTime;
-    file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-}
-
-echo json_encode(['success' => true, 'status' => $responseStatus]);
+// 3. الحالة الافتراضية
+echo json_encode([
+    'success' => true,
+    'message' => 'API Engine is active',
+    'sync_mode' => 'Cron Job Managed'
+]);
