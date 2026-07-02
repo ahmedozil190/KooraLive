@@ -231,16 +231,7 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="table">
-                        <thead>
-                            <tr>
-                                <th>المباراة</th>
-                                <th>البطولة</th>
-                                <th>الوقت</th>
-                                <th>الحالة</th>
-                                <th>البث</th>
-                                <th style="text-align:left;">التحكم</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
                         <?php 
                         // منطق التصفية الذكي والترتيب (مثل التطبيق)
@@ -301,8 +292,8 @@ if ($auth) {
                              </td>
                              <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
-                             <td style="padding:15px 25px; text-align:left;">
-                                 <div style="display:flex; gap:8px; justify-content:flex-end;">
+                             <td>
+                                 <div style="display:flex; gap:8px;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
                                      <a href="index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                  </div>
@@ -349,16 +340,7 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>المباراة</th>
-                                <th>البطولة</th>
-                                <th>الوقت</th>
-                                <th>الحالة</th>
-                                <th style="text-align:center;">البث</th>
-                                <th style="text-align:left;">التحكم</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="cur-tbody">
                         <?php 
                         // نفس منطق التصفية الذكي كما في التطبيق
@@ -391,7 +373,7 @@ if ($auth) {
                         <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
                             <td colspan="6" style="text-align:center; padding:50px 0;">
                                 <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
-                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة</div>
+                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لهذا اليوم</div>
                             </td>
                         </tr>
                         <?php foreach($dayM as $m):
@@ -420,12 +402,12 @@ if ($auth) {
                              </td>
                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
-                             <td style="padding:15px 25px; text-align:left;">
-                                 <div style="display:flex; gap:8px; justify-content:flex-end;">
-                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                     <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
-                                 </div>
-                             </td>
+                            <td>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
+                                    <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                </div>
+                            </td>
                         </tr>
                         <?php endforeach; endforeach; ?>
                         </tbody>
