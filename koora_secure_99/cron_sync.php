@@ -105,6 +105,15 @@ function formatMatch($m, $translate) {
     if($evDate === $yest) $day = 'yesterday';
     elseif($evDate === $tom) $day = 'tomorrow';
 
+    // استخراج النتيجة والأهداف للتطبيق
+    $score  = ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs'));
+    $hScore = "0"; $aScore = "0";
+    if (strpos($score, '-') !== false) {
+        $parts  = explode('-', $score);
+        $hScore = trim($parts[0]);
+        $aScore = trim($parts[1]);
+    }
+
     return [
         "id"              => (string)$m['event_key'],
         "event_key"       => (string)$m['event_key'],
@@ -119,7 +128,9 @@ function formatMatch($m, $translate) {
         "status"          => $liveStatus,
         "status_ar"       => $statusAr,
         "status_raw"      => $statusRaw,
-        "score"           => ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs')),
+        "score"           => $score,
+        "homeScore"       => $hScore,
+        "awayScore"       => $aScore,
         "round"           => $m['event_round'] ?? ''
     ];
 }
@@ -151,10 +162,18 @@ if (file_exists($matchesFile)) {
         // البحث عن المباراة في بيانات الـ API المجلوبة حديثاً
         foreach ($allMatches as $apiM) {
             if ($liveM['event_key'] == $apiM['id'] || (isset($liveM['id']) && $liveM['id'] == $apiM['id'])) {
-                $liveM['score']      = $apiM['score'];
-                $liveM['status']     = $apiM['status'];
-                $liveM['status_raw'] = $apiM['status_raw'];
-                $liveM['status_ar']  = $apiM['status_ar']; // تحديث الترجمة العربية
+                $liveM['score']       = $apiM['score'];
+                $liveM['homeScore']   = $apiM['homeScore'];
+                $liveM['awayScore']   = $apiM['awayScore'];
+                $liveM['status']      = $apiM['status'];
+                $liveM['status_raw']  = $apiM['status_raw'];
+                $liveM['status_ar']   = $apiM['status_ar'];
+                $liveM['status_text'] = $apiM['status_ar'];
+                
+                if ($apiM['status'] === 'live') {
+                    $liveM['status'] = 'live';
+                }
+                
                 $updatedCount++;
                 break;
             }
