@@ -82,9 +82,17 @@ function formatMatch($m, $translate) {
     $lTr = $translate('leagues', $lId, $lName);
 
     // الحالة
+    $statusMapAr = [
+        'Finished' => 'انتهت', 'FT' => 'انتهت', 'After ET' => 'انتهت (إضافي)', 'After Pen.' => 'انتهت (ركلات)',
+        'Half Time' => 'استراحة', 'HT' => 'استراحة', 'Postponed' => 'مؤجلة', 'Cancelled' => 'ملغاة',
+        'Abandoned' => 'متوقفة', 'LIVE' => 'مباشر', '1st Half' => 'الشوط الأول', '2nd Half' => 'الشوط الثاني'
+    ];
+    
     $liveStatus = 'upcoming';
     if (in_array($statusRaw, ['LIVE', '1st Half', '2nd Half', 'HT'])) $liveStatus = 'live';
     elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'After Pen.'])) $liveStatus = 'finished';
+
+    $statusAr = $statusMapAr[$statusRaw] ?? $statusRaw;
 
     $evDate = $m['event_date'];
     $ts = strtotime($evDate . ' ' . $m['event_time']);
@@ -108,6 +116,7 @@ function formatMatch($m, $translate) {
         "league"          => $lTr,
         "leagueId"        => (string)$lId,
         "status"          => $liveStatus,
+        "status_ar"       => $statusAr,
         "status_raw"      => $statusRaw,
         "score"           => ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs')),
         "round"           => $m['event_round'] ?? ''

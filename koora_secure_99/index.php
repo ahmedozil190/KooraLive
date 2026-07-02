@@ -717,8 +717,8 @@ if ($auth) {
 
                         html += grouped[league].map(m => {
                             let stClass = 'status-up';
-                            if(['1H', 'HT', '2H', 'ET', 'P', 'LIVE'].includes(m.status)) stClass = 'status-live';
-                            else if(['FT', 'AET', 'PEN'].includes(m.status)) stClass = 'status-final';
+                            if(m.status === 'live') stClass = 'status-live';
+                            else if(m.status === 'finished') stClass = 'status-final';
                             
                             let stTxt = m.status_ar || 'لم تبدأ';
                             let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
