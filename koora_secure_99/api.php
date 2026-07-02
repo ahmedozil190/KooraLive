@@ -12,7 +12,7 @@ $liveFile     = __DIR__ . '/../data/matches.json';
 $bankFile     = __DIR__ . '/../data/api_fixtures.json';
 
 if (!file_exists($settingsFile)) {
-    echo json_encode(['error' => 'يرجى وضع مفتاح AllSportsAPI أولاً في صفحة الإعدادات']);
+    echo json_encode(['error' => 'يرجى وضع المفتاح أولاً في صفحة الإعدادات']);
     exit;
 }
 
