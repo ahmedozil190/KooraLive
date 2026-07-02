@@ -90,8 +90,11 @@ function formatMatch($m, $translate) {
     ];
     
     $liveStatus = 'upcoming';
-    if (in_array($statusRaw, ['LIVE', '1st Half', '2nd Half', 'HT'])) $liveStatus = 'live';
-    elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'After Pen.'])) $liveStatus = 'finished';
+    if (in_array($statusRaw, ['LIVE', '1st Half', '2nd Half', 'HT', 'Half Time', 'Extra Time', 'Penalty Shootout']) || is_numeric($statusRaw)) {
+        $liveStatus = 'live';
+    } elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'After Pen.'])) {
+        $liveStatus = 'finished';
+    }
 
     $statusAr = $statusMapAr[$statusRaw] ?? $statusRaw;
 
