@@ -128,21 +128,9 @@ if ($auth) {
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
         if (isset($_POST['save_api_mgr'])) {
-            $dir = dirname($settingsFile);
-            if (!is_dir($dir)) mkdir($dir, 0777, true);
-            
             $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
-            if (isset($_POST['api_key'])) $s['api_key'] = trim($_POST['api_key']);
-            $s['cache_seconds'] = max(5, intval($_POST['cache_seconds']));
-            
-            $h12 = intval($_POST['fetch_hour_12'] ?? 12);
-            $ampm = $_POST['fetch_ampm'] ?? 'AM';
-            $h24 = $h12;
-            if ($ampm === 'PM' && $h12 < 12) $h24 += 12;
-            if ($ampm === 'AM' && $h12 === 12) $h24 = 0;
-            $s['fetch_hour'] = $h24;
-            
-            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            $s['api_key'] = trim($_POST['api_key']);
+            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             header("Location: index.php?section=api_mgr&success=1"); exit;
         }
         if (isset($_POST['save_fav_leagues'])) {
@@ -877,32 +865,33 @@ if ($auth) {
         <?php elseif($sec == 'api_mgr'):
             $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
-            $savedKey = isset($apiSettings['api_key']) && !empty($apiSettings['api_key']);
-            $cacheSec = $apiSettings['cache_seconds'] ?? 900;
-            $fetchHour = $apiSettings['fetch_hour'] ?? 0;
-            $autoF    = isset($apiSettings['auto_fetch']) ? $apiSettings['auto_fetch'] : true;
+            $lastSync = isset($apiSettings['last_cron_sync']) ? date('Y-m-d H:i:s', $apiSettings['last_cron_sync']) : 'لم يتم المزامنة بعد';
+            $syncStatus = (isset($apiSettings['last_cron_sync']) && (time() - $apiSettings['last_cron_sync']) < 300) ? 'نشط الآن' : 'بانتظار المزامنة';
+            $statusColor = ($syncStatus == 'نشط الآن') ? '#10b981' : '#f59e0b';
         ?>
             <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i>إدارة نظام API</h2>
             
-            <!-- بطاقات الحالة المحدثة -->
             <div class="stats-grid" style="margin-bottom:25px;">
-                <div class="stat-card total"><i class="fa-solid fa-calendar-check"></i><h3 id="st-fetch-date" style="font-size:16px;">...</h3><p>آخر جلب يومي</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-moon"></i><h3 style="font-size:16px;"><?php 
-                    $dispMsg = ($fetchHour == 0) ? '12:00 AM' : (($fetchHour > 12) ? ($fetchHour-12).':00 PM' : (($fetchHour==12)?'12:00 PM':$fetchHour.':00 AM'));
-                    echo $dispMsg; 
-                ?></h3><p>تحديث المباريات القادم</p></div>
-                <div class="stat-card live"><i class="fa-solid fa-rotate"></i><h3 id="st-live-update" style="font-size:16px;">...</h3><p>آخر تحديث حي</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-gauge-high"></i><h3 id="st-requests" style="font-size:16px;">...</h3><p>الطلبـات المستخدمة</p></div>
+                <div class="stat-card live" style="border-right: 4px solid <?php echo $statusColor; ?>;">
+                    <i class="fa-solid fa-circle-check" style="color:<?php echo $statusColor; ?>;"></i>
+                    <h3 style="font-size:16px;"><?php echo $syncStatus; ?></h3>
+                    <p>حالة التحديث التلقائي</p>
+                </div>
+                <div class="stat-card total">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h3 style="font-size:16px;"><?php echo $lastSync; ?></h3>
+                    <p>آخر مزامنة ناجحة (Cron)</p>
+                </div>
             </div>
 
             <div class="recent-card">
                 <div class="recent-header">
                     <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
-                    <h3 style="margin-right:10px;">إعدادات المزامنة والاتصال</h3>
+                    <h3 style="margin-right:10px;">إعدادات الاتصال بالـ API</h3>
                 </div>
                 <form method="POST" style="padding:25px;">
                     <div class="form-group">
-                        <label>مفتاح API-Football</label>
+                        <label>مفتاح API-Football (AllSportsAPI)</label>
                         <div style="position:relative;">
                             <input type="password" name="api_key" id="api-key-input" class="form-input"
                                 value="<?php echo $apiSettings['api_key'] ?? ''; ?>"
@@ -910,28 +899,14 @@ if ($auth) {
                                 style="padding-left:45px;">
                             <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                         </div>
-                    </div>
-
-                    <div class="form-group" style="display:flex; gap:15px; margin-bottom:25px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:150px;">
-                            <label>تحديث النتائج بالثواني</label>
-                            <input type="number" name="cache_seconds" class="form-input" value="<?php echo $cacheSec; ?>" min="5" style="text-align:right;">
-                        </div>
-                        <div style="flex:1; min-width:200px;">
-                            <label>وقت تحديث المباريات اليومي</label>
-                            <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                                <input type="number" name="fetch_hour_12" class="form-input" style="flex:1; text-align:right;" 
-                                    value="<?php echo ($fetchHour == 0) ? 12 : ($fetchHour > 12 ? $fetchHour-12 : $fetchHour); ?>" min="1" max="12">
-                                <select name="fetch_ampm" class="form-input" style="flex:1; height:45px;">
-                                    <option value="AM" <?php echo $fetchHour < 12 ? 'selected' : ''; ?>>AM</option>
-                                    <option value="PM" <?php echo $fetchHour >= 12 ? 'selected' : ''; ?>>PM</option>
-                                </select>
-                            </div>
-                        </div>
+                        <p style="font-size:12px; color:var(--text-dim); margin-top:10px;">
+                            <i class="fa-solid fa-circle-info" style="margin-left:5px;"></i>
+                            يتم تحديث جميع البيانات (أمس، اليوم، غداً) بشكل آلي تماماً عبر نظام الـ Cron Job.
+                        </p>
                     </div>
 
                     <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
-                        <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ الإعدادات
+                        <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ المفتاح وتفعيل المزامنة
                     </button>
                 </form>
             </div>

@@ -13,6 +13,9 @@ $matchesFile  = __DIR__ . '/../data/matches.json';
 $bankFile     = __DIR__ . '/../data/api_fixtures.json';
 $arMapFile    = __DIR__ . '/../ar_map.json';
 
+// تأكد من وجود المجلد للعمل بشكل مستقل
+if (!is_dir(dirname($settingsFile))) mkdir(dirname($settingsFile), 0777, true);
+
 if (!file_exists($settingsFile)) {
     die(json_encode(['error' => 'Settings file not found']));
 }
@@ -24,6 +27,10 @@ $arMap    = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile),
 if (empty($apiKey)) {
     die(json_encode(['error' => 'API Key is missing']));
 }
+
+// تحديث وقت المزامنة
+$settings['last_cron_sync'] = time();
+file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
 // 2. دالة الجلب من الـ API
 function fetchAPI($met, $params = []) {
