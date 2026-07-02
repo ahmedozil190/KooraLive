@@ -682,13 +682,13 @@ if ($auth) {
                     
                     // تحديد التواريخ المحلية للمقارنة
                     const now = new Date();
-                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const todayStr = now.toLocaleDateString('en-CA');
                     
                     const yesterday = new Date(); yesterday.setDate(now.getDate() - 1);
-                    const yestStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+                    const yestStr = yesterday.toLocaleDateString('en-CA');
                     
                     const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
-                    const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+                    const tomStr = tomorrow.toLocaleDateString('en-CA');
 
                     // فلترة بحسب اليوم (بناءً على التوقيت المحلي للمباريات) واستثناء المضاف مسبقاً
                     let filtered = apiBank.filter(m => {
@@ -696,7 +696,7 @@ if ($auth) {
                         if (addedMatchIds.includes(String(m.id)) || addedMatchIds.includes(parseInt(m.id))) return false;
 
                         const mDate = new Date(m.timestamp * 1000);
-                        const mStr = `${mDate.getFullYear()}-${String(mDate.getMonth() + 1).padStart(2, '0')}-${String(mDate.getDate()).padStart(2, '0')}`;
+                        const mStr = mDate.toLocaleDateString('en-CA'); // يعطي YYYY-MM-DD
                         
                         if (day === 'today') return mStr === todayStr;
                         if (day === 'yesterday') return mStr === yestStr;
