@@ -800,16 +800,26 @@ if ($auth) {
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
 
+                    const matchData = apiBank.find(m => m.id === id);
+                    if(!matchData) { showToast('لم يتم العثور على بيانات المباراة', 'error'); return; }
+
                     const btn = document.querySelector('#addApiModal button');
                     const originalText = btn.innerHTML;
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
 
                     try {
+                        const payload = {
+                            ...matchData,
+                            event_key: matchData.id,
+                            streamUrl: url,
+                            channel: ch,
+                            commentator: comm
+                        };
                         const r = await fetch('api.php?action=add_from_bank', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({id, streamUrl: url, channel: ch, commentator: comm})
+                            body: JSON.stringify(payload)
                         });
                         const d = await r.json();
                         if(d.success) {
