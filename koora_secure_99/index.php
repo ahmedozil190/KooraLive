@@ -869,7 +869,7 @@ if ($auth) {
         <?php elseif($sec == 'api_mgr'):
             $apiSettingsFile = __DIR__ . '/../data/api_settings.json';
             $apiSettings = file_exists($apiSettingsFile) ? json_decode(file_get_contents($apiSettingsFile), true) : [];
-            $lastSync = isset($apiSettings['last_cron_sync']) ? date('Y-m-d h:i:s A', $apiSettings['last_cron_sync']) : 'لم يتم المزامنة بعد';
+            $rawTs = $apiSettings['last_cron_sync'] ?? 0;
             $syncStatus = (isset($apiSettings['last_cron_sync']) && (time() - $apiSettings['last_cron_sync']) < 300) ? 'نشط الآن' : 'بانتظار المزامنة';
             $statusColor = ($syncStatus == 'نشط الآن') ? '#10b981' : '#f59e0b';
         ?>
@@ -883,7 +883,7 @@ if ($auth) {
                 </div>
                 <div class="stat-card total">
                     <i class="fa-solid fa-clock-rotate-left"></i>
-                    <h3 style="font-size:16px;"><?php echo $lastSync; ?></h3>
+                    <h3 id="st-last-sync" style="font-size:16px;" data-ts="<?php echo $rawTs; ?>">لم يتم المزامنة بعد</h3>
                     <p>آخر مزامنة ناجحة</p>
                 </div>
             </div>
@@ -914,6 +914,31 @@ if ($auth) {
                     </button>
                 </form>
             </div>
+
+            <script>
+            function formatLocalSyncTime() {
+                const el = document.getElementById('st-last-sync');
+                const ts = parseInt(el.getAttribute('data-ts'));
+                if (ts > 0) {
+                    const date = new Date(ts * 1000);
+                    // تنسيق التاريخ والوقت بصيغة YYYY-MM-DD HH:MM:SS AM/PM
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    
+                    let hours = date.getHours();
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const seconds = String(date.getSeconds()).padStart(2, '0');
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // الساعة 0 تصبح 12
+                    const h = String(hours).padStart(2, '0');
+
+                    el.textContent = `${y}-${m}-${d} ${h}:${minutes}:${seconds} ${ampm}`;
+                }
+            }
+            window.addEventListener('DOMContentLoaded', formatLocalSyncTime);
+            </script>
 
             <script>
             (async function loadApiStatus() {
