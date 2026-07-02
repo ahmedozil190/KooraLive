@@ -99,17 +99,16 @@ function formatMatchData($m) {
         if (empty($extRound)) $extRound = trim($parts[1]);
     }
 
-    // استخراج الـ IDs بدقة (AllSportsAPI v2 uses specific keys)
-    $hId = $m['home_team_key'] ?? ($m['event_home_team_key'] ?? '');
-    $aId = $m['away_team_key'] ?? ($m['event_away_team_key'] ?? '');
-    $lId = $m['league_key'] ?? ($m['event_league_key'] ?? '');
-    $countryId = $m['country_key'] ?? ($m['country_id'] ?? '');
+    $lName = $lNameRaw;
+    $hName = $m['event_home_team'];
+    $aName = $m['event_away_team'];
+    $hId   = $m['home_team_key'];
+    $aId   = $m['away_team_key'];
+    $lId   = $m['league_key'];
+    $countryId   = $m['country_key'] ?? '';
+    $countryName = $m['country_name'] ?? '';
 
-    $hName = $m['event_home_team'] ?? '';
-    $aName = $m['event_away_team'] ?? '';
-    $lName = $m['league_name'] ?? '';
-
-    // ترجمة الأسماء (الأولوية لترجمة الفريق بالـ ID، ثم ترجمة الدولة بالـ ID لو كان منتخباً)
+    // ترجمة الأسماء
     $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
     $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
     $translatedLeagueName = $translate('leagues', $lId, $lName);
