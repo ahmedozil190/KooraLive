@@ -116,6 +116,11 @@ function formatMatchData($m) {
     $translatedHomeName   = $translate('teams', $hId, ($hName === $countryName ? $tCountry : $hName));
     $translatedAwayName   = $translate('teams', $aId, ($aName === $countryName ? $tCountry : $aName));
     $translatedLeagueName = $translate('leagues', $lId, ($lName === $countryName ? $tCountry : $lName));
+
+    // لو اسم المنتخب هو نفسه اسم البلد بالإنجليزية ومازال لم يترجم، نترجمه
+    if($translatedHomeName === $hName && !empty($countryName)) $translatedHomeName = $tCountry;
+    if($translatedAwayName === $aName && !empty($countryName)) $translatedAwayName = $tCountry;
+
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
     // معالجة الحالة
@@ -193,9 +198,17 @@ if ($action === 'api_status') {
 if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
-    if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
+    // إجبار التحديث لو التاريخ تغير أو الملف قديم
+    $needsRefresh = ($settings['last_daily_date'] ?? '') !== $today;
+    
+    if (empty($current) || $needsRefresh || (isset($_GET['force']) && $_GET['force'] === '1')) {
+        if (empty($apiKey)) {
+            echo json_encode(['error' => 'يرجى وضع مفتاح AllSportsAPI في الإعدادات لتحديث البيانات']);
+            exit;
+        }
+        
         $from = date('Y-m-d', strtotime('-1 day'));
-        $to   = date('Y-m-d', strtotime('+1 day'));
+        $to   = date('Y-m-d', strtotime('+3 days')); // جلب مدى أوسع لضمان عدم الفراغ
         $res  = fetchFromAllSports('Fixtures', ['from' => $from, 'to' => $to]);
         
         if (isset($res['result']) && is_array($res['result'])) {
@@ -203,11 +216,12 @@ if ($action === 'get_bank') {
             foreach ($res['result'] as $m) $current[] = formatMatchData($m);
             if(!is_dir(dirname($bankFile))) mkdir(dirname($bankFile), 0777, true);
             file_put_contents($bankFile, json_encode($current, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         } else {
-            echo json_encode(['error' => 'AllSportsAPI: لم نجد أي مباريات لليوم']);
-            exit;
+            // لو فشل الجلب والبيانات قديمة جداً، نمسح القديم
+            if ($needsRefresh) $current = []; 
         }
     }
     
