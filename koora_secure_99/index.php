@@ -316,10 +316,10 @@ if ($auth) {
                 <h2 style="font-weight:800;">إدارة المباريات</h2>
             </div>
             <div class="stats-grid">
-                <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي</p></div>
-                <div class="stat-card live"><i class="fa-solid fa-tower-broadcast"></i><h3><?php echo $cur_live; ?></h3><p>جارية</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-clock"></i><h3><?php echo $cur_wait; ?></h3><p>قادمة</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-check-double"></i><h3><?php echo $cur_done; ?></h3><p>منتهية</p></div>
+                <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي المباريات</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-tower-broadcast"></i><h3><?php echo $cur_live; ?></h3><p>مباريات جارية</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-clock"></i><h3><?php echo $cur_wait; ?></h3><p>بانتظار البداية</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-check-double"></i><h3><?php echo $cur_done; ?></h3><p>مباريات منتهية</p></div>
             </div>
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
@@ -650,46 +650,32 @@ if ($auth) {
                 ?>;
                 
                 window.addEventListener('DOMContentLoaded', () => {
-                    if (apiBank.length > 0) {
-                        const activeTab = document.querySelector('.day-tab.active').dataset.day;
-                        renderBank(activeTab);
+                    if (apiBank && apiBank.length > 0) {
+                        renderBank('today');
+                    } else {
+                        loadBank(); 
                     }
-                    loadBank(); 
                 });
-
-                async function loadBank() {
-                    try {
-                        const r = await fetch('api.php?action=get_bank');
-                        const data = await r.json();
-                        if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                                <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
-                            </td></tr>`;
-                            return;
-                        }
-                        apiBank = data;
-                        const activeTab = document.querySelector('.day-tab.active').dataset.day;
-                        renderBank(activeTab);
-                    } catch(e) { 
-                        console.error(e); 
-                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
-                    }
-                }
 
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
-                    
-                    // فلترة بسيطة: حسب اليوم واستثناء المضاف مسبقاً
+                    if(!apiBank) return;
+
+                    // فلترة بسيطة جداً ومضمونة
                     let filtered = apiBank.filter(m => {
-                        // إخفاء المباراة إذا كانت موجودة بالفعل في الموقع
-                        if (addedMatchIds.includes(String(m.id)) || addedMatchIds.includes(parseInt(m.id))) return false;
-                        return m.day === day;
+                        // إخفاء المضاف مسبقاً
+                        let mId = String(m.id || m.event_key);
+                        if (addedMatchIds.includes(mId)) return false;
+                        
+                        return String(m.day) === String(day);
                     });
 
+                    // تعطيل فلترة المفضلات مؤقتاً لضمان الظهور
+                    /*
                     if (favLeaguesIds.length > 0) {
                         filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
                     }
+                    */
                     
                     if(filtered.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
