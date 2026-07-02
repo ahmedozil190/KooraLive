@@ -95,8 +95,7 @@ function formatMatch($m, $translate) {
     $statusAr = $statusMapAr[$statusRaw] ?? $statusRaw;
 
     $evDate = $m['event_date'];
-    // إضافة ' UTC' لإجبار السيرفر على حساب التوقيت العالمي بدقة
-    $ts = strtotime($evDate . ' ' . $m['event_time'] . ' UTC');
+    $ts = strtotime($evDate . ' ' . $m['event_time']);
     
     $today = date('Y-m-d');
     $yest  = date('Y-m-d', strtotime('-1 day'));
@@ -133,6 +132,11 @@ $res = fetchAPI('Fixtures', ['from' => $from, 'to' => $to]);
 $allMatches = [];
 
 if (isset($res['result']) && is_array($res['result'])) {
+    // كود فحص مؤقت للمباراة الأولى
+    if(count($res['result']) > 0) {
+        $first = $res['result'][0];
+        cronLog("DEBUG: API Time Sample -> " . $first['event_date'] . " " . $first['event_time']);
+    }
     foreach ($res['result'] as $m) {
         $allMatches[] = formatMatch($m, $translate);
     }
