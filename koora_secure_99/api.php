@@ -109,12 +109,11 @@ function formatMatchData($m) {
     $countryName = $m['country_name'] ?? '';
 
     // ترجمة الأسماء
-    // 1. نحاول ترجمة الفريق بالـ ID
-    // 2. إذا فشل، نحاول ترجمة اسم الفريق نفسه (hName) من قائمة الدول (للمنتخبات)
-    // 3. إذا فشل، نحاول ترجمة ID الدولة (countryId)
-    // الترجمة بالـ ID الصريح، وإذا فشل يبحث باسم الفريق في قائمة الدول (للمنتخبات)
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $hName, $hName));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $aName, $aName));
+    // 1. نحاول ترجمة الفريق بالـ ID في قسم الـ teams
+    // 2. إذا فشل، نحاول ترجمة الفريق بنفس الـ ID في قسم الـ countries (للمنتخبات)
+    // 3. إذا فشل، نحاول الترجمة بالاسم كاحتياط
+    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
+    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     $translatedLeagueName = $translate('leagues', $lId, $lName);
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
