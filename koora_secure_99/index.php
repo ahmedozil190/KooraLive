@@ -301,8 +301,8 @@ if ($auth) {
                              </td>
                              <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
                              <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
-                             <td>
-                                 <div style="display:flex; gap:8px;">
+                             <td style="padding:15px 25px; text-align:left;">
+                                 <div style="display:flex; gap:8px; justify-content:flex-end;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
                                      <a href="index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                  </div>
@@ -349,7 +349,16 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>المباراة</th>
+                                <th>البطولة</th>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th style="text-align:center;">البث</th>
+                                <th style="text-align:left;">التحكم</th>
+                            </tr>
+                        </thead>
                         <tbody id="cur-tbody">
                         <?php 
                         // نفس منطق التصفية الذكي كما في التطبيق
@@ -411,12 +420,12 @@ if ($auth) {
                              </td>
                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                             <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
-                            <td>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                    <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
-                                </div>
-                            </td>
+                             <td style="padding:15px 25px; text-align:left;">
+                                 <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
+                                     <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                 </div>
+                             </td>
                         </tr>
                         <?php endforeach; endforeach; ?>
                         </tbody>
