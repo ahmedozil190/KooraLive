@@ -593,9 +593,7 @@ if ($auth) {
                     <table>
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
-                            <?php if(empty($bank)): ?>
-                                <tr><td colspan="6" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
-                            <?php endif; ?>
+                            <tr><td colspan="6" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -650,16 +648,7 @@ if ($auth) {
 
             <script>
                 const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
-                let apiBank = <?php echo json_encode($bank); ?>;
-                
-                window.addEventListener('DOMContentLoaded', () => {
-                    if (apiBank.length > 0) {
-                        const activeTab = document.querySelector('.day-tab.active').dataset.day;
-                        renderBank(activeTab);
-                    }
-                    loadBank(); 
-                });
-
+                let apiBank = [];
                 async function loadBank() {
                     try {
                         const r = await fetch('api.php?action=get_bank');
