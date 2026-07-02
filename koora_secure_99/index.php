@@ -590,15 +590,15 @@ if ($auth) {
                 </div>
                 
                 <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse;">
+                    <table class="table">
                         <thead>
-                            <tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub); font-size:13px;">
-                                <th style="padding:15px 25px;">المباراة</th>
-                                <th style="padding:15px;">البطولة</th>
-                                <th style="padding:15px;">الدور</th>
-                                <th style="padding:15px;">الوقت</th>
-                                <th style="padding:15px;">الحالة</th>
-                                <th style="padding:15px 25px; text-align:left;">التحكم</th>
+                            <tr>
+                                <th>المباراة</th>
+                                <th>البطولة</th>
+                                <th>الدور</th>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th style="text-align:left;">التحكم</th>
                             </tr>
                         </thead>
                         <tbody id="api-bank-body">
@@ -704,7 +704,6 @@ if ($auth) {
 
                     let html = '';
                     for (const league in grouped) {
-                        // تصحيح جلب الـ ID من الحقل الجديد leagueId
                         const leagueId = grouped[league][0].leagueId || '-';
                         html += `
                         <tr class="league-group-header">
@@ -722,7 +721,6 @@ if ($auth) {
                             </td>
                         </tr>`;
 
-                        // إضافة المباريات التابعة لهذا الدوري
                         html += grouped[league].map(m => {
                             let stClass = 'status-up';
                             if(['1H', 'HT', '2H', 'ET', 'P', 'LIVE'].includes(m.status)) stClass = 'status-live';
@@ -732,24 +730,24 @@ if ($auth) {
                             let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
 
                             return `
-                            <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                            <tr style="transition: 0.2s;">
                                 <td style="padding:18px 25px;">
                                     <div style="display:flex; align-items:center; gap:12px;">
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
-                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
+                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.homeTeam}</span>
+                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                         </div>
                                         <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
-                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
-                                            <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
+                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
+                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.awayTeam}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td style="padding:15px; color:var(--text-sub); font-size:13px; font-weight:600;">${m.league}</td>
-                                <td style="padding:15px; color:var(--text-dim); font-size:12px; font-weight:700;">${roundTxt}</td>
-                                <td style="padding:15px; font-weight:800; color:#6366f1; font-size:14px;">${formatLocalTime(m.timestamp)}</td>
-                                <td style="padding:15px;">
+                                <td>${m.league}</td>
+                                <td style="color:var(--text-sub); font-size:13px; font-weight:600;">${roundTxt}</td>
+                                <td style="font-weight:800; color:var(--color-primary);">${formatLocalTime(m.timestamp)}</td>
+                                <td>
                                     <span class="status-badge ${stClass}">${stTxt}</span>
                                 </td>
                                 <td style="padding:15px 25px; text-align:left;">
