@@ -192,7 +192,7 @@ if ($auth) {
         <div style="padding-top:20px;">
             <a href="index.php?section=main"    class="nav-item <?php echo $sec=='main'   ?'active':''; ?>"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</a>
             <a href="index.php?section=current"  class="nav-item <?php echo $sec=='current'?'active':''; ?>"><i class="fa-solid fa-list-check"></i> المباريات الحالية</a>
-            <a href="index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة API</a>
+            <a href="index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة</a>
             <a href="index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
             <a href="index.php?section=fav_leagues" class="nav-item <?php echo $sec=='fav_leagues'?'active':''; ?>"><i class="fa-solid fa-star"></i> الدوريات المفضلة</a>
             <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
@@ -578,8 +578,8 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> 
-                        <h3 style="margin:0;">المباريات</h3>
+                        <i class="fa-solid fa-cloud-bolt"></i> 
+                        <h3 style="margin:0;">إضافة مباراة</h3>
                     </div>
                     <!-- تبويبات الأيام بتصميم "نظرة عامة" -->
                     <div class="day-tabs" style="margin-bottom:0;">
@@ -593,7 +593,7 @@ if ($auth) {
                     <table>
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
-                            <tr><td colspan="6" style="text-align:center; padding:50px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -678,7 +678,7 @@ if ($auth) {
                     }
                     
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:50px 0;">
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
                             <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
                             <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
                         </td></tr>`;
