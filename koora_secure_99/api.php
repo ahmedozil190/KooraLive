@@ -84,37 +84,26 @@ function formatMatchData($m) {
         $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
     }
 
-    // دالة مساعدة للترجمة
+    // دالة ترجمة تعتمد على الـ ID (إجبار النوع كنص لضمان المطابقة)
     $translate = function($type, $key, $default) use ($arMap) {
-        return $arMap[$type][$key] ?? $default;
+        $keyStr = (string)$key;
+        return $arMap[$type][$keyStr] ?? $default;
     };
 
-    $lNameRaw = $m['league_name'];
-    $extRound = $m['event_league_round'] ?? '';
-    
-    // محرك استخراج الجولة من الاسم (مثال: World Cup - 1/16-finals)
-    if (strpos($lNameRaw, ' - ') !== false) {
-        $parts = explode(' - ', $lNameRaw, 2);
-        $lNameRaw = trim($parts[0]);
-        if (empty($extRound)) $extRound = trim($parts[1]);
-    }
+    // استخراج الـ IDs والأسماء من AllSportsAPI
+    $hId   = $m['home_team_key'] ?? '';
+    $aId   = $m['away_team_key'] ?? '';
+    $lId   = $m['league_key'] ?? '';
+    $countryId = $m['country_key'] ?? ($m['country_id'] ?? '');
 
-    $lName = $lNameRaw;
-    $hName = $m['event_home_team'];
-    $aName = $m['event_away_team'];
-    $hId   = $m['home_team_key'];
-    $aId   = $m['away_team_key'];
-    $lId   = $m['league_key'];
-    $countryId   = $m['country_key'] ?? '';
-    $countryName = $m['country_name'] ?? '';
+    $hName = $m['event_home_team'] ?? '';
+    $aName = $m['event_away_team'] ?? '';
+    $lName = $m['league_name'] ?? '';
 
-    // ترجمة الأسماء
-    // 1. نحاول ترجمة الفريق بالـ ID
-    // 2. إذا فشل، نحاول ترجمة اسم الفريق نفسه (hName) من قائمة الدول (للمنتخبات)
-    // 3. إذا فشل، نحاول ترجمة ID الدولة (countryId)
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $hName, $translate('countries', $countryId, $hName)));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $aName, $translate('countries', $countryId, $aName)));
-    $translatedLeagueName = $translate('leagues', $lId, $translate('leagues', $lName, $lName));
+    // الترجمة بالـ ID الصريح
+    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
+    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
+    $translatedLeagueName = $translate('leagues', $lId, $lName);
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
     // معالجة الحالة
