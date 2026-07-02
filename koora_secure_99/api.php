@@ -84,9 +84,10 @@ function formatMatchData($m) {
         $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
     }
 
-    // دالة مساعدة للترجمة
+    // دالة مساعدة للترجمة (إصلاح: تحويل المفتاح لنص لضمان المطابقة)
     $translate = function($type, $key, $default) use ($arMap) {
-        return $arMap[$type][$key] ?? $default;
+        $keyStr = (string)$key;
+        return $arMap[$type][$keyStr] ?? $default;
     };
 
     $lNameRaw = $m['league_name'];
@@ -109,8 +110,19 @@ function formatMatchData($m) {
     $countryName = $m['country_name'] ?? '';
 
     // ترجمة الأسماء
-    $translatedHomeName   = $translate('teams', $hId, $translate('countries', $countryId, $hName));
-    $translatedAwayName   = $translate('teams', $aId, $translate('countries', $countryId, $aName));
+    // نقوم بترجمة الفريق أولاً، وإذا لم يترجم وكان اسم الفريق هو نفس اسم الدولة (منتخب)، نستخدم ترجمة الدولة
+    $tHome = $translate('teams', $hId, $hName);
+    $tAway = $translate('teams', $aId, $aName);
+    
+    if ($tHome === $hName && $hName === $countryName) {
+        $tHome = $translate('countries', $countryId, $hName);
+    }
+    if ($tAway === $aName && $aName === $countryName) {
+        $tAway = $translate('countries', $countryId, $aName);
+    }
+
+    $translatedHomeName   = $tHome;
+    $translatedAwayName   = $tAway;
     $translatedLeagueName = $translate('leagues', $lId, $lName);
     $translatedRound      = $translate('rounds', $extRound, $extRound);
 
@@ -189,7 +201,10 @@ if ($action === 'api_status') {
 if ($action === 'get_bank') {
     $current = file_exists($bankFile) ? json_decode(file_get_contents($bankFile), true) : [];
     
-    if (empty($current) || (isset($_GET['force']) && $_GET['force'] === '1')) {
+    // إجبار التحديث لو التاريخ تغير
+    $needsRefresh = ($settings['last_daily_date'] ?? '') !== $today;
+    
+    if (empty($current) || $needsRefresh || (isset($_GET['force']) && $_GET['force'] === '1')) {
         $from = date('Y-m-d', strtotime('-1 day'));
         $to   = date('Y-m-d', strtotime('+1 day'));
         $res  = fetchFromAllSports('Fixtures', ['from' => $from, 'to' => $to]);
@@ -202,8 +217,11 @@ if ($action === 'get_bank') {
             $settings['last_daily_date'] = $today;
             file_put_contents($settingsFile, json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         } else {
-            echo json_encode(['error' => 'AllSportsAPI: لم نجد أي مباريات لليوم']);
-            exit;
+            // لو فشل الجلب والبيانات قديمة، لا نخرج برسالة خطأ بل نترك ما في الملف لو وجد
+            if (!$needsRefresh) {
+                echo json_encode(['error' => 'AllSportsAPI: لم نجد أي مباريات حالياً']);
+                exit;
+            }
         }
     }
     
