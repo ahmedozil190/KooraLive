@@ -84,16 +84,9 @@ function formatMatchData($m) {
         $arMap = file_exists($mapFile) ? json_decode(file_get_contents($mapFile), true) : [];
     }
 
-    // دالة ترجمة ذكية: تبحث بالـ ID أولاً، ثم بالاسم الإنجليزي كاحتياط
+    // دالة مساعدة للترجمة
     $translate = function($type, $key, $default) use ($arMap) {
-        $strKey = (string)$key;
-        $strDef = (string)$default;
-        // 1. البحث بالرقم
-        if (isset($arMap[$type][$strKey])) return $arMap[$type][$strKey];
-        // 2. البحث بالاسم (لو فشل الرقم)
-        if (isset($arMap[$type][$strDef])) return $arMap[$type][$strDef];
-        
-        return $default;
+        return $arMap[$type][$key] ?? $default;
     };
 
     $lNameRaw = $m['league_name'];
