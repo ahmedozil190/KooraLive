@@ -231,8 +231,16 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="table">
-                        <thead><tr style="text-align:right; border-bottom:1px solid var(--border-color); color:var(--text-sub); font-size:13px;">
-                            <th style="padding:15px 25px;">المباراة</th><th style="padding:15px;">البطولة</th><th style="padding:15px;">الوقت</th><th style="padding:15px;">الحالة</th><th style="padding:15px;">البث</th><th style="padding:15px; text-align:left;">التحكم</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>المباراة</th>
+                                <th>البطولة</th>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>البث</th>
+                                <th style="text-align:left;">التحكم</th>
+                            </tr>
+                        </thead>
                         <tbody id="ov-tbody">
                         <?php 
                         // منطق التصفية الذكي والترتيب (مثل التطبيق)
@@ -273,7 +281,7 @@ if ($auth) {
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                              $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?> style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:18px 25px;">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
@@ -287,12 +295,12 @@ if ($auth) {
                                     </div>
                                 </div>
                              </td>
-                             <td style="color:var(--text-sub); font-size:13px;"><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                             <td style="font-weight:800; color:#6366f1;">
+                             <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
+                             <td style="font-weight:800; color:var(--color-primary);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
                              <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
-                             <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
+                             <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
@@ -383,7 +391,7 @@ if ($auth) {
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                             $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                        <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?> style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
+                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:18px 25px;">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
@@ -397,12 +405,12 @@ if ($auth) {
                                     </div>
                                 </div>
                              </td>
-                             <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                             <td style="font-weight:800; color:#6366f1;">
+                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
+                             <td style="font-weight:800; color:var(--color-primary);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
-                            <td style="font-size:16px;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
+                            <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
