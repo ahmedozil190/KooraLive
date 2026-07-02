@@ -52,80 +52,9 @@ function callApi($endpoint, $apiKey) {
     return ($httpCode === 200) ? json_decode($response, true) : ['error' => 'HTTP Error'];
 }
 
-// ========== محرك التحديث التلقائي (Live Update Only لضمان السرعة) ==========
-if ($autoFetch && !empty($apiKey)) {
-    $liveCache = readJson($liveCacheF);
-    $cacheSeconds = (int)($settings['cache_seconds'] ?? 900);
-    
-    // التحديث فقط إذا مر الوقت المحدد (للحفاظ على سرعة التطبيق)
-    if ((time() - ($liveCache['time'] ?? 0)) >= $cacheSeconds) {
-        $todayStr = date('Y-m-d');
-        $apiResult = callApi("fixtures?date=$todayStr&timezone=Asia/Riyadh", $apiKey);
-        $res = $apiResult['response'] ?? [];
-
-        if (!empty($res)) {
-            $apiUpdates = [];
-            foreach ($res as $f) $apiUpdates[(string)$f['fixture']['id']] = $f;
-
-            $todayStr     = date('Y-m-d');
-            $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
-            $tomorrowStr  = date('Y-m-d', strtotime('+1 day'));
-
-            // 1. تحديث مباريات الموقع
-            $matches = readJson($matchesFile);
-            
-            // تنظيف القديم (يومين)
-            $twoDaysAgo = strtotime('-2 days');
-            $matches = array_values(array_filter($matches, function($m) use ($twoDaysAgo) {
-                if (empty($m['timestamp'])) return true;
-                return (int)$m['timestamp'] > $twoDaysAgo;
-            }));
-
-            foreach ($matches as &$m) {
-                // تحديث حقل day
-                if (!empty($m['timestamp'])) {
-                    $matchDate   = date('Y-m-d', $m['timestamp']);
-                    $matchStatus = $m['status'] ?? 'upcoming';
-                    if ($matchDate === $tomorrowStr) $m['day'] = 'tomorrow';
-                    elseif ($matchDate === $todayStr) $m['day'] = 'today';
-                    elseif ($matchDate === $yesterdayStr) {
-                        $m['day'] = ($matchStatus === 'finished') ? 'yesterday' : 'today';
-                    }
-                }
-
-                // تحديث البيانات من النتائج المجلوبة
-                if (isset($apiUpdates[$m['id']])) {
-                    $f = $apiUpdates[$m['id']];
-                    $m['homeScore'] = (string)($f['goals']['home'] ?? '0');
-                    $m['awayScore'] = (string)($f['goals']['away'] ?? '0');
-                    $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
-                    if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $m['status'] = 'finished';
-                    elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $m['status'] = 'live';
-                    else $m['status'] = 'upcoming';
-                }
-            }
-            writeJson($matchesFile, $matches);
-
-            // 2. تحديث البنك أيضاً ليكون جاهزاً في أي لحظة
-            $bank = readJson($fixturesBank);
-            $bankUpdated = false;
-            foreach ($bank as &$bm) {
-                if (isset($apiUpdates[$bm['id']])) {
-                    $f = $apiUpdates[$bm['id']];
-                    $bm['homeScore'] = (string)($f['goals']['home'] ?? '0');
-                    $bm['awayScore'] = (string)($f['goals']['away'] ?? '0');
-                    $rawStatus = $f['fixture']['status']['short'] ?? 'NS';
-                    if (in_array($rawStatus, ['FT', 'AET', 'PEN'])) $bm['status'] = 'finished';
-                    elseif (in_array($rawStatus, ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'])) $bm['status'] = 'live';
-                    else $bm['status'] = 'upcoming';
-                    $bankUpdated = true;
-                }
-            }
-            if ($bankUpdated) writeJson($fixturesBank, $bank);
-        }
-        writeJson($liveCacheF, ['time' => time()]);
-    }
-}
+// ========== محرك التحديث التلقائي (تم النقل لنظام الكرون لزيادة السرعة والدقة) ==========
+// تم تعطيل التحديث المباشر هنا لأن الكرون يقوم بالمهمة في الخلفية كل دقيقة
+// لضمان أفضل أداء وحفاظاً على عدد طلبات الـ API
 
 // ========== عرض البيانات للموبايل ==========
 $action = $_GET['action'] ?? 'get_matches';

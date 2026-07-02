@@ -643,6 +643,11 @@ if ($auth) {
             <script>
                 const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
+                // قائمة المباريات المضافة بالفعل للموقع
+                let addedMatchIds = <?php 
+                    $addedIds = array_column($matches, 'event_key');
+                    echo json_encode($addedIds); 
+                ?>;
                 
                 window.addEventListener('DOMContentLoaded', () => {
                     if (apiBank.length > 0) {
@@ -685,8 +690,11 @@ if ($auth) {
                     const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
                     const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 
-                    // فلترة بحسب اليوم (بناءً على التوقيت المحلي للمباريات)
+                    // فلترة بحسب اليوم (بناءً على التوقيت المحلي للمباريات) واستثناء المضاف مسبقاً
                     let filtered = apiBank.filter(m => {
+                        // إخفاء المباراة إذا كانت موجودة بالفعل في الموقع
+                        if (addedMatchIds.includes(String(m.id)) || addedMatchIds.includes(parseInt(m.id))) return false;
+
                         const mDate = new Date(m.timestamp * 1000);
                         const mStr = `${mDate.getFullYear()}-${String(mDate.getMonth() + 1).padStart(2, '0')}-${String(mDate.getDate()).padStart(2, '0')}`;
                         
@@ -824,8 +832,10 @@ if ($auth) {
                         const d = await r.json();
                         if(d.success) {
                             showToast('تم بنجاح! المباراة الآن حية في الموقع ✅', 'success');
+                            // إضافة الـ ID للقائمة لإخفائها فوراً
+                            addedMatchIds.push(String(id));
                             closeApiModal();
-                            loadBank();
+                            renderBank(document.querySelector('.day-tab.active').dataset.day);
                         }
                     } catch(e) { showToast('خطأ في الاتصال', 'error'); }
                     btn.disabled = false;

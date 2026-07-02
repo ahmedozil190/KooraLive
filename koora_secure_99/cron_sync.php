@@ -154,6 +154,7 @@ if (file_exists($matchesFile)) {
                 $liveM['score']      = $apiM['score'];
                 $liveM['status']     = $apiM['status'];
                 $liveM['status_raw'] = $apiM['status_raw'];
+                $liveM['status_ar']  = $apiM['status_ar']; // تحديث الترجمة العربية
                 $updatedCount++;
                 break;
             }
