@@ -578,7 +578,7 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> 
+                        <i class="fa-solid fa-cloud-arrow-down"></i> 
                         <h3 style="margin:0;">المباريات</h3>
                     </div>
                     <!-- تبويبات الأيام بتصميم "نظرة عامة" -->
@@ -591,7 +591,7 @@ if ($auth) {
                 
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th style="text-align:left;">التحكم</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
                             <tr><td colspan="6" style="text-align:center; padding:50px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
@@ -741,7 +741,7 @@ if ($auth) {
                                 <td>
                                     <span class="status-badge ${stClass}">${stTxt}</span>
                                 </td>
-                                <td style="padding:15px 25px; text-align:left;">
+                                <td>
                                     <button class="api-add-btn" onclick="openApiModal('${m.id}')">
                                         <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
                                     </button>
