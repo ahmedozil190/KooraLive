@@ -681,7 +681,32 @@ if ($auth) {
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
                     // فلترة بحسب اليوم وأيضاً بحسب الدوريات المفضلة (لو تم تفعيل الخيار)
-                              html += `
+                    let filtered = apiBank.filter(m => m.day === day);
+                    if (favLeaguesIds.length > 0) {
+                        filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
+                    }
+                    
+                    if(filtered.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
+                            <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
+                            <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
+                        </td></tr>`;
+                        return;
+                    }
+
+                    // تجميع المباريات حسب الدوري
+                    const grouped = filtered.reduce((acc, match) => {
+                        const league = match.league || 'بطولات أخرى';
+                        if (!acc[league]) acc[league] = [];
+                        acc[league].push(match);
+                        return acc;
+                    }, {});
+
+                    let html = '';
+                    for (const league in grouped) {
+                        // تصحيح جلب الـ ID من الحقل الجديد leagueId
+                        const leagueId = grouped[league][0].leagueId || '-';
+                        html += `
                         <tr class="league-group-header">
                             <td colspan="6" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
                                 <div style="display:flex; align-items:center; gap:12px;">
@@ -707,32 +732,14 @@ if ($auth) {
                             let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
 
                             return `
-                            <tr style="transition: 0.2s;">
+                            <tr style="border-bottom:1px solid var(--border-color); transition: 0.2s;">
                                 <td style="padding:18px 25px;">
                                     <div style="display:flex; align-items:center; gap:12px;">
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.homeTeam}</span>
-                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
+                                            <span style="font-weight:700; font-size:14px;">${m.homeTeam}</span>
+                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain;">
                                         </div>
                                         <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
-                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
-                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.awayTeam}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>${m.league}</td>
-                                <td style="color:var(--text-sub); font-size:13px; font-weight:600;">${roundTxt}</td>
-                                <td style="font-weight:800; color:var(--color-primary);">${formatLocalTime(m.timestamp)}</td>
-                                <td>
-                                    <span class="status-badge ${stClass}">${stTxt}</span>
-                                </td>
-                                <td style="padding:15px 25px; text-align:left;">
-                                    <button class="api-add-btn" onclick="openApiModal('${m.id}')">
-                                        <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
-                                    </button>
-                                </td>
-                            </tr>`;span>
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                             <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain;">
                                             <span style="font-weight:700; font-size:14px;">${m.awayTeam}</span>
