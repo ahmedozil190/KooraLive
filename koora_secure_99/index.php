@@ -591,7 +591,7 @@ if ($auth) {
                 
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>احنجد</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
                             <tr><td colspan="6" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
@@ -654,8 +654,8 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank');
                         const data = await r.json();
                         if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
-                                <div style="font-size:55px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
+                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
                             return;
@@ -665,7 +665,7 @@ if ($auth) {
                         renderBank(activeTab);
                     } catch(e) { 
                         console.error(e); 
-                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:50px; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
+                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
                     }
                 }
 
