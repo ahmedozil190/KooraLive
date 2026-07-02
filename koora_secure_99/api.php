@@ -39,6 +39,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
         "league"       => $data['league'] ?? '',
         "leagueId"     => $data['leagueId'] ?? '',
         "status"       => $data['status'] ?? 'upcoming',
+        "status_raw"   => $data['status_raw'] ?? '',
+        "status_ar"    => $data['status_ar'] ?? '',
         "score"        => $data['score'] ?? 'vs',
         "round"        => $data['round'] ?? '',
         "streamUrl"    => $data['streamUrl'] ?? '#',
