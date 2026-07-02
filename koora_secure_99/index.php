@@ -260,9 +260,9 @@ if ($auth) {
                         </tr>
                         <?php foreach($dayM as $m): 
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
-                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                            $badgeClass = $statusType;
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                             $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                             $stTxt = !empty($m['status_text']) ? $m['status_text'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:18px 25px;">
@@ -282,7 +282,17 @@ if ($auth) {
                              <td style="font-weight:800; color:var(--color-primary);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
+                             <td>
+                                <?php 
+                                    $stClass = 'upcoming'; $stTxt = 'لم تبدأ بعد';
+                                    if($statusType === 'live'){ $stClass = 'live'; $stTxt = 'مباشر الآن'; }
+                                    elseif($statusType === 'finished'){ $stClass = 'finished'; $stTxt = 'انتهت المباراة'; }
+                                ?>
+                                <span class="status-badge <?php echo $stClass; ?>">
+                                    <?php if($stClass === 'live'): ?><i class="fa-solid fa-circle pulse"></i><?php endif; ?>
+                                    <?php echo $stTxt; ?>
+                                </span>
+                             </td>
                              <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -370,9 +380,9 @@ if ($auth) {
                         </tr>
                         <?php foreach($dayM as $m):
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
-                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                            $badgeClass = $statusType;
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                            $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                            $badgeText = !empty($m['status_text']) ? $m['status_text'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
                          <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
                              <td style="padding:18px 25px;">
@@ -392,7 +402,17 @@ if ($auth) {
                              <td style="font-weight:800; color:var(--color-primary);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                            <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
+                             <td>
+                                <?php 
+                                    $stClass = 'upcoming'; $stTxt = 'لم تبدأ بعد';
+                                    if($statusType === 'live'){ $stClass = 'live'; $stTxt = 'مباشر الآن'; }
+                                    elseif($statusType === 'finished'){ $stClass = 'finished'; $stTxt = 'انتهت المباراة'; }
+                                ?>
+                                <span class="status-badge <?php echo $stClass; ?>">
+                                    <?php if($stClass === 'live'): ?><i class="fa-solid fa-circle pulse"></i><?php endif; ?>
+                                    <?php echo $stTxt; ?>
+                                </span>
+                             </td>
                             <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                             <td>
                                 <div style="display:flex; gap:8px;">
@@ -434,6 +454,13 @@ if ($auth) {
             </div>
 
             <style>
+                /* الحالات الجديدة الموحدة */
+                .status-badge { padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; }
+                .status-badge.live { background: rgba(16,185,129,0.12); color: #10B981; border: 1px solid rgba(16,185,129,0.2); }
+                .status-badge.finished { background: rgba(156,163,175,0.12); color: #9CA3AF; border: 1px solid rgba(156,163,175,0.2); }
+                .status-badge.upcoming { background: rgba(99,102,241,0.12); color: #6366F1; border: 1px solid rgba(99,102,241,0.2); }
+                .status-badge i { font-size: 8px; }
+
                 .custom-select-trigger { background:var(--bg-card); border:1px solid var(--border-color); padding:12px 15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:0.3s; font-weight:700; color:var(--text-main); }
                 .custom-select-trigger:hover { border-color:#6366f1; background:rgba(99,102,241,0.05); }
                 
@@ -747,13 +774,6 @@ if ($auth) {
                         </tr>`;
 
                         html += grouped[league].map(m => {
-                            let stClass = 'status-up';
-                            if(m.status === 'live') stClass = 'status-live';
-                            else if(m.status === 'finished') stClass = 'status-final';
-                            
-                            let stTxt = m.status_ar || 'لم تبدأ';
-                            let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
-
                             return `
                             <tr style="transition: 0.2s;">
                                 <td style="padding:18px 25px;">
@@ -770,10 +790,12 @@ if ($auth) {
                                     </div>
                                 </td>
                                 <td>${m.league}</td>
-                                <td style="color:var(--text-sub); font-size:13px; font-weight:600;">${roundTxt}</td>
+                                <td style="color:var(--text-sub); font-size:13px; font-weight:600;">${m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--'}</td>
                                 <td style="font-weight:800; color:var(--color-primary);">${formatLocalTime(m.timestamp)}</td>
                                 <td>
-                                    <span class="status-badge ${stClass}">${stTxt}</span>
+                                    <span class="status-badge ${m.status === 'live' ? 'live' : (m.status === 'finished' ? 'finished' : 'upcoming')}">
+                                        ${m.status === 'live' ? '<i class="fa-solid fa-circle pulse"></i> مباشر الآن' : (m.status === 'finished' ? 'انتهت المباراة' : 'لم تبدأ بعد')}
+                                    </span>
                                 </td>
                                 <td>
                                     <button class="api-add-btn" onclick="openApiModal('${m.id}')">
