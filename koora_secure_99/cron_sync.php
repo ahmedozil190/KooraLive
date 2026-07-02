@@ -95,7 +95,8 @@ function formatMatch($m, $translate) {
     $statusAr = $statusMapAr[$statusRaw] ?? $statusRaw;
 
     $evDate = $m['event_date'];
-    $ts = strtotime($evDate . ' ' . $m['event_time']);
+    // إضافة ' UTC' لإجبار السيرفر على حساب التوقيت العالمي بدقة
+    $ts = strtotime($evDate . ' ' . $m['event_time'] . ' UTC');
     
     $today = date('Y-m-d');
     $yest  = date('Y-m-d', strtotime('-1 day'));
