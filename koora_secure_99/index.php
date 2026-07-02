@@ -674,8 +674,28 @@ if ($auth) {
 
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
-                    // فلترة بحسب اليوم وأيضاً بحسب الدوريات المفضلة (لو تم تفعيل الخيار)
-                    let filtered = apiBank.filter(m => m.day === day);
+                    
+                    // تحديد التواريخ المحلية للمقارنة
+                    const now = new Date();
+                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    
+                    const yesterday = new Date(); yesterday.setDate(now.getDate() - 1);
+                    const yestStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+                    
+                    const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
+                    const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+                    // فلترة بحسب اليوم (بناءً على التوقيت المحلي للمباريات)
+                    let filtered = apiBank.filter(m => {
+                        const mDate = new Date(m.timestamp * 1000);
+                        const mStr = `${mDate.getFullYear()}-${String(mDate.getMonth() + 1).padStart(2, '0')}-${String(mDate.getDate()).padStart(2, '0')}`;
+                        
+                        if (day === 'today') return mStr === todayStr;
+                        if (day === 'yesterday') return mStr === yestStr;
+                        if (day === 'tomorrow') return mStr === tomStr;
+                        return false;
+                    });
+
                     if (favLeaguesIds.length > 0) {
                         filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
                     }
