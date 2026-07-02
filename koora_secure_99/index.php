@@ -593,7 +593,7 @@ if ($auth) {
                     <table>
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th style="text-align:left;">التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
-                            <tr><td colspan="6" style="text-align:center; padding:100px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:50px 0; color:var(--text-dim);">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -678,7 +678,7 @@ if ($auth) {
                     }
                     
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:100px 0;">
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:50px 0;">
                             <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
                             <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
                         </td></tr>`;
