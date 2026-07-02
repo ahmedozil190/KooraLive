@@ -47,6 +47,7 @@ function fetchAPI($met, $params = []) {
     global $apiKey;
     $params['met'] = $met;
     $params['APIkey'] = $apiKey;
+    $params['timezone'] = 'UTC'; // إجبار الـ API على إرسال توقيت جرينتش الموحد
     $url = "https://apiv2.allsportsapi.com/football/?" . http_build_query($params);
 
     $ch = curl_init($url);
@@ -95,7 +96,7 @@ function formatMatch($m, $translate) {
     $statusAr = $statusMapAr[$statusRaw] ?? $statusRaw;
 
     $evDate = $m['event_date'];
-    $ts = strtotime($evDate . ' ' . $m['event_time']);
+    $ts = strtotime($evDate . ' ' . $m['event_time'] . ' UTC');
     
     $today = date('Y-m-d');
     $yest  = date('Y-m-d', strtotime('-1 day'));
@@ -132,11 +133,6 @@ $res = fetchAPI('Fixtures', ['from' => $from, 'to' => $to]);
 $allMatches = [];
 
 if (isset($res['result']) && is_array($res['result'])) {
-    // كود فحص مؤقت للمباراة الأولى
-    if(count($res['result']) > 0) {
-        $first = $res['result'][0];
-        cronLog("DEBUG: API Time Sample -> " . $first['event_date'] . " " . $first['event_time']);
-    }
     foreach ($res['result'] as $m) {
         $allMatches[] = formatMatch($m, $translate);
     }
