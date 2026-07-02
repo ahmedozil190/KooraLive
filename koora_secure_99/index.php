@@ -683,12 +683,28 @@ if ($auth) {
 
                 function renderBank(day) {
                     const tbody = document.getElementById('api-bank-body');
-                    
-                    // فلترة بسيطة: حسب اليوم واستثناء المضاف مسبقاً
+                    if(!apiBank) return;
+
+                    const toYMD = (d) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+                    const now = new Date();
+                    const todayStr = toYMD(now);
+                    const yesterday = new Date(); yesterday.setDate(now.getDate() - 1);
+                    const yestStr = toYMD(yesterday);
+                    const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
+                    const tomStr = toYMD(tomorrow);
+
+                    // فلترة ذكية بناءً على توقيت جهازك
                     let filtered = apiBank.filter(m => {
-                        // إخفاء المباراة إذا كانت موجودة بالفعل في الموقع
-                        if (addedMatchIds.includes(String(m.id)) || addedMatchIds.includes(parseInt(m.id))) return false;
-                        return m.day === day;
+                        let mId = String(m.id || m.event_key);
+                        if (addedMatchIds.includes(mId)) return false;
+                        
+                        const mDate = new Date(m.timestamp * 1000);
+                        const mStr = toYMD(mDate);
+
+                        if (day === 'today') return mStr === todayStr;
+                        if (day === 'yesterday') return mStr === yestStr;
+                        if (day === 'tomorrow') return mStr === tomStr;
+                        return false;
                     });
 
                     if (favLeaguesIds.length > 0) {
