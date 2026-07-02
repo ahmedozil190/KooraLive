@@ -16,8 +16,17 @@ $arMapFile    = __DIR__ . '/../ar_map.json';
 // تأكد من وجود المجلد للعمل بشكل مستقل
 if (!is_dir(dirname($settingsFile))) mkdir(dirname($settingsFile), 0777, true);
 
+// التحقق مما إذا كان الملف يتم تشغيله مباشرة أم تم تضمينه عبر include
+$isDirect = (basename($_SERVER['PHP_SELF']) == 'cron_sync.php');
+
+function cronLog($msg) {
+    global $isDirect;
+    if ($isDirect) echo $msg . "\n";
+}
+
 if (!file_exists($settingsFile)) {
-    die(json_encode(['error' => 'Settings file not found']));
+    if ($isDirect) die(json_encode(['error' => 'Settings file not found']));
+    return;
 }
 
 $settings = json_decode(file_get_contents($settingsFile), true);
@@ -25,7 +34,8 @@ $apiKey   = $settings['api_key'] ?? '';
 $arMap    = file_exists($arMapFile) ? json_decode(file_get_contents($arMapFile), true) : [];
 
 if (empty($apiKey)) {
-    die(json_encode(['error' => 'API Key is missing']));
+    if ($isDirect) die(json_encode(['error' => 'API Key is missing']));
+    return;
 }
 
 // تحديث وقت المزامنة
@@ -105,7 +115,7 @@ function formatMatch($m, $translate) {
 }
 
 // 5. التنفيذ: جلب بيانات الـ 3 أيام
-echo "Syncing matches from API...\n";
+cronLog("Syncing matches from API...");
 $from = date('Y-m-d', strtotime('-1 day'));
 $to   = date('Y-m-d', strtotime('+1 day'));
 
@@ -120,7 +130,7 @@ if (isset($res['result']) && is_array($res['result'])) {
 
 // 6. تحديث بنك المباريات (api_fixtures.json)
 file_put_contents($bankFile, json_encode($allMatches, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-echo "Bank updated: " . count($allMatches) . " matches.\n";
+cronLog("Bank updated: " . count($allMatches) . " matches.");
 
 // 7. تحديث المباريات المضافة للموقع (matches.json)
 if (file_exists($matchesFile)) {
@@ -141,7 +151,7 @@ if (file_exists($matchesFile)) {
     }
     
     file_put_contents($matchesFile, json_encode($currentLive, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-    echo "Site matches updated: $updatedCount matches.\n";
+    cronLog("Site matches updated: $updatedCount matches.");
 }
 
-echo "Sync completed successfully at " . date('Y-m-d H:i:s') . "\n";
+cronLog("Sync completed successfully at " . date('Y-m-d H:i:s'));

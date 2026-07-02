@@ -131,6 +131,10 @@ if ($auth) {
             $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $s['api_key'] = trim($_POST['api_key']);
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            
+            // محاولة المزامنة الفورية لجعل البيانات تظهر فورا
+            @include('cron_sync.php');
+            
             header("Location: index.php?section=api_mgr&success=1"); exit;
         }
         if (isset($_POST['save_fav_leagues'])) {
@@ -880,7 +884,7 @@ if ($auth) {
                 <div class="stat-card total">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3 style="font-size:16px;"><?php echo $lastSync; ?></h3>
-                    <p>آخر مزامنة ناجحة (Cron)</p>
+                    <p>آخر مزامنة ناجحة</p>
                 </div>
             </div>
 
