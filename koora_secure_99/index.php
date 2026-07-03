@@ -727,7 +727,6 @@ if ($auth) {
                                     </div>
                                 </td>
                                 <td>${m.league}</td>
-                                <td style="color:var(--text-sub); font-size:13px; font-weight:600;">${roundTxt}</td>
                                 <td style="font-weight:800; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
                                 <td>
                                     <span class="status-badge ${stClass}">${stTxt}</span>
