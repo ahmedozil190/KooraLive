@@ -661,7 +661,11 @@ if ($auth) {
             </style>
 
             <script>
-                const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
+                const favLeaguesIds = <?php 
+                    $favStr = trim($apiS['fav_leagues'] ?? '');
+                    $favs = !empty($favStr) ? explode(',', $favStr) : [];
+                    echo json_encode($favs); 
+                ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
                 // قائمة المباريات المضافة بالفعل للموقع
                 let addedMatchIds = <?php 
