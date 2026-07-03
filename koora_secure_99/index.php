@@ -199,6 +199,7 @@ if ($auth) {
         <?php if($sec == 'main'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">نظرة عامة</h2>
             <?php 
+                clearstatcache();
                 $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
                 $total = count($matches); $live = 0; $wait = 0; $done = 0;
                 foreach($matches as $m) {
@@ -240,14 +241,23 @@ if ($auth) {
 
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_filter($matches, function($m) use ($dayKey) {
-                                $mDay = isset($m['day']) ? $m['day'] : 'today';
-                                $mSt = isset($m['status']) ? $m['status'] : '';
+                                $ts = $m['timestamp'] ?? 0;
+                                if(!$ts) return false;
+                                
+                                // توقيت المباراة بصيغة Y-m-d حسب توقيتك
+                                $mDate = date('Y-m-d', $ts);
+                                $today = date('Y-m-d');
+                                $yest  = date('Y-m-d', strtotime('-1 day'));
+                                $tom   = date('Y-m-d', strtotime('+1 day'));
+
                                 if ($dayKey == 'today') {
-                                    return ($mDay == 'today') || ($mDay == 'yesterday' && $mSt != 'finished');
+                                    $isToday = ($mDate == $today);
+                                    $isLiveFromYesterday = ($mDate == $yest && ($m['status']??'') != 'finished');
+                                    return $isToday || $isLiveFromYesterday;
                                 } else if ($dayKey == 'yesterday') {
-                                    return ($mDay == 'yesterday' && $mSt == 'finished');
+                                    return ($mDate == $yest && ($m['status']??'') == 'finished');
                                 }
-                                return $mDay == $dayKey;
+                                return $mDate == $tom;
                             });
                             $dayM = sortMatches($dayM);
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
@@ -350,14 +360,22 @@ if ($auth) {
                         }
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_values(array_filter($allM, function($m) use ($dayKey) {
-                                $mDay = isset($m['day']) ? $m['day'] : 'today';
-                                $mSt  = isset($m['status']) ? $m['status'] : '';
+                                $ts = $m['timestamp'] ?? 0;
+                                if(!$ts) return false;
+                                
+                                $mDate = date('Y-m-d', $ts);
+                                $today = date('Y-m-d');
+                                $yest  = date('Y-m-d', strtotime('-1 day'));
+                                $tom   = date('Y-m-d', strtotime('+1 day'));
+
                                 if ($dayKey == 'today') {
-                                    return ($mDay == 'today') || ($mDay == 'yesterday' && $mSt != 'finished');
+                                    $isToday = ($mDate == $today);
+                                    $isLiveFromYesterday = ($mDate == $yest && ($m['status']??'') != 'finished');
+                                    return $isToday || $isLiveFromYesterday;
                                 } else if ($dayKey == 'yesterday') {
-                                    return ($mDay == 'yesterday' && $mSt == 'finished');
+                                    return ($mDate == $yest && ($m['status']??'') == 'finished');
                                 }
-                                return $mDay == $dayKey;
+                                return $mDate == $tom;
                             }));
                             $dayM = sortMatches($dayM);
                             $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
@@ -651,7 +669,7 @@ if ($auth) {
                         elseif(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
                     }
                     echo json_encode(array_values(array_unique($addedIds))); 
-                ?>;
+                ?>.map(id => String(id)); 
                 
                 window.addEventListener('DOMContentLoaded', () => {
                     // تشغيل العرض فوراً لليوم
