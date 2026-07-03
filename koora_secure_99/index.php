@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -723,11 +723,18 @@ if ($auth) {
                         return (a.timestamp || 0) - (b.timestamp || 0);
                     });
 
-                    // تجميع حسب البطولة (بشكل ذكي باستخدام الترجمة الموحدة)
+                    // تجميع حسب البطولة (بشكل فائق الذكاء: ترجمة نصية أولاً ثم ID)
                     const grouped = filtered.reduce((acc, m) => {
                         const lId = String(m.leagueId);
-                        // إذا كان هناك اسم مترجم لهذا الـ ID نستخدمه، وإلا نستخدم الاسم القادم من الـ API
-                        const unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : (m.league || 'بطولات أخرى');
+                        const lName = m.league || 'بطولات أخرى';
+                        
+                        // 1. البحث في الترجمة النصية الكاملة (مثل World Cup - 1/8-finals)
+                        let unifiedName = (arMap.names && arMap.names[lName]) ? arMap.names[lName] : null;
+                        
+                        // 2. إذا لم يجد، يبحث في ترجمة الـ ID (مثل 28 -> كأس العالم)
+                        if (!unifiedName) {
+                            unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : lName;
+                        }
                         
                         if (!acc[unifiedName]) acc[unifiedName] = [];
                         acc[unifiedName].push(m);
