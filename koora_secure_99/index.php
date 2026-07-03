@@ -229,54 +229,25 @@ if ($auth) {
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
                         <?php 
-                        // منطق التصفية الذكي والترتيب (مثل التطبيق)
-                        function sortMatches($list) {
-                            usort($list, function($a, $b) {
-                                $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
-                                $sA = isset($a['status']) ? $score[$a['status']] : 1;
-                                $sB = isset($b['status']) ? $score[$b['status']] : 1;
-                                if ($sA != $sB) return $sA - $sB;
-                                return strtotime(isset($a['time'])?$a['time']:'00:00') - strtotime(isset($b['time'])?$b['time']:'00:00');
-                            });
-                            return $list;
-                        }
-
-                        foreach(['today','yesterday','tomorrow'] as $dayKey):
-                            $dayM = array_filter($matches, function($m) use ($dayKey) {
-                                $ts = $m['timestamp'] ?? 0;
-                                if(!$ts) return false;
-                                
-                                // توقيت المباراة بصيغة Y-m-d حسب توقيتك
-                                $mDate = date('Y-m-d', $ts);
-                                $today = date('Y-m-d');
-                                $yest  = date('Y-m-d', strtotime('-1 day'));
-                                $tom   = date('Y-m-d', strtotime('+1 day'));
-
-                                if ($dayKey == 'today') {
-                                    $isToday = ($mDate == $today);
-                                    $isLiveFromYesterday = ($mDate == $yest && ($m['status']??'') != 'finished');
-                                    return $isToday || $isLiveFromYesterday;
-                                } else if ($dayKey == 'yesterday') {
-                                    return ($mDate == $yest && ($m['status']??'') == 'finished');
-                                }
-                                return $mDate == $tom;
-                            });
-                            $dayM = sortMatches($dayM);
-                            $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
+                            function sortMatches($list) {
+                                usort($list, function($a, $b) {
+                                    $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
+                                    $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
+                                    $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
+                                    if ($sA != $sB) return $sA - $sB;
+                                    return ($a['timestamp'] ?? 0) - ($b['timestamp'] ?? 0);
+                                });
+                                return $list;
+                            }
+                            $dayM = sortMatches($matches);
                         ?>
-                        <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
-                            <td colspan="6" style="text-align:center; padding:50px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
-                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لهذا اليوم</div>
-                            </td>
-                        </tr>
                         <?php foreach($dayM as $m): 
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                              $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
+                         <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:18px 25px;">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
@@ -284,7 +255,7 @@ if ($auth) {
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
                                     <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                        <?php echo (isset($m['score']) && $m['score'] != 'vs') ? str_replace('-', ' - ', $m['score']) : 'VS'; ?>
+                                        <?php echo (!empty($m['score']) && strtolower($m['score']) !== 'vs') ? $m['score'] : 'VS'; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
@@ -301,24 +272,59 @@ if ($auth) {
                              <td>
                                  <div style="display:flex; gap:8px;">
                                      <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                     <a href="index.php?del_m=<?php echo $m['id']; ?>&section=main&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                     <a href="index.php?del_m=<?php echo $m['id']; ?>&section=main" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                  </div>
                              </td>
                          </tr>
-                        <?php endforeach; endforeach; ?>
+                        <?php endforeach; ?>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات اليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات غداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <script>
-                // تحديث روابط الحذف في الرئيسي لتشمل اليوم المختار
-                function updateOvDeleteLinks(day) {
-                    document.querySelectorAll('#ov-tbody .btn-del').forEach(a => {
-                        let url = new URL(a.href);
-                        url.searchParams.set('day', day);
-                        a.href = url.toString();
+                function refreshDashboardTabs() {
+                    const now = new Date();
+                    const todayStr = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+                    const yest = new Date(); yest.setDate(now.getDate()-1);
+                    const yestStr = yest.getFullYear()+'-'+(yest.getMonth()+1)+'-'+yest.getDate();
+                    const tom = new Date(); tom.setDate(now.getDate()+1);
+                    const tomStr = tom.getFullYear()+'-'+(tom.getMonth()+1)+'-'+tom.getDate();
+
+                    let counts = { today:0, yesterday:0, tomorrow:0 };
+                    document.querySelectorAll('.match-row').forEach(row => {
+                        const ts = row.dataset.ts;
+                        const status = row.dataset.status;
+                        const mDate = new Date(ts * 1000);
+                        const mStr = mDate.getFullYear()+'-'+(mDate.getMonth()+1)+'-'+mDate.getDate();
+                        
+                        let targetDay = '';
+                        if (mStr === todayStr) targetDay = 'today';
+                        else if (mStr === yestStr) {
+                            targetDay = (status === 'live') ? 'today' : 'yesterday';
+                        }
+                        else if (mStr === tomStr) targetDay = 'tomorrow';
+
+                        row.dataset.day = targetDay;
+                        if(targetDay) counts[targetDay]++;
+                        
+                        const currentTab = document.querySelector('.day-tab.active').dataset.day;
+                        row.style.display = (targetDay === currentTab) ? '' : 'none';
+                    });
+                    
+                    ['today','yesterday','tomorrow'].forEach(d => {
+                        const emptyMsg = document.querySelector(`tr[data-day="${d}"][data-empty="1"]`);
+                        if(emptyMsg) emptyMsg.style.display = (counts[d] === 0 && document.querySelector('.day-tab.active').dataset.day === d) ? '' : 'none';
                     });
                 }
+                function switchTab(el) {
+                    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+                    el.classList.add('active');
+                    refreshDashboardTabs();
+                }
+                window.addEventListener('DOMContentLoaded', refreshDashboardTabs);
             </script>
         <?php elseif($sec == 'current'):
             $allM = json_decode(@file_get_contents($matchesFile), true) ?: [];
@@ -339,9 +345,9 @@ if ($auth) {
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-list-check"></i><h3>المباريات الحالية</h3></div>
                     <div class="day-tabs" style="margin-bottom:0;">
-                        <div class="day-tab" data-day="yesterday" onclick="switchDay(this)">مباريات الأمس</div>
-                        <div class="day-tab active" data-day="today" onclick="switchDay(this)">مباريات اليوم</div>
-                        <div class="day-tab" data-day="tomorrow" onclick="switchDay(this)">مباريات الغد</div>
+                        <div class="day-tab" data-day="yesterday" onclick="switchTab(this)">مباريات الأمس</div>
+                        <div class="day-tab active" data-day="today" onclick="switchTab(this)">مباريات اليوم</div>
+                        <div class="day-tab" data-day="tomorrow" onclick="switchTab(this)">مباريات الغد</div>
                     </div>
                 </div>
                 <div style="overflow-x:auto;">
@@ -349,7 +355,6 @@ if ($auth) {
                         <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="cur-tbody">
                         <?php 
-                        // نفس منطق التصفية الذكي كما في التطبيق
                         if (!function_exists('sortMatches')) {
                             function sortMatches($list) {
                                 usort($list, function($a, $b) {
@@ -357,46 +362,20 @@ if ($auth) {
                                     $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
                                     $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
                                     if ($sA != $sB) return $sA - $sB;
-                                    return strtotime(isset($a['time'])?$a['time']:'00:00') - strtotime(isset($b['time'])?$b['time']:'00:00');
+                                    return ($a['timestamp'] ?? 0) - ($b['timestamp'] ?? 0);
                                 });
                                 return $list;
                             }
                         }
-                        foreach(['today','yesterday','tomorrow'] as $dayKey):
-                            $dayM = array_values(array_filter($allM, function($m) use ($dayKey) {
-                                $ts = $m['timestamp'] ?? 0;
-                                if(!$ts) return false;
-                                
-                                $mDate = date('Y-m-d', $ts);
-                                $today = date('Y-m-d');
-                                $yest  = date('Y-m-d', strtotime('-1 day'));
-                                $tom   = date('Y-m-d', strtotime('+1 day'));
-
-                                if ($dayKey == 'today') {
-                                    $isToday = ($mDate == $today);
-                                    $isLiveFromYesterday = ($mDate == $yest && ($m['status']??'') != 'finished');
-                                    return $isToday || $isLiveFromYesterday;
-                                } else if ($dayKey == 'yesterday') {
-                                    return ($mDate == $yest && ($m['status']??'') == 'finished');
-                                }
-                                return $mDate == $tom;
-                            }));
-                            $dayM = sortMatches($dayM);
-                            $isVisible = $dayKey === 'today' ? '' : ' style="display:none;"';
+                        $dayM = sortMatches($allM);
                         ?>
-                        <tr data-day="<?php echo $dayKey; ?>" data-empty="1"<?php echo (!empty($dayM) ? ' style="display:none;"' : $isVisible); ?>>
-                            <td colspan="6" style="text-align:center; padding:50px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
-                                <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لهذا اليوم</div>
-                            </td>
-                        </tr>
                         <?php foreach($dayM as $m):
                             $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                             $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                         ?>
-                         <tr data-day="<?php echo $dayKey; ?>"<?php echo $isVisible; ?>>
+                         <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:18px 25px;">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
@@ -404,7 +383,7 @@ if ($auth) {
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
                                     <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                        <?php echo (isset($m['score']) && $m['score'] != 'vs') ? str_replace('-', ' - ', $m['score']) : 'VS'; ?>
+                                        <?php echo (!empty($m['score']) && strtolower($m['score']) !== 'vs') ? $m['score'] : 'VS'; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
@@ -421,26 +400,19 @@ if ($auth) {
                             <td>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn-edit" onclick="openEditModal(this)" data-match='<?php echo htmlspecialchars(json_encode($m), ENT_QUOTES); ?>'><i class="fa-solid fa-pen"></i></button>
-                                    <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current&day=<?php echo $dayKey; ?>" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
+                                    <a href="index.php?del_m=<?php echo $m['id']; ?>&section=current" class="btn-del" onclick="return confirm('حذف؟')"><i class="fa-solid fa-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
-                        <?php endforeach; endforeach; ?>
+                        <?php endforeach; ?>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات اليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات غداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <script>
-                function updateCurDeleteLinks(day) {
-                    document.querySelectorAll('#cur-tbody .btn-del').forEach(a => {
-                        let url = new URL(a.href);
-                        url.searchParams.set('day', day);
-                        a.href = url.toString();
-                    });
-                }
-            </script>
 
-            <!-- Modal المتقدم للبحث -->
             <div id="searchModal" class="modal-overlay">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -562,7 +534,6 @@ if ($auth) {
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $hasKey = !empty($apiS['api_key']);
             $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
-            // تصحيح: التحقق من وجود الملف قبل محاولة فتحه
             $arMap = file_exists($arMapFile) ? (json_decode(file_get_contents($arMapFile), true) ?: []) : []; 
             $c_total = count($bank);
             $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
@@ -582,7 +553,6 @@ if ($auth) {
             </div>
             <?php endif; ?>
             
-            <!-- بطاقات الإحصائيات الجمالية -->
             <div class="stats-grid" style="margin-bottom:30px;">
                 <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $c_total; ?></h3><p>إجمالي المباريات</p></div>
                 <div class="stat-card live"><i class="fa-solid fa-calendar-check"></i><h3><?php echo $c_today; ?></h3><p>مباريات اليوم</p></div>
@@ -590,14 +560,12 @@ if ($auth) {
                 <div class="stat-card finished"><i class="fa-solid fa-calendar-plus"></i><h3><?php echo $c_tom; ?></h3><p>مباريات الغد</p></div>
             </div>
 
-            <!-- حاوية الجدول بتصميم "نظرة عامة" -->
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <i class="fa-solid fa-cloud-bolt"></i> 
                         <h3 style="margin:0;">إضافة مباراة</h3>
                     </div>
-                    <!-- تبويبات الأيام بتصميم "نظرة عامة" -->
                     <div class="day-tabs" style="margin-bottom:0;">
                         <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
                         <div class="day-tab active" data-day="today" onclick="switchApiTab(this)">مباريات اليوم</div>
@@ -619,7 +587,6 @@ if ($auth) {
 
             <div id="addApiModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
                 <div style="background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:fadeInScale 0.3s ease;">
-                    <!-- Header -->
                     <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                         <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">
                             <i class="fa-solid fa-plus-circle" style="color:#6366f1; margin-left:8px;"></i> إضافة بيانات البث
@@ -628,7 +595,6 @@ if ($auth) {
                             <i class="fa-solid fa-xmark"></i>
                         </div>
                     </div>
-                    <!-- Body -->
                     <div style="padding:25px; background:var(--bg-card);">
                         <input type="hidden" id="add-api-id">
                         
@@ -667,18 +633,16 @@ if ($auth) {
             <script>
                 const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
-                // قائمة المباريات المضافة بالفعل للموقع
                 let addedMatchIds = <?php 
                     $addedIds = [];
                     foreach($matches as $mm) {
-                        $id = isset($mm['event_key']) ? (string)$mm['event_key'] : (isset($mm['id']) ? (string)$mm['id'] : '');
-                        if($id !== '') $addedIds[] = $id;
+                        if(!empty($mm['event_key'])) $addedIds[] = (string)$mm['event_key'];
+                        elseif(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
                     }
                     echo json_encode(array_values(array_unique($addedIds))); 
-                ?>;
+                ?>.map(id => String(id)); 
                 
                 window.addEventListener('DOMContentLoaded', () => {
-                    // تشغيل العرض فوراً لليوم
                     if (apiBank && apiBank.length > 0) {
                         renderBank('today');
                     }
@@ -717,7 +681,6 @@ if ($auth) {
                     const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
                     const tomStr = toYMD(tomorrow);
 
-                    // فلترة ذكية بناءً على توقيت جهازك
                     let filtered = apiBank.filter(m => {
                         let mId = String(m.id || m.event_key);
                         if (addedMatchIds.includes(mId)) return false;
@@ -743,7 +706,6 @@ if ($auth) {
                         return;
                     }
 
-                    // تجميع المباريات حسب الدوري
                     const grouped = filtered.reduce((acc, match) => {
                         const league = match.league || 'بطولات أخرى';
                         if (!acc[league]) acc[league] = [];
@@ -787,7 +749,7 @@ if ($auth) {
                                             <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                         </div>
                                         <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                            ${(m.score && m.score !== 'vs' && m.score !== '-') ? m.score.replace('-', ' - ') : 'VS'}
+                                            ${(m.score && m.score.toLowerCase() !== 'vs') ? m.score : 'VS'}
                                         </span>
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                             <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
@@ -837,7 +799,7 @@ if ($auth) {
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
 
-                    const matchData = apiBank.find(m => String(m.id || m.event_key || "") === String(id));
+                    const matchData = apiBank.find(m => String(m.id) === String(id));
                     if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
 
                     const btn = document.querySelector('#addApiModal button');
@@ -861,7 +823,6 @@ if ($auth) {
                         const d = await r.json();
                         if(d.success) {
                             showToast('تم بنجاح! المباراة الآن حية في الموقع ✅', 'success');
-                            // إضافة الـ ID للقائمة لإخفائها فوراً
                             addedMatchIds.push(String(id));
                             closeApiModal();
                             renderBank(document.querySelector('.day-tab.active').dataset.day);
