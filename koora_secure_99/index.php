@@ -244,15 +244,17 @@ if ($auth) {
                         <thead><tr><th>المباراة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
                         <?php 
-                            function sortMatches($list) {
-                                usort($list, function($a, $b) {
-                                    $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
-                                    $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
-                                    $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
-                                    if ($sA != $sB) return $sA - $sB;
-                                    return ($a['timestamp'] ?? 0) - ($b['timestamp'] ?? 0);
-                                });
-                                return $list;
+                            if(!function_exists('sortMatches')){
+                                function sortMatches($list) {
+                                    usort($list, function($a, $b) {
+                                        $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
+                                        $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
+                                        $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
+                                        if ($sA != $sB) return $sA - $sB;
+                                        return ($a['timestamp'] ?? 0) - ($b['timestamp'] ?? 0);
+                                    });
+                                    return $list;
+                                }
                             }
                             $dayM = sortMatches($matches);
                             // تجميع المباريات حسب البطولة
@@ -360,7 +362,6 @@ if ($auth) {
                                 return $list;
                             }
                         }
-                        <?php 
                         $dayM = sortMatches($allM);
                         $grouped = [];
                         foreach($dayM as $m) {
