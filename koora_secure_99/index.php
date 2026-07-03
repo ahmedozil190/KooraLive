@@ -2,7 +2,6 @@
 session_start();
 // تصحيح المسارات لتعمل من داخل مجلد admin
 // منع التخزين المؤقت لضمان ظهور أحدث البيانات دائماً
-date_default_timezone_set('UTC'); 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
@@ -203,8 +202,7 @@ if ($auth) {
             <h2 style="font-weight:800; margin-bottom:25px;">نظرة عامة</h2>
             <?php 
                 clearstatcache();
-                clearstatcache();
-    $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
+                $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
                 $total = count($matches); $live = 0; $wait = 0; $done = 0;
                 foreach($matches as $m) {
                     $s = isset($m['status']) ? $m['status'] : '';
@@ -245,14 +243,13 @@ if ($auth) {
 
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_filter($matches, function($m) use ($dayKey) {
-                                $ts = $m['timestamp'] ?? 0;
+                                $ts = isset($m['timestamp']) ? (int)$m['timestamp'] : 0;
                                 if(!$ts) return false;
-                                
-                                // توقيت المباراة بصيغة Y-m-d حسب توقيتك
-                                $mDate = date('Y-m-d', $ts);
-                                $today = date('Y-m-d');
-                                $yest  = date('Y-m-d', strtotime('-1 day'));
-                                $tom   = date('Y-m-d', strtotime('+1 day'));
+
+                                $mDate = gmdate('Y-m-d', $ts);
+                                $today = gmdate('Y-m-d');
+                                $yest  = gmdate('Y-m-d', strtotime('-1 day'));
+                                $tom   = gmdate('Y-m-d', strtotime('+1 day'));
 
                                 if ($dayKey == 'today') {
                                     $isToday = ($mDate == $today);
@@ -364,13 +361,13 @@ if ($auth) {
                         }
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_values(array_filter($allM, function($m) use ($dayKey) {
-                                $ts = $m['timestamp'] ?? 0;
+                                $ts = isset($m['timestamp']) ? (int)$m['timestamp'] : 0;
                                 if(!$ts) return false;
-                                
-                                $mDate = date('Y-m-d', $ts);
-                                $today = date('Y-m-d');
-                                $yest  = date('Y-m-d', strtotime('-1 day'));
-                                $tom   = date('Y-m-d', strtotime('+1 day'));
+
+                                $mDate = gmdate('Y-m-d', $ts);
+                                $today = gmdate('Y-m-d');
+                                $yest  = gmdate('Y-m-d', strtotime('-1 day'));
+                                $tom   = gmdate('Y-m-d', strtotime('+1 day'));
 
                                 if ($dayKey == 'today') {
                                     $isToday = ($mDate == $today);
