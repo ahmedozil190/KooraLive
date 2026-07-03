@@ -726,12 +726,20 @@ if ($auth) {
                     // تجميع حسب البطولة (بشكل فائق الذكاء: ترجمة نصية أولاً ثم ID)
                     const grouped = filtered.reduce((acc, m) => {
                         const lId = String(m.leagueId);
-                        const lName = m.league || 'بطولات أخرى';
+                        const lName = (m.league || 'بطولات أخرى').trim();
                         
-                        // 1. البحث في الترجمة النصية الكاملة (مثل World Cup - 1/8-finals)
-                        let unifiedName = (arMap.names && arMap.names[lName]) ? arMap.names[lName] : null;
+                        // 1. البحث في الترجمة النصية الكاملة (تجاهل المسافات)
+                        let unifiedName = null;
+                        if (arMap.names) {
+                            for (let key in arMap.names) {
+                                if (key.trim() === lName) {
+                                    unifiedName = arMap.names[key];
+                                    break;
+                                }
+                            }
+                        }
                         
-                        // 2. إذا لم يجد، يبحث في ترجمة الـ ID (مثل 28 -> كأس العالم)
+                        // 2. إذا لم يجد، يبحث في ترجمة الـ ID
                         if (!unifiedName) {
                             unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : lName;
                         }
@@ -876,7 +884,21 @@ if ($auth) {
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $favs = !empty($apiS['fav_leagues']) ? explode(',', $apiS['fav_leagues']) : [];
             $map = json_decode(@file_get_contents($arMapFile), true) ?: [];
+            
+            // جلب الدوريات المترجمة
             $allLeagues = $map['leagues'] ?? [];
+            
+            // جلب أي دوريات إضافية موجودة حالياً في البنك
+            if (!empty($bank)) {
+                foreach($bank as $m) {
+                    $lid = (string)($m['leagueId'] ?? '');
+                    if ($lid && !isset($allLeagues[$lid])) {
+                        // إذا لم تكن مترجمة، نستخدم الاسم القادم من الـ API بشكل مؤقت
+                        $allLeagues[$lid] = $m['league'] ?? 'بطولة غير معروفة';
+                    }
+                }
+            }
+            ksort($allLeagues); // ترتيب حسب الـ ID لسهولة البحث
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
                 <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b; margin-left:10px;"></i>الدوريات المفضلة</h2>
