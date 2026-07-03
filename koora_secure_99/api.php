@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 /**
  * KooraLive API Engine - Optimized for Cron Sync
@@ -49,7 +52,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
     ];
 
     $ms[] = $newMatch;
-    file_put_contents($liveFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    file_put_contents($liveFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
+    clearstatcache();
     echo json_encode(['success' => true]);
     exit;
 }

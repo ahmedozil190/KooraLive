@@ -1,5 +1,10 @@
 <?php
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+ob_start();
+error_reporting(E_ALL);
 // تصحيح المسارات لتعمل من داخل مجلد admin
 // منع التخزين المؤقت لضمان ظهور أحدث البيانات دائماً
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -16,6 +21,9 @@ $fixturesBank = '../data/api_fixtures.json';
 // تأكد من وجود المجلد
 if (!is_dir('../data')) mkdir('../data', 0777, true);
 $arMapFile      = '../ar_map.json'; // خارج مجلد data
+
+clearstatcache(true, $matchesFile);
+$matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
 
 if (isset($_POST['login'])) {
     if ($_POST['user'] === 'admin' && $_POST['pass'] === '123456') { 
@@ -35,7 +43,7 @@ if ($auth) {
     if (isset($_GET['del_m'])) {
         $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
         $ms = array_filter($ms, function($v) { return $v['id'] != $_GET['del_m']; });
-        file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+        file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
         $backSec = isset($_GET['section']) ? $_GET['section'] : 'main';
         $backDay = isset($_GET['day']) ? $_GET['day'] : 'today';
         header("Location: index.php?section=$backSec&day=$backDay"); exit;
@@ -43,7 +51,7 @@ if ($auth) {
     if (isset($_GET['del_n'])) {
         $ns = json_decode(@file_get_contents($newsFile), true) ?: [];
         $ns = array_filter($ns, function($v) { return $v['id'] != $_GET['del_n']; });
-        file_put_contents($newsFile, json_encode(array_values($ns), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+        file_put_contents($newsFile, json_encode(array_values($ns), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
         header("Location: index.php?section=news"); exit;
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -63,7 +71,7 @@ if ($auth) {
             $d = json_decode(@file_get_contents($newsFile), true);
             if(!$d) $d = array();
             $d[] = array('id'=>time(),'title'=>$_POST['t'],'image'=>$imgPath,'content'=>$_POST['c'],'date'=>date('Y-m-d'));
-            file_put_contents($newsFile, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            file_put_contents($newsFile, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
             header("Location: index.php?section=news&success=1"); exit;
         }
         if (isset($_POST['save_edit'])) {
@@ -82,7 +90,7 @@ if ($auth) {
                     break;
                 }
             }
-            file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            file_put_contents($matchesFile, json_encode(array_values($ms), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
             header("Location: index.php?section=current&success=1"); exit;
         }
         if (isset($_POST['save_news_edit'])) {
@@ -201,7 +209,7 @@ if ($auth) {
         <?php if($sec == 'main'): ?>
             <h2 style="font-weight:800; margin-bottom:25px;">نظرة عامة</h2>
             <?php 
-                clearstatcache();
+                clearstatcache(true, $matchesFile);
                 $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
                 $total = count($matches); $live = 0; $wait = 0; $done = 0;
                 foreach($matches as $m) {
@@ -634,9 +642,9 @@ if ($auth) {
                 const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
                 let addedMatchIds = <?php 
+                    clearstatcache(true, $matchesFile);
                     $addedIds = [];
                     foreach($matches as $mm) {
-                        // جمع كل المعرفات الممكنة لضمان الإخفاء
                         if(!empty($mm['event_key'])) $addedIds[] = (string)$mm['event_key'];
                         if(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
                     }
@@ -652,7 +660,7 @@ if ($auth) {
 
                 async function loadBank() {
                     try {
-                        const r = await fetch('api.php?action=get_bank');
+                        const r = await fetch('api.php?action=get_bank&t=' + Date.now());
                         const data = await r.json();
                         if (data.error) {
                             document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
@@ -683,8 +691,8 @@ if ($auth) {
                     const tomStr = toYMD(tomorrow);
 
                     let filtered = apiBank.filter(m => {
-                        let mId = String(m.id || m.event_key || "");
-                        if (addedMatchIds.map(String).includes(mId)) return false;
+                        let mId = String(m.id || m.event_key);
+                        if (addedMatchIds.includes(mId)) return false;
                         
                         const mDate = new Date(m.timestamp * 1000);
                         const mStr = toYMD(mDate);
@@ -775,10 +783,10 @@ if ($auth) {
                     tbody.innerHTML = html;
                 }
 
-                function switchApiTab(tab) {
-                    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    renderBank(tab.dataset.day);
+                function switchApiTab(el) {
+                    document.querySelectorAll('.day-tabs .day-tab').forEach(t => t.classList.remove('active'));
+                    el.classList.add('active');
+                    renderBank(el.dataset.day);
                 }
 
                 function openApiModal(id) {
