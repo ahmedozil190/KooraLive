@@ -273,7 +273,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:52px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -363,7 +363,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:52px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -733,7 +733,7 @@ if ($auth) {
                                             <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${m.homeTeam}</span>
                                             <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                         </div>
-                                        <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; min-width:50px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                        <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                             ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
                                         </span>
                                         <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -1077,22 +1077,40 @@ if ($auth) {
             </div></div>
         <?php endif; ?>
         
-        <div id="edit-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header">
-            <h3 style="margin:0; font-size:18px; font-weight:800;"><i class="fa-solid fa-pen" style="color:#6366f1;"></i> تعديل المباراة</h3>
-            <div class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></div></div>
-            <form method="POST" action="index.php?section=<?php echo $sec; ?>"><input type="hidden" name="edit_match_id" id="edit-id"><div class="modal-body">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                    <div class="form-group"><label>القناة</label><input type="text" name="edit_channel" id="edit-channel" class="form-input" placeholder="beIN Sports 1"></div>
-                    <div class="form-group"><label>المعلق</label><input type="text" name="edit_commentator" id="edit-commentator" class="form-input" placeholder="اسم المعلق"></div>
-                    <div class="form-group"><label>الحالة</label><select name="edit_status" id="edit-status" class="form-input"><option value="upcoming">قادمة</option><option value="live">مباشر</option><option value="finished">انتهت</option></select></div>
-                    <div class="form-group"><label>النتيجة</label><input type="text" name="edit_score" id="edit-score" class="form-input" placeholder="0 - 0"></div>
+        <div id="edit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+            <div style="background:var(--bg-card); width:90%; max-width:450px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5); animation:fadeInScale 0.3s ease;">
+                <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">
+                        <i class="fa-solid fa-pen" style="color:#6366f1; margin-left:8px;"></i> تعديل بيانات البث
+                    </h3>
+                    <div onclick="closeEditModal()" style="width:32px; height:32px; border-radius:50%; background:rgba(255,0,0,0.1); color:#ff4757; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
                 </div>
-                <div class="form-group" style="margin-top:15px;"><label>رابط البث</label><input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="أدخل رابط البث"></div>
-            </div><div class="modal-foot" style="padding:15px 25px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:12px;">
-                <button type="button" class="btn-cancel-sm" style="padding:10px 20px;" onclick="document.getElementById('edit-modal').classList.remove('open')">إلغاء</button>
-                <button type="submit" name="save_edit" class="btn-primary-sm" style="padding:10px 25px;">حفظ التعديل</button>
-            </div></form>
-        </div></div>
+                <form method="POST" action="index.php?section=<?php echo $sec; ?>">
+                    <input type="hidden" name="edit_match_id" id="edit-id">
+                    <div style="padding:25px; background:var(--bg-card);">
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط البث</label>
+                            <input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
+                                <input type="text" name="edit_channel" id="edit-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
+                                <input type="text" name="edit_commentator" id="edit-commentator" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
+                            </div>
+                        </div>
+                        <button type="submit" name="save_edit" style="width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <i class="fa-solid fa-check-circle"></i> حفظ التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </main>
     <script>
         const themeBtn = document.getElementById('adm-theme');
@@ -1136,10 +1154,11 @@ if ($auth) {
             document.getElementById('edit-id').value = m.id;
             document.getElementById('edit-channel').value = m.channel || '';
             document.getElementById('edit-commentator').value = m.commentator || '';
-            document.getElementById('edit-status').value = m.status || 'upcoming';
-            document.getElementById('edit-score').value = m.score || '';
             document.getElementById('edit-stream').value = m.streamUrl || '';
-            document.getElementById('edit-modal').classList.add('open');
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
         }
         function openNewsEdit(btn) {
             const n = JSON.parse(btn.getAttribute('data-news'));
