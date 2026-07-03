@@ -885,7 +885,6 @@ if ($auth) {
                                     </div>
                                 </label>
                             <?php endforeach; ?>
-                        <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                     <div style="margin-top:25px; border-top:1px solid var(--border-color); padding-top:20px; display:flex; justify-content:flex-end;">
