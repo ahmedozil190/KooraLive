@@ -164,7 +164,12 @@ if ($auth) {
     <title>لوحة التحكم - كورة لايف</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.1">
+    <style>
+        .status-badge.status-live { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; }
+        .status-badge.status-final { background: rgba(107, 114, 128, 0.1) !important; color: #6b7280 !important; border: 1px solid rgba(107, 114, 128, 0.2) !important; }
+        .status-badge.status-up { background: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; border: 1px solid rgba(99, 102, 241, 0.2) !important; }
+    </style>
     <script>
         function formatLocalTime(ts) {
             if(!ts) return '--:--';
@@ -594,9 +599,6 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
-                .status-up { background:rgba(99,102,241,0.1); color:#6366f1; }
-                .status-live { background:rgba(16,185,129,0.1); color:#10b981; }
-                .status-final { background:rgba(107,114,128,0.1); color:#6b7280; }
             </style>
 
             <script>
