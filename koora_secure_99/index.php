@@ -645,6 +645,7 @@ if ($auth) {
             </style>
 
             <script>
+                const arMap = <?php echo json_encode($arMap); ?>;
                 const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
                 let addedMatchIds = <?php 
@@ -722,11 +723,14 @@ if ($auth) {
                         return (a.timestamp || 0) - (b.timestamp || 0);
                     });
 
-                    // تجميع حسب البطولة
+                    // تجميع حسب البطولة (بشكل ذكي باستخدام الترجمة الموحدة)
                     const grouped = filtered.reduce((acc, m) => {
-                        const l = m.league || 'بطولات أخرى';
-                        if (!acc[l]) acc[l] = [];
-                        acc[l].push(m);
+                        const lId = String(m.leagueId);
+                        // إذا كان هناك اسم مترجم لهذا الـ ID نستخدمه، وإلا نستخدم الاسم القادم من الـ API
+                        const unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : (m.league || 'بطولات أخرى');
+                        
+                        if (!acc[unifiedName]) acc[unifiedName] = [];
+                        acc[unifiedName].push(m);
                         return acc;
                     }, {});
 
@@ -766,12 +770,22 @@ if ($auth) {
                                     else if (m.status_raw === 'Half Time') stTxt = 'بين الشوطين';
                                 }
 
+                                // استخلاص المرحلة أو الجولة بشكل ذكي
+                                let roundTxt = m.league_round || '';
+                                if(!roundTxt && m.league && m.league.includes(' - ')) {
+                                    // إذا كان الاسم الأصلي يحتوي على شرطلة، نأخذ الجزء الثاني كمرحلة (مثلاً 1/16-finals)
+                                    roundTxt = m.league.split(' - ')[1];
+                                }
+
                                 html += `
                                 <tr style="transition: 0.2s;">
                                     <td style="padding:12px 20px;">
                                         <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                             <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-                                                <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
+                                                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                                    <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
+                                                    ${roundTxt ? `<span style="font-size:10px; color:#6366f1; opacity:0.8; font-weight:700;">${roundTxt}</span>` : ''}
+                                                </div>
                                                 <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                             </div>
                                             <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
@@ -779,7 +793,10 @@ if ($auth) {
                                             </span>
                                             <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                                 <img src="${m.awayLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
-                                                <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.awayTeam}</span>
+                                                <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                                                    <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.awayTeam}</span>
+                                                    ${roundTxt ? `<span style="font-size:10px; color:#6366f1; opacity:0.8; font-weight:700;">${roundTxt}</span>` : ''}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
