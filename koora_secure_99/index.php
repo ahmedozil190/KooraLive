@@ -267,18 +267,18 @@ if ($auth) {
                              }
                         ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
-                             <td style="padding:18px 25px;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
+                             <td style="padding:12px 25px;">
+                                <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
+                                    <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                        <?php echo (!empty($m['score']) && strtolower($m['score']) !== 'vs') ? $m['score'] : 'VS'; ?>
+                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:52px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                        <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
+                                    <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -357,18 +357,18 @@ if ($auth) {
                             }
                         ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
-                             <td style="padding:18px 25px;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
+                             <td style="padding:12px 25px;">
+                                <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
+                                    <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                        <?php echo (!empty($m['score']) && strtolower($m['score']) !== 'vs') ? $m['score'] : 'VS'; ?>
+                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:52px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                        <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
+                                    <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -727,18 +727,18 @@ if ($auth) {
 
                             return `
                             <tr style="transition: 0.2s;">
-                                <td style="padding:18px 25px;">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.homeTeam}</span>
-                                            <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
+                                <td style="padding:12px 20px;">
+                                    <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
+                                        <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${m.homeTeam}</span>
+                                            <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                         </div>
-                                        <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
-                                            ${(m.score && m.score.toLowerCase() !== 'vs') ? m.score : 'VS'}
+                                        <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; min-width:50px; text-align:center; border:1px solid var(--border-color); white-space:nowrap;">
+                                            ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
                                         </span>
-                                        <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
-                                            <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.awayTeam}</span>
+                                        <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+                                            <img src="${m.awayLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
+                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${m.awayTeam}</span>
                                         </div>
                                     </div>
                                 </td>
