@@ -556,10 +556,10 @@ if ($auth) {
                 
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
                             <?php if(empty($bank)): ?>
-                                <tr><td colspan="5" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
+                                <tr><td colspan="4" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -700,7 +700,7 @@ if ($auth) {
                         const leagueId = grouped[league][0].leagueId || '-';
                         html += `
                         <tr class="league-group-header">
-                            <td colspan="5" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
+                            <td colspan="4" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
@@ -742,7 +742,6 @@ if ($auth) {
                                         </div>
                                     </div>
                                 </td>
-                                <td>${m.league}</td>
                                 <td style="font-weight:800; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
                                 <td>
                                     <span class="status-badge ${stClass}">${stTxt}</span>
