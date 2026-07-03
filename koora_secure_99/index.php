@@ -206,6 +206,10 @@ if ($auth) {
             <a href="index.php?section=fav_leagues" class="nav-item <?php echo $sec=='fav_leagues'?'active':''; ?>"><i class="fa-solid fa-star"></i> الدوريات المفضلة</a>
             <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
         </div>
+        <?php 
+            // تحميل البنك بشكل عالمي ليكون متاحاً في كل الأقسام
+            $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
+        ?>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
             <a href="index.php?logout=1" class="f-icon" style="color:#ef4444;"><i class="fa-solid fa-power-off"></i></a>
@@ -547,7 +551,6 @@ if ($auth) {
         <?php elseif($sec == 'api_add'): 
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $hasKey = !empty($apiS['api_key']);
-            $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
             $arMap = file_exists($arMapFile) ? (json_decode(file_get_contents($arMapFile), true) ?: []) : []; 
             $c_total = count($bank);
             $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
