@@ -283,7 +283,7 @@ if ($auth) {
                                 </div>
                              </td>
                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                             <td style="font-weight:800; color:var(--text-main);">
+                             <td style="font-weight:700; color:var(--text-main);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
                              <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
@@ -373,7 +373,7 @@ if ($auth) {
                                 </div>
                              </td>
                               <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
-                             <td style="font-weight:800; color:var(--text-main);">
+                             <td style="font-weight:700; color:var(--text-main);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
@@ -742,7 +742,7 @@ if ($auth) {
                                         </div>
                                     </div>
                                 </td>
-                                <td style="font-weight:800; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
+                                <td style="font-weight:700; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
                                 <td>
                                     <span class="status-badge ${stClass}">${stTxt}</span>
                                 </td>
