@@ -285,9 +285,9 @@ if ($auth) {
                              </td>
                          </tr>
                         <?php endforeach; ?>
-                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات اليوم</div></td></tr>
-                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات بالأمس</div></td></tr>
-                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات غداً</div></td></tr>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -371,9 +371,9 @@ if ($auth) {
                             </td>
                         </tr>
                         <?php endforeach; ?>
-                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات اليوم</div></td></tr>
-                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات بالأمس</div></td></tr>
-                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات غداً</div></td></tr>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
