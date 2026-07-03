@@ -270,7 +270,7 @@ if ($auth) {
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
                                     <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
@@ -278,7 +278,7 @@ if ($auth) {
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -360,7 +360,7 @@ if ($auth) {
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['homeTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
                                     <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
@@ -368,7 +368,7 @@ if ($auth) {
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
-                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:145px;"><?php echo $m['awayTeam']; ?></span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['awayTeam']; ?></span>
                                     </div>
                                 </div>
                              </td>
@@ -730,7 +730,7 @@ if ($auth) {
                                 <td style="padding:12px 20px;">
                                     <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                         <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${m.homeTeam}</span>
+                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
                                             <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                         </div>
                                         <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
@@ -738,7 +738,7 @@ if ($auth) {
                                         </span>
                                         <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
                                             <img src="${m.awayLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
-                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${m.awayTeam}</span>
+                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.awayTeam}</span>
                                         </div>
                                     </div>
                                 </td>
