@@ -712,80 +712,81 @@ if ($auth) {
                     if (favLeaguesIds.length > 0) {
                         filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
                     }
-                    
-                    if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0;">
-                            <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
-                            <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
-                        </td></tr>`;
-                        return;
-                    }
 
-                    const grouped = filtered.reduce((acc, match) => {
-                        const league = match.league || 'بطولات أخرى';
-                        if (!acc[league]) acc[league] = [];
-                        acc[league].push(match);
+                    // نظام الترتيب الذكي
+                    filtered.sort((a, b) => {
+                        const score = { 'live': 0, 'upcoming': 1, 'finished': 2 };
+                        const sA = score[a.status] !== undefined ? score[a.status] : 1;
+                        const sB = score[b.status] !== undefined ? score[b.status] : 1;
+                        if (sA !== sB) return sA - sB;
+                        return (a.timestamp || 0) - (b.timestamp || 0);
+                    });
+
+                    // تجميع حسب البطولة
+                    const grouped = filtered.reduce((acc, m) => {
+                        const l = m.league || 'بطولات أخرى';
+                        if (!acc[l]) acc[l] = [];
+                        acc[l].push(m);
                         return acc;
                     }, {});
 
                     let html = '';
-                    for (const league in grouped) {
-                        const leagueId = grouped[league][0].leagueId || '-';
-                        html += `
-                        <tr class="league-group-header">
-                            <td colspan="4" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
-                                <div style="display:flex; align-items:center; gap:12px;">
+                    if (filtered.length === 0) {
+                        html = `<tr><td colspan="4" style="text-align:center; padding:50px 0;">
+                            <div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-folder-open"></i></div>
+                            <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات متاحة للإضافة في هذا اليوم</div>
+                        </td></tr>`;
+                    } else {
+                        for (let leagueName in grouped) {
+                            html += `<tr class="league-group-header">
+                                <td colspan="4" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
-                                        <span style="font-weight:800; font-size:15px; color:var(--text-main);">${league}</span>
+                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
+                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);">${leagueName}</span>
                                     </div>
-                                    <div style="display:flex; align-items:center; gap:10px; margin-right:auto; direction:ltr;">
-                                        <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:4px 12px; border-radius:30px; font-size:11px; font-weight:800;">${grouped[league].length} Matches</span>
-                                        <span style="background:var(--bg-main); color:var(--text-sub); border:1px solid var(--border-color); padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700;">ID: ${leagueId}</span>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>`;
-
-                        html += grouped[league].map(m => {
-                            let stClass = 'status-up';
-                            if(m.status === 'live') stClass = 'status-live';
-                            else if(m.status === 'finished') stClass = 'status-final';
-                            
-                            let stTxt = m.status_ar || 'لم تبدأ بعد';
-                            if (m.status === 'live' && m.status_raw) {
-                                if (!isNaN(m.status_raw)) stTxt = 'مباشر ' + m.status_raw + '\'';
-                                else if (m.status_raw === 'Half Time') stTxt = 'بين الشوطين';
-                            }
-
-                            return `
-                            <tr style="transition: 0.2s;">
-                                <td style="padding:12px 20px;">
-                                    <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
-                                        <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
-                                            <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
-                                        </div>
-                                        <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
-                                            ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
-                                        </span>
-                                        <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
-                                            <img src="${m.awayLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
-                                            <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.awayTeam}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="font-weight:700; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
-                                <td>
-                                    <span class="status-badge ${stClass}">${stTxt}</span>
-                                </td>
-                                <td>
-                                    <button class="api-add-btn" onclick="openApiModal('${m.id}')">
-                                        <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
-                                    </button>
                                 </td>
                             </tr>`;
-                        }).join('');
+                            
+                            grouped[leagueName].forEach(m => {
+                                let stClass = 'status-up';
+                                if(m.status === 'live') stClass = 'status-live';
+                                else if(m.status === 'finished') stClass = 'status-final';
+                                
+                                let stTxt = m.status_ar || 'لم تبدأ بعد';
+                                if (m.status === 'live' && m.status_raw) {
+                                    if (!isNaN(m.status_raw)) stTxt = 'مباشر ' + m.status_raw + '\'';
+                                    else if (m.status_raw === 'Half Time') stTxt = 'بين الشوطين';
+                                }
+
+                                html += `
+                                <tr style="transition: 0.2s;">
+                                    <td style="padding:12px 20px;">
+                                        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
+                                            <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                                                <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
+                                                <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
+                                            </div>
+                                            <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                                ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
+                                            </span>
+                                            <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+                                                <img src="${m.awayLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
+                                                <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.awayTeam}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="font-weight:700; color:var(--text-main);">${formatLocalTime(m.timestamp)}</td>
+                                    <td>
+                                        <span class="status-badge ${stClass}">${stTxt}</span>
+                                    </td>
+                                    <td>
+                                        <button class="api-add-btn" onclick="openApiModal('${m.id}')">
+                                            <i class="fa-solid fa-plus" style="margin-left:5px;"></i> إضافة للموقع
+                                        </button>
+                                    </td>
+                                </tr>`;
+                            });
+                        }
                     }
                     tbody.innerHTML = html;
                 }
