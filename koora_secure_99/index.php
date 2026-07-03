@@ -241,7 +241,7 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="table">
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="ov-tbody">
                         <?php 
                             function sortMatches($list) {
@@ -255,17 +255,33 @@ if ($auth) {
                                 return $list;
                             }
                             $dayM = sortMatches($matches);
+                            // تجميع المباريات حسب البطولة
+                            $grouped = [];
+                            foreach($dayM as $m) {
+                                $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
+                                if(!isset($grouped[$l])) $grouped[$l] = [];
+                                $grouped[$l][] = $m;
+                            }
                         ?>
-                        <?php foreach($dayM as $m): 
-                            $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
-                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                             $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
-                             if ($statusType === 'live' && !empty($m['status_raw'])) {
-                                 if (is_numeric($m['status_raw'])) $stTxt = 'مباشر ' . $m['status_raw'] . '\'';
-                                 elseif ($m['status_raw'] === 'Half Time') $stTxt = 'بين الشوطين';
-                             }
-                        ?>
+                        <?php foreach($grouped as $leagueName => $leagueMatches): ?>
+                            <tr class="league-group-header">
+                                <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
+                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php foreach($leagueMatches as $m): 
+                                $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
+                                $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                                 $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                                 $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                                 if ($statusType === 'live' && !empty($m['status_raw'])) {
+                                     if (is_numeric($m['status_raw'])) $stTxt = 'مباشر ' . $m['status_raw'] . '\'';
+                                     elseif ($m['status_raw'] === 'Half Time') $stTxt = 'بين الشوطين';
+                                 }
+                            ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
@@ -282,7 +298,6 @@ if ($auth) {
                                     </div>
                                 </div>
                              </td>
-                             <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
                              <td style="font-weight:700; color:var(--text-main);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
@@ -296,9 +311,10 @@ if ($auth) {
                              </td>
                          </tr>
                         <?php endforeach; ?>
-                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
-                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
-                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
+                        <?php endforeach; ?>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -329,7 +345,7 @@ if ($auth) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>الوقت</th><th>الحالة</th><th>البث</th><th>التحكم</th></tr></thead>
                         <tbody id="cur-tbody">
                         <?php 
                         if (!function_exists('sortMatches')) {
@@ -344,18 +360,34 @@ if ($auth) {
                                 return $list;
                             }
                         }
+                        <?php 
                         $dayM = sortMatches($allM);
+                        $grouped = [];
+                        foreach($dayM as $m) {
+                            $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
+                            if(!isset($grouped[$l])) $grouped[$l] = [];
+                            $grouped[$l][] = $m;
+                        }
                         ?>
-                        <?php foreach($dayM as $m):
-                            $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
-                            $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                            $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                            $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
-                            if ($statusType === 'live' && !empty($m['status_raw'])) {
-                                if (is_numeric($m['status_raw'])) $badgeText = 'مباشر ' . $m['status_raw'] . '\'';
-                                elseif ($m['status_raw'] === 'Half Time') $badgeText = 'بين الشوطين';
-                            }
-                        ?>
+                        <?php foreach($grouped as $leagueName => $leagueMatches): ?>
+                            <tr class="league-group-header">
+                                <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
+                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php foreach($leagueMatches as $m):
+                                $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
+                                $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
+                                $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                                $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                                if ($statusType === 'live' && !empty($m['status_raw'])) {
+                                    if (is_numeric($m['status_raw'])) $badgeText = 'مباشر ' . $m['status_raw'] . '\'';
+                                    elseif ($m['status_raw'] === 'Half Time') $badgeText = 'بين الشوطين';
+                                }
+                            ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
@@ -372,7 +404,6 @@ if ($auth) {
                                     </div>
                                 </div>
                              </td>
-                              <td><?php echo htmlspecialchars(isset($m['league'])?$m['league']:'--'); ?></td>
                              <td style="font-weight:700; color:var(--text-main);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
@@ -386,9 +417,10 @@ if ($auth) {
                             </td>
                         </tr>
                         <?php endforeach; ?>
-                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
-                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
-                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="6" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
+                        <?php endforeach; ?>
+                        <tr data-day="today" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-day"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لليوم</div></td></tr>
+                        <tr data-day="yesterday" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-clock-rotate-left"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة بالأمس</div></td></tr>
+                        <tr data-day="tomorrow" data-empty="1" style="display:none;"><td colspan="5" style="text-align:center; padding:50px 0;"><div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-calendar-plus"></i></div><div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات مضافة لغداً</div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -852,6 +884,7 @@ if ($auth) {
                                     </div>
                                 </label>
                             <?php endforeach; ?>
+                        <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                     <div style="margin-top:25px; border-top:1px solid var(--border-color); padding-top:20px; display:flex; justify-content:flex-end;">
