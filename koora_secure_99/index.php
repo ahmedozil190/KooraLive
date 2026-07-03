@@ -738,11 +738,19 @@ if ($auth) {
                         </td></tr>`;
                     } else {
                         for (let leagueName in grouped) {
-                            html += `<tr class="league-group-header">
-                                <td colspan="4" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
-                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);">${leagueName}</span>
+                            const leagueId = grouped[leagueName][0].leagueId || '-';
+                            html += `
+                            <tr class="league-group-header">
+                                <td colspan="4" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
+                                            <span style="font-weight:800; font-size:15px; color:var(--text-main);">${leagueName}</span>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:10px; margin-right:auto; direction:ltr;">
+                                            <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:4px 12px; border-radius:30px; font-size:11px; font-weight:800;">${grouped[leagueName].length} Matches</span>
+                                            <span style="background:var(--bg-main); color:var(--text-sub); border:1px solid var(--border-color); padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700;">ID: ${leagueId}</span>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>`;
