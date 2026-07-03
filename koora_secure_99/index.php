@@ -2,6 +2,7 @@
 session_start();
 // تصحيح المسارات لتعمل من داخل مجلد admin
 // منع التخزين المؤقت لضمان ظهور أحدث البيانات دائماً
+date_default_timezone_set('UTC'); 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
@@ -202,7 +203,8 @@ if ($auth) {
             <h2 style="font-weight:800; margin-bottom:25px;">نظرة عامة</h2>
             <?php 
                 clearstatcache();
-                $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
+                clearstatcache();
+    $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
                 $total = count($matches); $live = 0; $wait = 0; $done = 0;
                 foreach($matches as $m) {
                     $s = isset($m['status']) ? $m['status'] : '';

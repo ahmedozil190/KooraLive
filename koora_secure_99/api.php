@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+date_default_timezone_set('UTC');
 
 /**
  * KooraLive API Engine - Optimized for Cron Sync
@@ -17,6 +18,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
         exit;
     }
 
+    clearstatcache();
     $ms = json_decode(@file_get_contents($liveFile), true) ?: [];
     
     // منع التكرار
