@@ -541,10 +541,10 @@ if ($auth) {
                 
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الدور</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
+                        <thead><tr><th>المباراة</th><th>البطولة</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
                             <?php if(empty($bank)): ?>
-                                <tr><td colspan="6" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
+                                <tr><td colspan="5" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -594,6 +594,9 @@ if ($auth) {
                 .r-tab.active { background:var(--card); color:#6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
                 .api-add-btn { padding:7px 14px; border-radius:8px; border:1px solid #6366f1; background:rgba(99,102,241,0.05); color:#6366f1; cursor:pointer; font-weight:700; transition:0.2s; font-size:12px; }
                 .api-add-btn:hover { background:#6366f1; color:#fff; transform: translateY(-2px); }
+                .status-up { background:rgba(99,102,241,0.1); color:#6366f1; }
+                .status-live { background:rgba(16,185,129,0.1); color:#10b981; }
+                .status-final { background:rgba(107,114,128,0.1); color:#6b7280; }
             </style>
 
             <script>
@@ -621,7 +624,7 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank&t=' + Date.now());
                         const data = await r.json();
                         if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0;">
                                 <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
@@ -632,7 +635,7 @@ if ($auth) {
                         renderBank(activeTab);
                     } catch(e) { 
                         console.error(e); 
-                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
+                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
                     }
                 }
 
@@ -666,7 +669,7 @@ if ($auth) {
                     }
                     
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0;">
                             <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-folder-open"></i></div>
                             <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات جديدة متاحة حالياً</div>
                         </td></tr>`;
@@ -685,7 +688,7 @@ if ($auth) {
                         const leagueId = grouped[league][0].leagueId || '-';
                         html += `
                         <tr class="league-group-header">
-                            <td colspan="6" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
+                            <td colspan="5" style="background:var(--bg-body); padding:12px 25px; border-bottom:1px solid var(--border-color);">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:14px;"></i>
@@ -705,7 +708,6 @@ if ($auth) {
                             else if(m.status === 'finished') stClass = 'status-final';
                             
                             let stTxt = m.status_ar || 'لم تبدأ بعد';
-                            let roundTxt = m.round ? m.round.replace('Regular Season - ', 'الجولة ') : '--';
 
                             return `
                             <tr style="transition: 0.2s;">
