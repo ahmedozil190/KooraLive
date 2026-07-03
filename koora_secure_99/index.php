@@ -243,13 +243,14 @@ if ($auth) {
 
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_filter($matches, function($m) use ($dayKey) {
-                                $ts = isset($m['timestamp']) ? (int)$m['timestamp'] : 0;
+                                $ts = $m['timestamp'] ?? 0;
                                 if(!$ts) return false;
-
-                                $mDate = gmdate('Y-m-d', $ts);
-                                $today = gmdate('Y-m-d');
-                                $yest  = gmdate('Y-m-d', strtotime('-1 day'));
-                                $tom   = gmdate('Y-m-d', strtotime('+1 day'));
+                                
+                                // توقيت المباراة بصيغة Y-m-d حسب توقيتك
+                                $mDate = date('Y-m-d', $ts);
+                                $today = date('Y-m-d');
+                                $yest  = date('Y-m-d', strtotime('-1 day'));
+                                $tom   = date('Y-m-d', strtotime('+1 day'));
 
                                 if ($dayKey == 'today') {
                                     $isToday = ($mDate == $today);
@@ -282,7 +283,9 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                    <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
+                                        <?php echo (isset($m['score']) && $m['score'] != 'vs') ? str_replace('-', ' - ', $m['score']) : 'VS'; ?>
+                                    </span>
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                         <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
@@ -361,13 +364,13 @@ if ($auth) {
                         }
                         foreach(['today','yesterday','tomorrow'] as $dayKey):
                             $dayM = array_values(array_filter($allM, function($m) use ($dayKey) {
-                                $ts = isset($m['timestamp']) ? (int)$m['timestamp'] : 0;
+                                $ts = $m['timestamp'] ?? 0;
                                 if(!$ts) return false;
-
-                                $mDate = gmdate('Y-m-d', $ts);
-                                $today = gmdate('Y-m-d');
-                                $yest  = gmdate('Y-m-d', strtotime('-1 day'));
-                                $tom   = gmdate('Y-m-d', strtotime('+1 day'));
+                                
+                                $mDate = date('Y-m-d', $ts);
+                                $today = date('Y-m-d');
+                                $yest  = date('Y-m-d', strtotime('-1 day'));
+                                $tom   = date('Y-m-d', strtotime('+1 day'));
 
                                 if ($dayKey == 'today') {
                                     $isToday = ($mDate == $today);
@@ -400,7 +403,9 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                    <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
+                                        <?php echo (isset($m['score']) && $m['score'] != 'vs') ? str_replace('-', ' - ', $m['score']) : 'VS'; ?>
+                                    </span>
                                     <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                         <img src="<?php echo $m['awayLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                         <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $m['awayTeam']; ?></span>
@@ -666,11 +671,11 @@ if ($auth) {
                 let addedMatchIds = <?php 
                     $addedIds = [];
                     foreach($matches as $mm) {
-                        if(!empty($mm['event_key'])) $addedIds[] = (string)$mm['event_key'];
-                        elseif(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
+                        $id = isset($mm['event_key']) ? (string)$mm['event_key'] : (isset($mm['id']) ? (string)$mm['id'] : '');
+                        if($id !== '') $addedIds[] = $id;
                     }
                     echo json_encode(array_values(array_unique($addedIds))); 
-                ?>.map(id => String(id)); 
+                ?>;
                 
                 window.addEventListener('DOMContentLoaded', () => {
                     // تشغيل العرض فوراً لليوم
@@ -781,7 +786,9 @@ if ($auth) {
                                             <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.homeTeam}</span>
                                             <img src="${m.homeLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                         </div>
-                                        <span style="background:var(--bg-main); padding:2px 8px; border-radius:6px; color:var(--text-dim); font-size:11px; font-weight:800;">VS</span>
+                                        <span style="background:var(--bg-main); padding:3px 10px; border-radius:6px; color:var(--text-main); font-size:12px; font-weight:800; min-width:45px; text-align:center; border:1px solid var(--border-color);">
+                                            ${(m.score && m.score !== 'vs' && m.score !== '-') ? m.score.replace('-', ' - ') : 'VS'}
+                                        </span>
                                         <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
                                             <img src="${m.awayLogo}" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                             <span style="font-weight:700; font-size:14px; color:var(--text-main);">${m.awayTeam}</span>
@@ -830,7 +837,7 @@ if ($auth) {
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
 
-                    const matchData = apiBank.find(m => String(m.id) === String(id));
+                    const matchData = apiBank.find(m => String(m.id || m.event_key || "") === String(id));
                     if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
 
                     const btn = document.querySelector('#addApiModal button');
