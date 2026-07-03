@@ -30,10 +30,21 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
         }
     }
 
+    // معالجة النتيجة فوراً لتظهر بشكل صحيح
+    $score = $data['score'] ?? 'vs';
+    $hScore = '0';
+    $aScore = '0';
+    if (strpos($score, '-') !== false) {
+        $parts = explode('-', $score);
+        $hScore = trim($parts[0]);
+        $aScore = trim($parts[1]);
+        $score = $hScore . " - " . $aScore;
+    }
+
     // تنظيف البيانات المضافة
     $newMatch = [
-        "id"           => (string)$data['event_key'],
-        "event_key"    => (string)$data['event_key'],
+        "id"           => (string)$data['id'],
+        "event_key"    => (string)$data['id'],
         "timestamp"    => $data['timestamp'] ?? time(),
         "homeTeam"     => $data['homeTeam'] ?? '',
         "homeLogo"     => $data['homeLogo'] ?? '',
@@ -44,7 +55,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
         "status"       => $data['status'] ?? 'upcoming',
         "status_raw"   => $data['status_raw'] ?? '',
         "status_ar"    => $data['status_ar'] ?? '',
-        "score"        => $data['score'] ?? 'vs',
+        "score"        => $score,
+        "homeScore"    => $hScore,
+        "awayScore"    => $aScore,
         "round"        => $data['round'] ?? '',
         "streamUrl"    => $data['streamUrl'] ?? '#',
         "channel"      => $data['channel'] ?? '',
