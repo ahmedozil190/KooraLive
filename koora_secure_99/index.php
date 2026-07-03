@@ -636,11 +636,12 @@ if ($auth) {
                 let addedMatchIds = <?php 
                     $addedIds = [];
                     foreach($matches as $mm) {
+                        // جمع كل المعرفات الممكنة لضمان الإخفاء
                         if(!empty($mm['event_key'])) $addedIds[] = (string)$mm['event_key'];
-                        elseif(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
+                        if(!empty($mm['id'])) $addedIds[] = (string)$mm['id'];
                     }
                     echo json_encode(array_values(array_unique($addedIds))); 
-                ?>.map(id => String(id)); 
+                ?>;
                 
                 window.addEventListener('DOMContentLoaded', () => {
                     if (apiBank && apiBank.length > 0) {
@@ -682,8 +683,8 @@ if ($auth) {
                     const tomStr = toYMD(tomorrow);
 
                     let filtered = apiBank.filter(m => {
-                        let mId = String(m.id || m.event_key);
-                        if (addedMatchIds.includes(mId)) return false;
+                        let mId = String(m.id || m.event_key || "");
+                        if (addedMatchIds.map(String).includes(mId)) return false;
                         
                         const mDate = new Date(m.timestamp * 1000);
                         const mStr = toYMD(mDate);
