@@ -1,13 +1,5 @@
 {
     "leagues": {},
-    "names": {
-        "World Cup - 1/16-finals": "كأس العالم - دور الـ 32",
-        "World Cup - 1/8-finals": "كأس العالم - دور الـ 16",
-        "World Cup - 1/4-finals": "كأس العالم - ربع النهائي",
-        "World Cup - Semi-finals": "كأس العالم - نصف النهائي",
-        "World Cup - Final": "كأس العالم - النهائي",
-        "World Cup - World Championship": "كأس العالم - دور المجموعات"
-    },
     "teams": {},
     "countries": {},
     "rounds": {}
