@@ -1,5 +1,7 @@
 {
-    "leagues": {},
+    "leagues": {
+        "28": "كأس العالم"
+    },
     "names": {
         "World Cup - 1/16-finals": "كأس العالم - دور الـ 32",
         "World Cup - 1/8-finals": "كأس العالم - دور الـ 16",
