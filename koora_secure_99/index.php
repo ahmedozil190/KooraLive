@@ -831,8 +831,8 @@ if ($auth) {
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
 
-                    const matchData = apiBank.find(m => m.id === id);
-                    if(!matchData) { showToast('لم يتم العثور على بيانات المباراة', 'error'); return; }
+                    const matchData = apiBank.find(m => String(m.id) === String(id));
+                    if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
 
                     const btn = document.querySelector('#addApiModal button');
                     const originalText = btn.innerHTML;
