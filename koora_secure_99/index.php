@@ -166,7 +166,9 @@ if ($auth) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css?v=2.1">
     <style>
-        .status-badge.status-live { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; }
+        .status-badge.status-live { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; position:relative; }
+        .status-badge.status-live::before { content:''; width:6px; height:6px; background:#10b981; border-radius:50%; margin-left:6px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         .status-badge.status-final { background: rgba(107, 114, 128, 0.1) !important; color: #6b7280 !important; border: 1px solid rgba(107, 114, 128, 0.2) !important; }
         .status-badge.status-up { background: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; border: 1px solid rgba(99, 102, 241, 0.2) !important; }
     </style>
@@ -259,6 +261,10 @@ if ($auth) {
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                              $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                              $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                             if ($statusType === 'live' && !empty($m['status_raw'])) {
+                                 if (is_numeric($m['status_raw'])) $stTxt = 'مباشر ' . $m['status_raw'] . '\'';
+                                 elseif ($m['status_raw'] === 'Half Time') $stTxt = 'بين الشوطين';
+                             }
                         ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:18px 25px;">
@@ -345,6 +351,10 @@ if ($auth) {
                             $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                             $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                             $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                            if ($statusType === 'live' && !empty($m['status_raw'])) {
+                                if (is_numeric($m['status_raw'])) $badgeText = 'مباشر ' . $m['status_raw'] . '\'';
+                                elseif ($m['status_raw'] === 'Half Time') $badgeText = 'بين الشوطين';
+                            }
                         ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:18px 25px;">
@@ -710,6 +720,10 @@ if ($auth) {
                             else if(m.status === 'finished') stClass = 'status-final';
                             
                             let stTxt = m.status_ar || 'لم تبدأ بعد';
+                            if (m.status === 'live' && m.status_raw) {
+                                if (!isNaN(m.status_raw)) stTxt = 'مباشر ' + m.status_raw + '\'';
+                                else if (m.status_raw === 'Half Time') stTxt = 'بين الشوطين';
+                            }
 
                             return `
                             <tr style="transition: 0.2s;">
