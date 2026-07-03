@@ -292,48 +292,7 @@ if ($auth) {
                     </table>
                 </div>
             </div>
-            <script>
-                function refreshDashboardTabs() {
-                    const now = new Date();
-                    const todayStr = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
-                    const yest = new Date(); yest.setDate(now.getDate()-1);
-                    const yestStr = yest.getFullYear()+'-'+(yest.getMonth()+1)+'-'+yest.getDate();
-                    const tom = new Date(); tom.setDate(now.getDate()+1);
-                    const tomStr = tom.getFullYear()+'-'+(tom.getMonth()+1)+'-'+tom.getDate();
-
-                    let counts = { today:0, yesterday:0, tomorrow:0 };
-                    document.querySelectorAll('.match-row').forEach(row => {
-                        const ts = row.dataset.ts;
-                        const status = row.dataset.status;
-                        const mDate = new Date(ts * 1000);
-                        const mStr = mDate.getFullYear()+'-'+(mDate.getMonth()+1)+'-'+mDate.getDate();
-                        
-                        let targetDay = '';
-                        if (mStr === todayStr) targetDay = 'today';
-                        else if (mStr === yestStr) {
-                            targetDay = (status === 'live') ? 'today' : 'yesterday';
-                        }
-                        else if (mStr === tomStr) targetDay = 'tomorrow';
-
-                        row.dataset.day = targetDay;
-                        if(targetDay) counts[targetDay]++;
-                        
-                        const currentTab = document.querySelector('.day-tab.active').dataset.day;
-                        row.style.display = (targetDay === currentTab) ? '' : 'none';
-                    });
-                    
-                    ['today','yesterday','tomorrow'].forEach(d => {
-                        const emptyMsg = document.querySelector(`tr[data-day="${d}"][data-empty="1"]`);
-                        if(emptyMsg) emptyMsg.style.display = (counts[d] === 0 && document.querySelector('.day-tab.active').dataset.day === d) ? '' : 'none';
-                    });
-                }
-                function switchTab(el) {
-                    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-                    el.classList.add('active');
-                    refreshDashboardTabs();
-                }
-                window.addEventListener('DOMContentLoaded', refreshDashboardTabs);
-            </script>
+                // تم نقل السكريبت للأسفل ليعمل في كل الأقسام
         <?php elseif($sec == 'current'):
             $allM = json_decode(@file_get_contents($matchesFile), true) ?: [];
             $cur_total = count($allM); $cur_live = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'live'; }));
@@ -1236,5 +1195,65 @@ if ($auth) {
         };
     </script>
 <?php endif; ?>
+    <script>
+        function refreshDashboardTabs() {
+            // استخدام توقيت المتصفح بدقة
+            const now = new Date();
+            const getStr = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            
+            const todayStr = getStr(now);
+            const yest = new Date(); yest.setDate(now.getDate() - 1);
+            const yestStr = getStr(yest);
+            const tom = new Date(); tom.setDate(now.getDate() + 1);
+            const tomStr = getStr(tom);
+
+            let counts = { today: 0, yesterday: 0, tomorrow: 0 };
+            
+            // البحث عن التبويب النشط في القسم الحالي فقط
+            const activeTbody = document.querySelector('#ov-tbody') || document.querySelector('#cur-tbody');
+            if (!activeTbody) return;
+            
+            const tabContainer = activeTbody.closest('.recent-card').querySelector('.day-tabs');
+            const activeTab = tabContainer.querySelector('.day-tab.active').dataset.day;
+
+            activeTbody.querySelectorAll('.match-row').forEach(row => {
+                const ts = parseInt(row.dataset.ts);
+                const status = row.dataset.status;
+                if (!ts) { row.style.display = 'none'; return; }
+
+                const mDate = new Date(ts * 1000);
+                const mStr = getStr(mDate);
+                
+                let targetDay = '';
+                if (mStr === todayStr) targetDay = 'today';
+                else if (mStr === yestStr) {
+                    targetDay = (status === 'live') ? 'today' : 'yesterday';
+                }
+                else if (mStr === tomStr) targetDay = 'tomorrow';
+
+                row.dataset.day = targetDay;
+                if (targetDay) {
+                    if (targetDay === activeTab) counts[activeTab]++;
+                    
+                    // إظهار الصف إذا كان يطابق التبويب المختار
+                    row.style.display = (targetDay === activeTab) ? '' : 'none';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // تحديث رسائل الفراغ
+            activeTbody.querySelectorAll('tr[data-empty="1"]').forEach(emptyRow => {
+                const d = emptyRow.dataset.day;
+                emptyRow.style.display = (counts[d] === 0 && d === activeTab) ? '' : 'none';
+            });
+        }
+        function switchTab(el) {
+            document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            refreshDashboardTabs();
+        }
+        window.addEventListener('DOMContentLoaded', refreshDashboardTabs);
+    </script>
 </body>
 </html>
