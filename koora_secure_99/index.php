@@ -292,7 +292,6 @@ if ($auth) {
                     </table>
                 </div>
             </div>
-                // تم نقل السكريبت للأسفل ليعمل في كل الأقسام
         <?php elseif($sec == 'current'):
             $allM = json_decode(@file_get_contents($matchesFile), true) ?: [];
             $cur_total = count($allM); $cur_live = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'live'; }));
