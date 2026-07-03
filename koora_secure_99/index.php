@@ -661,11 +661,7 @@ if ($auth) {
             </style>
 
             <script>
-                const favLeaguesIds = <?php 
-                    $favStr = trim($apiS['fav_leagues'] ?? '');
-                    $favs = !empty($favStr) ? explode(',', $favStr) : [];
-                    echo json_encode($favs); 
-                ?>;
+                const favLeaguesIds = <?php echo json_encode(array_filter(explode(',', $apiS['fav_leagues'] ?? ''))); ?>;
                 let apiBank = <?php echo json_encode($bank); ?>;
                 // قائمة المباريات المضافة بالفعل للموقع
                 let addedMatchIds = <?php 
@@ -686,25 +682,22 @@ if ($auth) {
                 });
 
                 async function loadBank() {
-                    const tbody = document.getElementById('api-bank-body');
                     try {
                         const r = await fetch('api.php?action=get_bank');
                         const data = await r.json();
-                        
-                        if (!data || data.length === 0) {
-                            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-sync fa-spin"></i></div>
-                                <div style="font-weight:700; color:var(--text-sub);">البنك فارغ حالياً. يرجى الانتظار دقيقة للمزامنة أو اضغط <a href="cron_sync.php" target="_blank" style="color:#6366f1;">هنا</a> لتشغيلها يدوياً مرة واحدة.</div>
+                        if (data.error) {
+                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0;">
+                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
                             return;
                         }
-                        
                         apiBank = data;
                         const activeTab = document.querySelector('.day-tab.active').dataset.day;
                         renderBank(activeTab);
                     } catch(e) { 
                         console.error(e); 
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في جلب البيانات. تأكد من إعدادات الـ API.</td></tr>`;
+                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
                     }
                 }
 
