@@ -128,12 +128,14 @@ if ($auth) {
             header("Location: index.php?section=news&cleaned=$count"); exit;
         }
         if (isset($_POST['save_api_mgr'])) {
-            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            $s = json_decode(@file_get_contents($settingsFile), true) ?: []; 
             $s['api_key'] = trim($_POST['api_key']);
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             
-            // محاولة المزامنة الفورية لجعل البيانات تظهر فورا
-            @include('cron_sync.php');
+            // تشغيل المزامنة بشكل آمن عبر رابط خارجي لعدم إبطاء الصفحة أو التسبب في أخطاء
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+            $syncUrl = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/cron_sync.php";
+            @file_get_contents($syncUrl); 
             
             header("Location: index.php?section=api_mgr&success=1"); exit;
         }
