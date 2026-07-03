@@ -206,10 +206,6 @@ if ($auth) {
             <a href="index.php?section=fav_leagues" class="nav-item <?php echo $sec=='fav_leagues'?'active':''; ?>"><i class="fa-solid fa-star"></i> الدوريات المفضلة</a>
             <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
         </div>
-        <?php 
-            // تحميل البنك بشكل عالمي ليكون متاحاً في كل الأقسام
-            $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
-        ?>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
             <a href="index.php?logout=1" class="f-icon" style="color:#ef4444;"><i class="fa-solid fa-power-off"></i></a>
@@ -551,6 +547,7 @@ if ($auth) {
         <?php elseif($sec == 'api_add'): 
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $hasKey = !empty($apiS['api_key']);
+            $bank = json_decode(@file_get_contents($fixturesBank), true) ?: [];
             $arMap = file_exists($arMapFile) ? (json_decode(file_get_contents($arMapFile), true) ?: []) : []; 
             $c_total = count($bank);
             $c_today = count(array_filter($bank, fn($m) => ($m['day']??'') == 'today'));
@@ -620,15 +617,20 @@ if ($auth) {
                             <input type="text" id="add-api-url" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
                         </div>
 
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
                             <div>
                                 <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
                                 <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
-                                <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">الدور / المرحلة</label>
+                                <input type="text" id="add-api-round" class="form-input" placeholder="مثل: دور الـ ١٦" style="width:100%; box-sizing:border-box;">
                             </div>
+                        </div>
+
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">المعلق</label>
+                            <input type="text" id="add-api-comm" class="form-input" placeholder="اسم المعلق" style="width:100%; box-sizing:border-box;">
                         </div>
 
                         <button onclick="confirmAddFromBank()" style="width:100%; height:55px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -726,26 +728,12 @@ if ($auth) {
                         return (a.timestamp || 0) - (b.timestamp || 0);
                     });
 
-                    // تجميع حسب البطولة (بشكل فائق الذكاء: ترجمة نصية أولاً ثم ID)
+                    // تجميع حسب البطولة (بشكل بسيط: ID ثم اسم الدوري)
                     const grouped = filtered.reduce((acc, m) => {
                         const lId = String(m.leagueId);
-                        const lName = (m.league || 'بطولات أخرى').trim();
-                        
-                        // 1. البحث في الترجمة النصية الكاملة (تجاهل المسافات)
-                        let unifiedName = null;
-                        if (arMap.names) {
-                            for (let key in arMap.names) {
-                                if (key.trim() === lName) {
-                                    unifiedName = arMap.names[key];
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        // 2. إذا لم يجد، يبحث في ترجمة الـ ID
-                        if (!unifiedName) {
-                            unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : lName;
-                        }
+                        const lName = m.league || 'بطولات أخرى';
+                        // نستخدم ترجمة الـ ID إذا وجدت، وإلا الاسم الأصلي
+                        const unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : lName;
                         
                         if (!acc[unifiedName]) acc[unifiedName] = [];
                         acc[unifiedName].push(m);
@@ -845,6 +833,7 @@ if ($auth) {
                     const url = document.getElementById('add-api-url').value;
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
+                    const rnd = document.getElementById('add-api-round').value;
 
                     const matchData = apiBank.find(m => String(m.id) === String(id));
                     if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
@@ -860,7 +849,8 @@ if ($auth) {
                             event_key: matchData.id,
                             streamUrl: url,
                             channel: ch,
-                            commentator: comm
+                            commentator: comm,
+                            round: rnd
                         };
                         const r = await fetch('api.php?action=add_from_bank', {
                             method: 'POST',
@@ -887,21 +877,7 @@ if ($auth) {
             $apiS = json_decode(@file_get_contents($settingsFile), true) ?: [];
             $favs = !empty($apiS['fav_leagues']) ? explode(',', $apiS['fav_leagues']) : [];
             $map = json_decode(@file_get_contents($arMapFile), true) ?: [];
-            
-            // جلب الدوريات المترجمة
             $allLeagues = $map['leagues'] ?? [];
-            
-            // جلب أي دوريات إضافية موجودة حالياً في البنك
-            if (!empty($bank)) {
-                foreach($bank as $m) {
-                    $lid = (string)($m['leagueId'] ?? '');
-                    if ($lid && !isset($allLeagues[$lid])) {
-                        // إذا لم تكن مترجمة، نستخدم الاسم القادم من الـ API بشكل مؤقت
-                        $allLeagues[$lid] = $m['league'] ?? 'بطولة غير معروفة';
-                    }
-                }
-            }
-            ksort($allLeagues); // ترتيب حسب الـ ID لسهولة البحث
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
                 <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b; margin-left:10px;"></i>الدوريات المفضلة</h2>
