@@ -82,31 +82,39 @@ function formatMatch($m, $translate) {
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
     // 1. ترجمة اسم البطولة الأساسي
+    $lNameClean = str_replace('–', '-', $lName); // توحيد أنواع الشرطات
+    $parts = explode('-', $lNameClean, 2);
+    $engBase = trim($parts[0]);
+    $engRoundInName = isset($parts[1]) ? trim($parts[1]) : "";
+
     $trBase = $translate('leagues', $lId, null);
     if (!$trBase) {
-        $baseNameOnly = (strpos($lName, ' - ') !== false) ? trim(explode(' - ', $lName, 2)[0]) : $lName;
-        $trBase = $translate('leagues', $baseNameOnly, $baseNameOnly);
+        $trBase = $translate('leagues', $engBase, $engBase);
     }
 
-    // 2. معالجة الدور (الجولة) بشكل مستقل
+    // 2. تحديد الدور المترجم (الأولوية للقاموس)
     $finalRound = "";
-    if (strpos($lName, ' - ') !== false) {
-        $rPart = trim(explode(' - ', $lName, 2)[1]);
-        if ($rPart !== "World Championship" && $rPart !== "Regular season") {
-            $finalRound = $translate('rounds', $rPart, $rPart);
-        }
+    $rField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
+    
+    // فحص الدور من الاسم أو الحقل
+    $roundSource = !empty($engRoundInName) ? $engRoundInName : $rField;
+    if (!empty($roundSource) && $roundSource !== "World Championship" && $roundSource !== "Regular season") {
+        $finalRound = $translate('rounds', $roundSource, $roundSource);
     }
-    // دعم حقل Round المنفصل
-    $rField = $m['league_round'] ?? ($m['event_round'] ?? '');
-    if (!empty($rField)) {
-        $frField = $translate('rounds', $rField, $rField);
-        if ($frField !== $rField || empty($finalRound)) $finalRound = $frField;
+    
+    // إذا كان هناك دور في الحقل مختلف عن الاسم، نترجمه أيضاً
+    if (!empty($rField) && $rField !== $engRoundInName) {
+        $trField = $translate('rounds', $rField, $rField);
+        if ($trField !== $rField) $finalRound = $trField;
     }
 
-    // 3. التجميع النهائي
+    // 3. التجميع النهائي الذكي
     $lTr = $trBase;
-    if (!empty($finalRound) && $finalRound !== $trBase && strpos($lTr, (string)$finalRound) === false) {
-        $lTr = $trBase . ' - ' . $finalRound;
+    if (!empty($finalRound) && $finalRound !== $trBase) {
+        // نمنع تكرار كلمة "كأس العالم" إذا كانت موجودة في الدور أيضاً
+        if (strpos($trBase, $finalRound) === false && strpos($finalRound, $trBase) === false) {
+            $lTr = $trBase . ' - ' . $finalRound;
+        }
     }
 
     // الحالة
