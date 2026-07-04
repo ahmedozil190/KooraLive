@@ -315,7 +315,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                    <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -423,7 +423,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 10px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                    <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -799,8 +799,13 @@ if ($auth) {
                                 
                                 let stTxt = m.status_ar || 'لم تبدأ بعد';
                                 if (m.status === 'live' && m.status_raw) {
-                                    if (!isNaN(m.status_raw)) stTxt = 'مباشر ' + m.status_raw + '\'';
-                                    else if (m.status_raw === 'Half Time') stTxt = 'بين الشوطين';
+                                    if (m.status_raw === 'Half Time' || m.status_raw === 'HT') {
+                                        stTxt = 'بين الشوطين';
+                                    } else {
+                                        stTxt = 'مباشر ' + m.status_raw + (!isNaN(m.status_raw) ? "'" : "");
+                                    }
+                                } else if (m.status === 'finished' && m.status_raw === 'After Pen.') {
+                                    stTxt = 'انتهت (ركلات)';
                                 }
 
                                 html += `
@@ -811,7 +816,7 @@ if ($auth) {
                                                 <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
                                                 <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                             </div>
-                                            <span style="background:var(--bg-main); padding:4px 8px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:60px; min-width:60px; max-width:60px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                            <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                                 ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
                                             </span>
                                             <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -853,6 +858,7 @@ if ($auth) {
                     document.getElementById('add-api-url').value = '';
                     document.getElementById('add-api-channel').value = '';
                     document.getElementById('add-api-comm').value = '';
+                    document.getElementById('add-api-round').value = '';
                 }
 
                 async function confirmAddFromBank() {
@@ -865,7 +871,9 @@ if ($auth) {
                     const matchData = apiBank.find(m => String(m.id) === String(id));
                     if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
 
-                    const btn = document.querySelector('#addApiModal button');
+                    const btn = document.querySelector('#addApiModal button[onclick*="confirmAddFromBank"]');
+                    if(!btn) return;
+                    
                     const originalText = btn.innerHTML;
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
@@ -884,16 +892,26 @@ if ($auth) {
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify(payload)
                         });
-                        const d = await r.json();
-                        if(d.success) {
+                        
+                        const text = await r.text();
+                        let d;
+                        try { d = JSON.parse(text); } catch(e) { throw new Error('استجابة غير صالحة من السيرفر: ' + text); }
+
+                        if(d && d.success) {
                             showToast('تم بنجاح! المباراة الآن حية في الموقع ✅', 'success');
                             addedMatchIds.push(String(id));
                             closeApiModal();
                             renderBank(document.querySelector('.day-tab.active').dataset.day);
+                        } else {
+                            alert('فشلت الإضافة: ' + (d.error || 'سبب غير معروف'));
                         }
-                    } catch(e) { showToast('خطأ في الاتصال', 'error'); }
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
+                    } catch(e) { 
+                        console.error(e);
+                        alert('حدث خطأ: ' + e.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
                 }
 
                 loadBank();
