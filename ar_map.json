@@ -1,13 +1,10 @@
 {
     "leagues": {
         "28": "كأس العالم",
-        "World Cup": "كأس العالم",
-        "World Cup - World Championship": "كأس العالم"
+        "334": "الدوري المصري"
     },
     "teams": {},
-    "countries": {
-        "Worldcup": "كأس العالم"
-    },
+    "countries": {},
     "rounds": {
         "1/16-finals": "دور الـ 32",
         "1/8-finals": "دور الـ 16",
