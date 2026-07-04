@@ -769,12 +769,32 @@ if ($auth) {
                         return (a.timestamp || 0) - (b.timestamp || 0);
                     });
 
-                    // تجميع حسب البطولة (بشكل بسيط: ID ثم اسم الدوري)
+                    // تجميع حسب البطولة (بشكل متطور: يدعم الجولات)
                     const grouped = filtered.reduce((acc, m) => {
                         const lId = String(m.leagueId);
-                        const lName = m.league || 'بطولات أخرى';
-                        // نستخدم ترجمة الـ ID إذا وجدت، وإلا الاسم الأصلي
-                        const unifiedName = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : lName;
+                        const lRaw = m.league || 'بطولات أخرى';
+                        
+                        // 1. فصل أجزاء الاسم الأصلي
+                        const cleanL = lRaw.replace(/–| - /g, '-');
+                        const parts = cleanL.split('-');
+                        const engBase = parts[0].trim();
+                        const engRound = parts[1] ? parts[1].trim() : "";
+
+                        // 2. ترجمة البطولة (ID ثم اسم)
+                        let trBase = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId] : 
+                                     ((arMap.leagues && arMap.leagues[engBase]) ? arMap.leagues[engBase] : engBase);
+                        
+                        // 3. ترجمة الدور
+                        const apiRound = (m.round || "").trim();
+                        const activeRound = apiRound ? apiRound : engRound;
+                        let trRound = (activeRound && arMap.rounds && arMap.rounds[activeRound]) ? arMap.rounds[activeRound] : activeRound;
+                        if (["World Championship", "Regular season", "World Cup"].includes(trRound)) trRound = "";
+
+                        // 4. دمج نهائي
+                        let unifiedName = trBase;
+                        if (trRound && trRound !== trBase && !trBase.includes(trRound)) {
+                            unifiedName = trBase + ' - ' + trRound;
+                        }
                         
                         if (!acc[unifiedName]) acc[unifiedName] = [];
                         acc[unifiedName].push(m);
@@ -893,9 +913,14 @@ if ($auth) {
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
 
                     try {
+                        // الحصول على الاسم المترجم النهائي من العرض
+                        const leagueHeader = document.querySelector(`tr[class="league-group-header"]:has(+ tr button[onclick*="${id}"]) span`);
+                        const finalLeagueName = leagueHeader ? leagueHeader.innerText : matchData.league;
+
                         const payload = {
                             ...matchData,
                             event_key: matchData.id,
+                            league: finalLeagueName, // نرسل الاسم المترجم المدمج
                             streamUrl: url,
                             channel: ch,
                             commentator: comm,
