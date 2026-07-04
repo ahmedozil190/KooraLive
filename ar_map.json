@@ -7,7 +7,15 @@
     "teams": {},
     "countries": {
         "Algeria": "الجزائر",
-        "Switzerland": "سويسرا"
+        "Egypt": "مصر",
+        "Australia": "استراليا",
+        "Switzerland": "سويسرا",
+        "Ghana": "ألمانيا",
+        "Cape Verde": "فرنسا",
+        "Colombia": "اسبانيا",
+        "Argentina": "ايطاليا",
+        "Canada": "كندا",
+        "Morocco": "المغرب"
     },
     "rounds": {
         "1/16-finals": "دور الـ 32",
