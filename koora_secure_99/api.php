@@ -33,34 +33,41 @@ if (isset($_GET['action']) && $_GET['action'] === 'add_from_bank') {
     // معالجة النتيجة فوراً لتظهر بشكل صحيح (مع دعم ركلات الترجيح)
     $score = $data['score'] ?? 'vs';
     $statusRaw = $data['status_raw'] ?? '';
+    $statusAr  = $data['status_ar'] ?? '';
     
-    if ($statusRaw === 'After Pen.' && !empty($data['event_penalty_result'])) {
-        $baseScore = $data['event_ft_result'] ?: '0 - 0';
-        $penScore  = $data['event_penalty_result'];
-        $pHome = "0"; $pAway = "0";
-        if (strpos($penScore, '-') !== false) {
-            $pParts = explode('-', $penScore);
-            $pHome = trim($pParts[0]);
-            $pAway = trim($pParts[1]);
+    // تحديث الحالة العربية بناءً على الحالة الخام
+    if ($statusRaw === 'AET' || $statusRaw === 'After ET') {
+        $statusAr = 'انتهت - إضافي';
+    } elseif ($statusRaw === 'AP' || $statusRaw === 'After Pen.') {
+        $statusAr = 'انتهت - ركلات';
+        if (!empty($data['event_penalty_result'])) {
+            $baseScore = $data['event_ft_result'] ?: '0 - 0';
+            $penScore  = $data['event_penalty_result'];
+            $pHome = "0"; $pAway = "0";
+            if (strpos($penScore, '-') !== false) {
+                $pParts = explode('-', $penScore);
+                $pHome = trim($pParts[0]);
+                $pAway = trim($pParts[1]);
+            }
+            $baseScore = str_replace('-', ' - ', $baseScore);
+            $score = "($pHome) $baseScore ($pAway)";
         }
-        $score = "($pHome) $baseScore ($pAway)";
-    } else {
-        if (strpos($score, '-') !== false) {
-            $parts = explode('-', $score);
-            $hScore = trim($parts[0] ?? '0');
-            $aScore = trim($parts[1] ?? '0');
-            $score = $hScore . " - " . $aScore;
-        }
+    } elseif ($statusRaw === 'FT' || $statusRaw === 'Finished') {
+        $statusAr = 'انتهت المباراة';
+    }
+
+    if (strpos($score, '-') !== false && strpos($score, '(') === false) {
+        $score = str_replace('-', ' - ', $score);
     }
 
     $hScore = "0"; $aScore = "0";
-    if (preg_match('/\(?\d+\)?\s*(\d+)\s*-\s*(\d+)\s*\(?\d+\)?/', $score, $matches)) {
-        $hScore = $matches[1];
-        $aScore = $matches[2];
+    if (preg_match('/\(?(\d+)\)?\s*(\d+)\s*-\s*(\d+)\s*\(?(\d+)\)?/', $score, $matchScores)) {
+        $hScore = $matchScores[2];
+        $aScore = $matchScores[3];
     } elseif (strpos($score, '-') !== false) {
         $parts = explode('-', $score);
-        $hScore = trim($parts[0]);
-        $aScore = trim($parts[1]);
+        $hScore = trim($parts[0] ?? '0');
+        $aScore = trim($parts[1] ?? '0');
     }
 
     // تنظيف البيانات المضافة

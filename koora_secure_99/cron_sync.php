@@ -104,7 +104,9 @@ function formatMatch($m, $translate) {
 
     // الحالة
     $statusMapAr = [
-        'Finished' => 'انتهت', 'FT' => 'انتهت', 'After ET' => 'انتهت (إضافي)', 'After Pen.' => 'انتهت (ركلات)',
+        'Finished' => 'انتهت المباراة', 'FT' => 'انتهت المباراة', 
+        'After ET' => 'انتهت - إضافي', 'AET' => 'انتهت - إضافي',
+        'After Pen.' => 'انتهت - ركلات', 'AP' => 'انتهت - ركلات',
         'Half Time' => 'استراحة', 'HT' => 'استراحة', 'Postponed' => 'مؤجلة', 'Cancelled' => 'تم الإلغاء',
         'Abandoned' => 'متوقفة', 'LIVE' => 'مباشر', '1st Half' => 'الشوط الأول', '2nd Half' => 'الشوط الثاني',
         'Not Started' => 'لم تبدأ بعد'
@@ -113,7 +115,7 @@ function formatMatch($m, $translate) {
     $liveStatus = 'upcoming';
     if (in_array($statusRaw, ['LIVE', '1st Half', '2nd Half', 'HT', 'Half Time', 'Extra Time', 'Penalty Shootout']) || is_numeric($statusRaw) || strpos($statusRaw, '+') !== false) {
         $liveStatus = 'live';
-    } elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'After Pen.'])) {
+    } elseif (in_array($statusRaw, ['FT', 'Finished', 'After ET', 'AET', 'After Pen.', 'AP'])) {
         $liveStatus = 'finished';
     }
 
@@ -133,11 +135,10 @@ function formatMatch($m, $translate) {
     $score  = ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs'));
     
     // تصحيح النتيجة في حالة ركلات الترجيح لتجنب أخطاء الـ API
-    if ($statusRaw === 'After Pen.' && !empty($m['event_penalty_result'])) {
-        $baseScore = $m['event_ft_result'] ?: '0 - 0'; // النتيجة الأصلية قبل الركلات
-        $penScore  = $m['event_penalty_result'];      // نتيجة الركلات فقط
+    if (in_array($statusRaw, ['After Pen.', 'AP']) && !empty($m['event_penalty_result'])) {
+        $baseScore = $m['event_ft_result'] ?: '0 - 0';
+        $penScore  = $m['event_penalty_result'];
         
-        // استخراج أرقام الركلات (نتوقع صيغة "2 - 4")
         $pHome = "0"; $pAway = "0";
         if (strpos($penScore, '-') !== false) {
             $pParts = explode('-', $penScore);
@@ -145,8 +146,10 @@ function formatMatch($m, $translate) {
             $pAway = trim($pParts[1]);
         }
         
-        // بناء النتيجة بالشكل المطلوب: (ركلات الفريق الأول) نتيجة المباراة (ركلات الفريق الثاني)
+        $baseScore = str_replace('-', ' - ', $baseScore);
         $score = "($pHome) $baseScore ($pAway)";
+    } elseif (strpos($score, '-') !== false) {
+        $score = str_replace('-', ' - ', $score);
     }
 
     $hScore = "0"; $aScore = "0";

@@ -341,6 +341,17 @@ if ($auth) {
                                 $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                                 $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                                  $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                                 
+                                 // دعم الحالات المتقدمة في العرض
+                                 $statusRaw = isset($m['status_raw']) ? $m['status_raw'] : '';
+                                 if ($statusType === 'finished') {
+                                     if ($statusRaw === 'AET' || $statusRaw === 'After ET') {
+                                         $statusMap['finished'] = 'انتهت - إضافي';
+                                     } elseif ($statusRaw === 'AP' || $statusRaw === 'After Pen.') {
+                                         $statusMap['finished'] = 'انتهت - ركلات';
+                                     }
+                                 }
+                                 
                                  $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                                  if ($statusType === 'live' && !empty($m['status_raw'])) {
                                      if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
