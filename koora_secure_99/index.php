@@ -79,13 +79,22 @@ if ($auth) {
             $ms = json_decode(@file_get_contents($matchesFile), true) ?: [];
             foreach ($ms as &$m) {
                 if ($m['id'] == $mid) {
-                    $m['status']      = isset($_POST['edit_status']) ? $_POST['edit_status'] : $m['status'];
+                    $newStatus = isset($_POST['edit_status']) ? $_POST['edit_status'] : $m['status'];
+                    
+                    // إذا تم تغيير الحالة لـ "انتهت"، نقوم بتغيير النصوص المرافقة أيضاً
+                    if ($newStatus === 'finished') {
+                        $m['status'] = 'finished';
+                        $m['status_ar'] = 'انتهت المباراة';
+                        $m['status_raw'] = 'FT';
+                    } else {
+                        $m['status'] = $newStatus;
+                    }
+
                     $m['channel']     = isset($_POST['edit_channel']) ? $_POST['edit_channel'] : (isset($m['channel']) ? $m['channel'] : '');
                     $m['commentator'] = isset($_POST['edit_commentator']) ? $_POST['edit_commentator'] : (isset($m['commentator']) ? $m['commentator'] : '');
-                    $m['score']       = isset($_POST['edit_score']) ? $_POST['edit_score'] : (isset($m['score']) ? $m['score'] : 'vs');
                     $m['streamUrl']  = isset($_POST['edit_stream']) ? $_POST['edit_stream'] : (isset($m['streamUrl']) ? $m['streamUrl'] : '');
                     
-                    $statusMap = array('live'=>'مباشر','upcoming'=>'قادمة','finished'=>'انتهت');
+                    $statusMap = array('live'=>'مباشر الآن','upcoming'=>'قادمة','finished'=>'انتهت المباراة');
                     $m['status_text'] = isset($statusMap[$m['status']]) ? $statusMap[$m['status']] : $m['status'];
                     break;
                 }
@@ -1143,19 +1152,13 @@ if ($auth) {
                 <form method="POST" action="index.php?section=<?php echo $sec; ?>">
                     <input type="hidden" name="edit_match_id" id="edit-id">
                     <div style="padding:25px; background:var(--bg-card);">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
-                            <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">النتيجة الحالية</label>
-                                <input type="text" name="edit_score" id="edit-score" class="form-input" style="width:100%; box-sizing:border-box; text-align:center;">
-                            </div>
-                            <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">حالة المباراة</label>
-                                <select name="edit_status" id="edit-status" class="form-input" style="width:100%; box-sizing:border-box; cursor:pointer;">
-                                    <option value="upcoming">لم تبدأ بعد</option>
-                                    <option value="live">جارية الآن</option>
-                                    <option value="finished">انتهت المباراة</option>
-                                </select>
-                            </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">حالة المباراة</label>
+                            <select name="edit_status" id="edit-status" class="form-input" style="width:100%; box-sizing:border-box; cursor:pointer;">
+                                <option value="upcoming">لم تبدأ بعد</option>
+                                <option value="live">جارية الآن</option>
+                                <option value="finished">انتهت المباراة</option>
+                            </select>
                         </div>
 
                         <div style="margin-bottom:15px;">
@@ -1223,7 +1226,6 @@ if ($auth) {
             document.getElementById('edit-channel').value = m.channel || '';
             document.getElementById('edit-commentator').value = m.commentator || '';
             document.getElementById('edit-stream').value = m.streamUrl || '';
-            document.getElementById('edit-score').value = m.score || 'vs';
             document.getElementById('edit-status').value = m.status || 'upcoming';
             document.getElementById('edit-modal').style.display = 'flex';
         }
