@@ -166,6 +166,25 @@ if ($auth) {
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
             header("Location: index.php?section=fav_leagues&success=1"); exit;
         }
+        
+        if (isset($_POST['add_to_map'])) {
+            $nid = trim($_POST['new_league_id']);
+            $nnm = trim($_POST['new_league_name']);
+            if (!empty($nid) && !empty($nnm)) {
+                $map = json_decode(@file_get_contents($arMapFile), true) ?: ['leagues'=>[], 'teams'=>[], 'countries'=>[], 'rounds'=>[]];
+                $map['leagues'][(string)$nid] = $nnm;
+                file_put_contents($arMapFile, json_encode($map, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+                
+                // إضافتها للمفضلة تلقائياً
+                $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+                $favs = !empty($s['fav_leagues']) ? explode(',', $s['fav_leagues']) : [];
+                if (!in_array($nid, $favs)) $favs[] = $nid;
+                $s['fav_leagues'] = implode(',', array_filter($favs));
+                file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+                
+                header("Location: index.php?section=fav_leagues&success=1"); exit;
+            }
+        }
     }
 }
 ?>
@@ -963,11 +982,37 @@ if ($auth) {
             $map = json_decode(@file_get_contents($arMapFile), true) ?: [];
             $allLeagues = $map['leagues'] ?? [];
         ?>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px;">
                 <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b; margin-left:10px;"></i>الدوريات المفضلة</h2>
-                <div class="search-box-api" style="width:300px; position:relative;">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--text-dim);"></i>
-                    <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:12px 40px 12px 15px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:rgba(99,102,241,0.1); color:#6366f1; border:1px solid #6366f1; border-radius:12px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-plus-circle"></i> إضافة بطولة بالـ ID
+                    </button>
+                    <div class="search-box-api" style="width:300px; position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--text-dim);"></i>
+                        <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:12px 40px 12px 15px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- نافذة إضافة بطولة جديدة -->
+            <div id="addLeagueModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+                <div style="background:var(--bg-card); width:90%; max-width:400px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5);">
+                    <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; font-size:17px; font-weight:800; color:var(--text-main);">إضافة بطولة للقاموس</h3>
+                        <div onclick="closeAddLeagueModal()" style="cursor:pointer; opacity:0.5;"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                    <form method="POST" style="padding:25px;">
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">ID البطولة (من الـ API)</label>
+                            <input type="text" name="new_league_id" placeholder="مثال: 28" required style="width:100%; padding:12px; border-radius:10px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); box-sizing:border-box;">
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">الاسم بالعربي</label>
+                            <input type="text" name="new_league_name" placeholder="مثال: الدوري السعودي" required style="width:100%; padding:12px; border-radius:10px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); box-sizing:border-box;">
+                        </div>
+                        <button type="submit" name="add_to_map" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">إضافة وحفظ</button>
+                    </form>
                 </div>
             </div>
 
@@ -1008,6 +1053,9 @@ if ($auth) {
             </style>
 
             <script>
+                function openAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'flex'; }
+                function closeAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'none'; }
+
                 function filterLeagues() {
                     const q = document.getElementById('league-search').value.toLowerCase();
                     document.querySelectorAll('.league-card-item').forEach(item => {
