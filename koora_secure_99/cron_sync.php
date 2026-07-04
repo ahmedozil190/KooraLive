@@ -82,39 +82,28 @@ function formatMatch($m, $translate) {
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
     // 1. ترجمة اسم البطولة الأساسي
-    $lNameClean = str_replace('–', '-', $lName); // توحيد أنواع الشرطات
+    $lNameClean = str_replace(['–', ' -'], '-', $lName);
     $parts = explode('-', $lNameClean, 2);
     $engBase = trim($parts[0]);
-    $engRoundInName = isset($parts[1]) ? trim($parts[1]) : "";
+    $engRound = isset($parts[1]) ? trim($parts[1]) : "";
 
+    // ترجمة البطولة (الأولوية للـ ID)
     $trBase = $translate('leagues', $lId, null);
-    if (!$trBase) {
-        $trBase = $translate('leagues', $engBase, $engBase);
-    }
+    if (!$trBase) $trBase = $translate('leagues', $engBase, $engBase);
 
-    // 2. تحديد الدور المترجم (الأولوية للقاموس)
-    $finalRound = "";
+    // 2. ترجمة الدور (سواء من الاسم أو الحقل المنفصل)
     $rField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
+    $activeRound = !empty($rField) ? $rField : $engRound;
     
-    // فحص الدور من الاسم أو الحقل
-    $roundSource = !empty($engRoundInName) ? $engRoundInName : $rField;
-    if (!empty($roundSource) && $roundSource !== "World Championship" && $roundSource !== "Regular season") {
-        $finalRound = $translate('rounds', $roundSource, $roundSource);
-    }
-    
-    // إذا كان هناك دور في الحقل مختلف عن الاسم، نترجمه أيضاً
-    if (!empty($rField) && $rField !== $engRoundInName) {
-        $trField = $translate('rounds', $rField, $rField);
-        if ($trField !== $rField) $finalRound = $trField;
+    $trRound = "";
+    if (!empty($activeRound) && $activeRound !== "World Championship" && $activeRound !== "Regular season") {
+        $trRound = $translate('rounds', $activeRound, $activeRound);
     }
 
-    // 3. التجميع النهائي الذكي
+    // 3. التجميع النهائي (دمج الدور مع البطولة إذا لم يكن مكرراً)
     $lTr = $trBase;
-    if (!empty($finalRound) && $finalRound !== $trBase) {
-        // نمنع تكرار كلمة "كأس العالم" إذا كانت موجودة في الدور أيضاً
-        if (strpos($trBase, $finalRound) === false && strpos($finalRound, $trBase) === false) {
-            $lTr = $trBase . ' - ' . $finalRound;
-        }
+    if (!empty($trRound) && $trRound !== $trBase && strpos($trBase, (string)$trRound) === false) {
+        $lTr = $trBase . ' - ' . $trRound;
     }
 
     // الحالة
