@@ -185,10 +185,9 @@ if ($auth) {
                 header("Location: index.php?section=fav_leagues&success=1"); exit;
             }
         }
-        }
-    }
+    } // نهاية بلوك الـ POST
     
-    // معالجة طلبات الـ GET المباشرة (مثل الحذف)
+    // معالجة طلبات الـ GET (مثل حذف بطولة من القاموس)
     if (isset($_GET['del_map_id'])) {
         $did = $_GET['del_map_id'];
         $map = json_decode(@file_get_contents($arMapFile), true);
@@ -205,7 +204,7 @@ if ($auth) {
         }
         header("Location: index.php?section=fav_leagues"); exit;
     }
-}
+} // نهاية بلوك الـ auth
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
