@@ -80,27 +80,33 @@ function formatMatch($m, $translate) {
     // الترجمة
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
-    // نظام ترجمة متطور للبطولات
-    $lTr = $translate('leagues', $lId, null);
-    if (!$lTr) {
-        if (strpos($lName, ' - ') !== false) {
-            $parts = explode(' - ', $lName, 2);
-            $base = trim($parts[0]);
-            $round = trim($parts[1]);
-            
-            $trBase = $translate('leagues', $base, $base);
-            $trRound = $translate('rounds', $round, $round);
-            $lTr = ($trBase === $trRound) ? $trBase : $trBase . ' - ' . $trRound;
-        } else {
-            $lTr = $translate('leagues', $lName, $lName);
-        }
+    
+    // 1. ترجمة اسم البطولة الأساسي
+    $trBase = $translate('leagues', $lId, null);
+    if (!$trBase) {
+        $baseNameOnly = (strpos($lName, ' - ') !== false) ? trim(explode(' - ', $lName, 2)[0]) : $lName;
+        $trBase = $translate('leagues', $baseNameOnly, $baseNameOnly);
     }
 
-    // ترجمة الدور الإضافي (إذا وجد في حقل منفصل)
-    $roundRaw = $m['league_round'] ?? ($m['event_round'] ?? '');
-    $roundTr = !empty($roundRaw) ? $translate('rounds', $roundRaw, $roundRaw) : '';
-    if (!empty($roundTr) && strpos($lTr, $roundTr) === false) {
-        $lTr .= ' - ' . $roundTr;
+    // 2. معالجة الدور (الجولة) بشكل مستقل
+    $finalRound = "";
+    if (strpos($lName, ' - ') !== false) {
+        $rPart = trim(explode(' - ', $lName, 2)[1]);
+        if ($rPart !== "World Championship" && $rPart !== "Regular season") {
+            $finalRound = $translate('rounds', $rPart, $rPart);
+        }
+    }
+    // دعم حقل Round المنفصل
+    $rField = $m['league_round'] ?? ($m['event_round'] ?? '');
+    if (!empty($rField)) {
+        $frField = $translate('rounds', $rField, $rField);
+        if ($frField !== $rField || empty($finalRound)) $finalRound = $frField;
+    }
+
+    // 3. التجميع النهائي
+    $lTr = $trBase;
+    if (!empty($finalRound) && $finalRound !== $trBase && strpos($lTr, (string)$finalRound) === false) {
+        $lTr = $trBase . ' - ' . $finalRound;
     }
 
     // الحالة
@@ -221,7 +227,7 @@ if (file_exists($matchesFile)) {
                 $liveM['status_ar']   = $apiM['status_ar'];
                 $liveM['status_text'] = $apiM['status_ar'];
                 
-                // تحديث الترجمة ديناميكياً في حال تم تغييرها في الملف
+                // تحديث الترجمة فورياً لقاعدة البيانات
                 $liveM['league']      = $apiM['league'];
                 $liveM['homeTeam']    = $apiM['homeTeam'];
                 $liveM['awayTeam']    = $apiM['awayTeam'];
