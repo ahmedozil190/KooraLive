@@ -80,7 +80,28 @@ function formatMatch($m, $translate) {
     // الترجمة
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
-    $lTr = $translate('leagues', $lId, $lName);
+    // نظام ترجمة متطور للبطولات
+    $lTr = $translate('leagues', $lId, null);
+    if (!$lTr) {
+        if (strpos($lName, ' - ') !== false) {
+            $parts = explode(' - ', $lName, 2);
+            $base = trim($parts[0]);
+            $round = trim($parts[1]);
+            
+            $trBase = $translate('leagues', $base, $base);
+            $trRound = $translate('rounds', $round, $round);
+            $lTr = ($trBase === $trRound) ? $trBase : $trBase . ' - ' . $trRound;
+        } else {
+            $lTr = $translate('leagues', $lName, $lName);
+        }
+    }
+
+    // ترجمة الدور الإضافي (إذا وجد في حقل منفصل)
+    $roundRaw = $m['league_round'] ?? ($m['event_round'] ?? '');
+    $roundTr = !empty($roundRaw) ? $translate('rounds', $roundRaw, $roundRaw) : '';
+    if (!empty($roundTr) && strpos($lTr, $roundTr) === false) {
+        $lTr .= ' - ' . $roundTr;
+    }
 
     // الحالة
     $statusMapAr = [

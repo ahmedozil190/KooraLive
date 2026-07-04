@@ -1,6 +1,21 @@
 {
-    "leagues": {},
+    "leagues": {
+        "28": "كأس العالم",
+        "World Cup": "كأس العالم",
+        "World Cup - World Championship": "كأس العالم"
+    },
     "teams": {},
-    "countries": {},
-    "rounds": {}
+    "countries": {
+        "Worldcup": "كأس العالم"
+    },
+    "rounds": {
+        "1/16-finals": "دور الـ 32",
+        "1/8-finals": "دور الـ 16",
+        "Quarter-finals": "الربع النهائي",
+        "Semi-finals": "النصف النهائي",
+        "Final": "النهائي",
+        "Round 1": "الجولة 1",
+        "Round 2": "الجولة 2",
+        "Round 3": "الجولة 3"
+    }
 }
