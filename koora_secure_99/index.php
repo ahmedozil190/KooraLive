@@ -283,6 +283,8 @@ if ($auth) {
                             foreach($dayM as $m) {
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
+                                $ts = $m['timestamp'] ?? 0;
+                                $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today');
                                 $grouped[$l][] = $m;
                             }
                         ?>
