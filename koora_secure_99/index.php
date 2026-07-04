@@ -389,7 +389,6 @@ if ($auth) {
                                 return $list;
                             }
                         }
-                        <?php 
                         $dayM = sortMatches($allM);
                         $grouped = [];
                         foreach($dayM as $m) {
