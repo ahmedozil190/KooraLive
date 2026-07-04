@@ -288,7 +288,7 @@ if ($auth) {
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
                             <tr class="league-group-header" <?php 
-                                $leagueDays = array_unique(array_column($leagueMatches, 'day'));
+                                $leagueDays = array_unique(array_column($leagueMatches, 'mDay'));
                                 foreach($leagueDays as $ld) echo 'data-day-'.$ld.'="1" '; 
                             ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
@@ -311,7 +311,7 @@ if ($auth) {
                                      }
                                  }
                             ?>
-                         <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
+                         <tr class="match-row" data-day="<?php echo $m['mDay']; ?>" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
@@ -389,9 +389,16 @@ if ($auth) {
                                 return $list;
                             }
                         }
+                        <?php 
                         $dayM = sortMatches($allM);
                         $grouped = [];
                         foreach($dayM as $m) {
+                            $ts = $m['timestamp'] ?? 0;
+                            $mDay = 'today';
+                            if($ts < strtotime('today')) $mDay = 'yesterday';
+                            elseif($ts >= strtotime('tomorrow')) $mDay = 'tomorrow';
+                            $m['mDay'] = $mDay; 
+
                             $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                             if(!isset($grouped[$l])) $grouped[$l] = [];
                             $grouped[$l][] = $m;
@@ -399,7 +406,7 @@ if ($auth) {
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
                             <tr class="league-group-header" <?php 
-                                $leagueDays = array_unique(array_column($leagueMatches, 'day'));
+                                $leagueDays = array_unique(array_column($leagueMatches, 'mDay'));
                                 foreach($leagueDays as $ld) echo 'data-day-'.$ld.'="1" '; 
                             ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
@@ -422,7 +429,7 @@ if ($auth) {
                                     }
                                 }
                             ?>
-                         <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
+                         <tr class="match-row" data-day="<?php echo $m['mDay']; ?>" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
                              <td style="padding:12px 25px;">
                                 <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
@@ -1262,28 +1269,42 @@ if ($auth) {
             let counts = {today:0, yesterday:0, tomorrow:0};
             
             rows.forEach(r => {
+                // إخفاء صفوف الرسائل الفارغة افتراضياً
                 if(r.dataset.empty) { r.style.display = 'none'; return; }
                 
-                // التحكم في رؤوس البطولات
-                if(r.dataset.leagueHeader) {
-                    r.style.display = r.hasAttribute('data-day-' + activeDay) ? '' : 'none';
+                // التحكم في رؤوس البطولات (League Headers)
+                if(r.classList.contains('league-group-header') || r.dataset.leagueHeader) {
+                    if(r.hasAttribute('data-day-' + activeDay)) {
+                         r.style.display = '';
+                    } else {
+                         r.style.display = 'none';
+                    }
                     return;
                 }
 
-                // التحكم في المباريات العادية
+                // التحكم في صفوف المباريات (Match Rows)
                 if(r.dataset.day) {
                     if(r.dataset.day === activeDay){
                         const txt = r.innerText.toLowerCase();
-                        if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; }
-                        else { r.style.display = 'none'; }
+                        if(!search || txt.includes(search)){ 
+                            r.style.display = ''; 
+                            counts[activeDay]++; 
+                        } else { 
+                            r.style.display = 'none'; 
+                        }
                     } else {
                         r.style.display = 'none';
                     }
                 }
             });
+
+            // إظهار رسالة "لا توجد مباريات" إذا كان العدد صفراً
             document.querySelectorAll('tr[data-empty]').forEach(r => {
-                if(r.dataset.day === activeDay) r.style.display = counts[activeDay] === 0 ? '' : 'none';
-                else r.style.display = 'none';
+                if(r.dataset.day === activeDay) {
+                    r.style.display = (counts[activeDay] === 0) ? '' : 'none';
+                } else {
+                    r.style.display = 'none';
+                }
             });
         }
         function openEditModal(btn) {
