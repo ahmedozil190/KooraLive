@@ -80,27 +80,32 @@ function formatMatch($m, $translate) {
     // الترجمة
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
-    // نظام ترجمة متطور للبطولات
-    $lTr = $translate('leagues', $lId, null);
-    if (!$lTr) {
-        if (strpos($lName, ' - ') !== false) {
-            $parts = explode(' - ', $lName, 2);
-            $base = trim($parts[0]);
-            $round = trim($parts[1]);
-            
-            $trBase = $translate('leagues', $base, $base);
-            $trRound = $translate('rounds', $round, $round);
-            $lTr = ($trBase === $trRound) ? $trBase : $trBase . ' - ' . $trRound;
-        } else {
-            $lTr = $translate('leagues', $lName, $lName);
-        }
+    // 1. ترجمة اسم البطولة الأساسي (بالـ ID أو الجزء الأول من الاسم)
+    $baseNameOnly = (strpos($lName, ' - ') !== false) ? explode(' - ', $lName, 2)[0] : $lName;
+    $trBase = $translate('leagues', $lId, $translate('leagues', $baseNameOnly, $baseNameOnly));
+
+    // 2. البحث عن "الدور" في الاسم المركب (مثل 1/16-finals)
+    $trRound = "";
+    if (strpos($lName, ' - ') !== false) {
+        $roundPart = trim(explode(' - ', $lName, 2)[1]);
+        // نحاول ترجمته، إذا لم نجد ترجمة نستخدمه كما هو (إلا لو كان مساوياً لاسم البطولة)
+        $tempRound = $translate('rounds', $roundPart, null);
+        if ($tempRound) $trRound = $tempRound;
+        elseif ($roundPart !== "World Championship") $trRound = $roundPart; 
+    }
+    
+    // 3. البحث عن "الدور" في الحقول المنفصلة (مثل Round 1)
+    $roundField = $m['league_round'] ?? ($m['event_round'] ?? '');
+    if (!empty($roundField)) {
+        $trRoundField = $translate('rounds', $roundField, $roundField);
+        // نحدث الدور إذا كان الحقل المنفصل يعطي معلومات أكثر
+        if (empty($trRound) || $trRoundField !== $roundField) $trRound = $trRoundField;
     }
 
-    // ترجمة الدور الإضافي (إذا وجد في حقل منفصل)
-    $roundRaw = $m['league_round'] ?? ($m['event_round'] ?? '');
-    $roundTr = !empty($roundRaw) ? $translate('rounds', $roundRaw, $roundRaw) : '';
-    if (!empty($roundTr) && strpos($lTr, $roundTr) === false) {
-        $lTr .= ' - ' . $roundTr;
+    // 4. التجميع النهائي
+    $lTr = $trBase;
+    if (!empty($trRound) && $trRound !== $trBase && strpos($trBase, $trRound) === false) {
+        $lTr .= ' - ' . $trRound;
     }
 
     // الحالة
