@@ -5,7 +5,10 @@
         "Argentino B": "الدوري المصري"
     },
     "teams": {},
-    "countries": {},
+    "countries": {
+        "Algeria": "الجزائر",
+        "Switzerland": "سويسرا"
+    },
     "rounds": {
         "1/16-finals": "دور الـ 32",
         "1/8-finals": "دور الـ 16",
