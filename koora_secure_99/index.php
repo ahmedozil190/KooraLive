@@ -185,6 +185,23 @@ if ($auth) {
                 header("Location: index.php?section=fav_leagues&success=1"); exit;
             }
         }
+        
+        if (isset($_GET['del_map_id'])) {
+            $did = $_GET['del_map_id'];
+            $map = json_decode(@file_get_contents($arMapFile), true);
+            if ($map && isset($map['leagues'][$did])) {
+                unset($map['leagues'][$did]);
+                file_put_contents($arMapFile, json_encode($map, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+                
+                // إزالتها من المفضلة أيضاً
+                $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+                $favs = !empty($s['fav_leagues']) ? explode(',', $s['fav_leagues']) : [];
+                $favs = array_diff($favs, [$did]);
+                $s['fav_leagues'] = implode(',', array_filter($favs));
+                file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            }
+            header("Location: index.php?section=fav_leagues"); exit;
+        }
     }
 }
 ?>
@@ -677,15 +694,9 @@ if ($auth) {
                             <input type="text" id="add-api-url" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
                         </div>
 
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
-                            <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
-                                <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
-                            </div>
-                            <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">الدور / المرحلة</label>
-                                <input type="text" id="add-api-round" class="form-input" placeholder="مثل: دور الـ ١٦" style="width:100%; box-sizing:border-box;">
-                            </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">القناة</label>
+                            <input type="text" id="add-api-channel" class="form-input" placeholder="beIN Sports 1" style="width:100%; box-sizing:border-box;">
                         </div>
 
                         <div style="margin-bottom:20px;">
@@ -911,7 +922,6 @@ if ($auth) {
                     document.getElementById('add-api-url').value = '';
                     document.getElementById('add-api-channel').value = '';
                     document.getElementById('add-api-comm').value = '';
-                    document.getElementById('add-api-round').value = '';
                 }
 
                 async function confirmAddFromBank() {
@@ -919,7 +929,6 @@ if ($auth) {
                     const url = document.getElementById('add-api-url').value;
                     const ch  = document.getElementById('add-api-channel').value;
                     const comm = document.getElementById('add-api-comm').value;
-                    const rnd = document.getElementById('add-api-round').value;
 
                     const matchData = apiBank.find(m => String(m.id) === String(id));
                     if(!matchData) { alert('لم يتم العثور على بيانات المباراة في البنك'); return; }
@@ -942,8 +951,7 @@ if ($auth) {
                             league: finalLeagueName, // نرسل الاسم المترجم المدمج
                             streamUrl: url,
                             channel: ch,
-                            commentator: comm,
-                            round: rnd
+                            commentator: comm
                         };
                         const r = await fetch('api.php?action=add_from_bank', {
                             method: 'POST',
@@ -1000,7 +1008,9 @@ if ($auth) {
                 <div style="background:var(--bg-card); width:90%; max-width:400px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5);">
                     <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                         <h3 style="margin:0; font-size:17px; font-weight:800; color:var(--text-main);">إضافة بطولة للقاموس</h3>
-                        <div onclick="closeAddLeagueModal()" style="cursor:pointer; opacity:0.5;"><i class="fa-solid fa-xmark"></i></div>
+                        <div onclick="closeAddLeagueModal()" style="width:32px; height:32px; border-radius:50%; background:rgba(255,0,0,0.1); color:#ff4757; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
                     </div>
                     <form method="POST" style="padding:25px;">
                         <div style="margin-bottom:15px;">
@@ -1024,16 +1034,21 @@ if ($auth) {
                             <div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-dim);">لا توجد بطولات مترجمة في ar_map.json</div>
                         <?php else: ?>
                             <?php foreach($allLeagues as $lid => $lname): $isChecked = in_array($lid, $favs); ?>
-                                <label class="league-card-item <?php echo $isChecked ? 'active' : ''; ?>" style="display:flex; align-items:center; gap:12px; padding:15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; cursor:pointer; transition:0.2s;">
-                                    <input type="checkbox" name="favs[]" value="<?php echo $lid; ?>" <?php echo $isChecked ? 'checked' : ''; ?> onchange="this.parentElement.classList.toggle('active', this.checked)" style="display:none;">
-                                    <div class="custom-chk" style="width:20px; height:20px; border:2px solid var(--border-color); border-radius:5px; display:flex; align-items:center; justify-content:center; color:transparent; font-size:10px; transition:0.2s; flex-shrink:0;">
-                                        <i class="fa-solid fa-check"></i>
-                                    </div>
-                                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-                                        <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $lname; ?></span>
-                                        <span style="font-size:11px; opacity:0.6; font-weight:800; background:var(--bg-card); padding:3px 8px; border-radius:6px;">ID: <?php echo $lid; ?></span>
-                                    </div>
-                                </label>
+                                <div class="league-card-item <?php echo $isChecked ? 'active' : ''; ?>" style="display:flex; align-items:center; gap:12px; padding:15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; transition:0.2s; position:relative;">
+                                    <label style="flex:1; display:flex; align-items:center; gap:12px; cursor:pointer;">
+                                        <input type="checkbox" name="favs[]" value="<?php echo $lid; ?>" <?php echo $isChecked ? 'checked' : ''; ?> onchange="this.parentElement.parentElement.classList.toggle('active', this.checked)" style="display:none;">
+                                        <div class="custom-chk" style="width:20px; height:20px; border:2px solid var(--border-color); border-radius:5px; display:flex; align-items:center; justify-content:center; color:transparent; font-size:10px; transition:0.2s; flex-shrink:0;">
+                                            <i class="fa-solid fa-check"></i>
+                                        </div>
+                                        <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                                            <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $lname; ?></span>
+                                            <span style="font-size:11px; opacity:0.6; font-weight:800; color:var(--text-sub);">ID: <?php echo $lid; ?></span>
+                                        </div>
+                                    </label>
+                                    <a href="index.php?section=fav_leagues&del_map_id=<?php echo $lid; ?>" onclick="return confirm('حذف البطولة نهائياً من القاموس؟')" style="color:#ef4444; opacity:0.3; transition:0.3s; padding:5px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
