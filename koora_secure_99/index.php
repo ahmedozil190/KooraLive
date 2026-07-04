@@ -281,11 +281,9 @@ if ($auth) {
                             // تجميع المباريات حسب البطولة
                             $grouped = [];
                             foreach($dayM as $m) {
-                                $ts = $m['timestamp'] ?? 0;
-                                $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today');
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
-                                $grouped[$l][] = $m;
+                                 $ts = $m['timestamp'] ?? 0; $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today'); $grouped[$l][] = $m;
                             }
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
