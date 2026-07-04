@@ -1143,6 +1143,21 @@ if ($auth) {
                 <form method="POST" action="index.php?section=<?php echo $sec; ?>">
                     <input type="hidden" name="edit_match_id" id="edit-id">
                     <div style="padding:25px; background:var(--bg-card);">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">النتيجة الحالية</label>
+                                <input type="text" name="edit_score" id="edit-score" class="form-input" style="width:100%; box-sizing:border-box; text-align:center;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">حالة المباراة</label>
+                                <select name="edit_status" id="edit-status" class="form-input" style="width:100%; box-sizing:border-box; cursor:pointer;">
+                                    <option value="upcoming">لم تبدأ بعد</option>
+                                    <option value="live">جارية الآن</option>
+                                    <option value="finished">انتهت المباراة</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div style="margin-bottom:15px;">
                             <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط البث</label>
                             <input type="text" name="edit_stream" id="edit-stream" class="form-input" placeholder="أدخل رابط البث" style="width:100%; box-sizing:border-box;">
@@ -1208,6 +1223,8 @@ if ($auth) {
             document.getElementById('edit-channel').value = m.channel || '';
             document.getElementById('edit-commentator').value = m.commentator || '';
             document.getElementById('edit-stream').value = m.streamUrl || '';
+            document.getElementById('edit-score').value = m.score || 'vs';
+            document.getElementById('edit-status').value = m.status || 'upcoming';
             document.getElementById('edit-modal').style.display = 'flex';
         }
         function closeEditModal() {

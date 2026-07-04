@@ -163,6 +163,11 @@ if (file_exists($matchesFile)) {
     $updatedCount = 0;
 
     foreach ($currentLive as &$liveM) {
+        // إذا كنت قد أنهيت المباراة يدوياً في لوحة التحكم، فلن نسمح للـ Cron بتعديلها مرة أخرى
+        if (isset($liveM['status']) && $liveM['status'] === 'finished') {
+            continue;
+        }
+
         // البحث عن المباراة في بيانات الـ API المجلوبة حديثاً
         foreach ($allMatches as $apiM) {
             if ($liveM['event_key'] == $apiM['id'] || (isset($liveM['id']) && $liveM['id'] == $apiM['id'])) {
