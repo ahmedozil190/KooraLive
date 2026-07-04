@@ -81,24 +81,25 @@ function formatMatch($m, $translate) {
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
-    // 1. ترجمة اسم البطولة الأساسي
-    // 1. ترجمة البطولة (الأولوية للـ ID ثم الاسم الإنجليزي)
+    // 1. استخراج البطولة والجولة من الاسم الإنجليزي (كاحتياط)
     $lNameRaw = str_replace(['–', ' -'], '-', $lName);
     $lParts = explode('-', $lNameRaw, 2);
-    $lBase = trim($lParts[0]);
-    $lRoundInName = isset($lParts[1]) ? trim($lParts[1]) : "";
+    $engBase = trim($lParts[0]);
+    $engRound = isset($lParts[1]) ? trim($lParts[1]) : "";
 
-    $trBase = $translate('leagues', $lId, $translate('leagues', $lBase, $lBase));
+    // 2. ترجمة البطولة (الأولوية للـ ID كمفتاح نصي)
+    $trB = $translate('leagues', (string)$lId, null);
+    if (!$trB) $trB = $translate('leagues', $engBase, $engBase);
 
-    // 2. ترجمة الجولة (من حقل المنفصل أو من الاسم)
-    $rField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
-    $rActive = !empty($rField) ? $rField : $lRoundInName;
-    $trRound = (!empty($rActive) && !in_array($rActive, ["World Championship", "Regular season"])) ? $translate('rounds', $rActive, $rActive) : "";
+    // 3. ترجمة الجولة (من الحقل أو الاسم)
+    $rF = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
+    $rA = !empty($rF) ? $rF : $engRound;
+    $trR = (!empty($rA) && !in_array($rA, ["World Championship", "Regular season", "World Cup"])) ? $translate('rounds', $rA, $rA) : "";
 
-    // 3. التجميع النهائي
-    $lTr = $trBase;
-    if (!empty($trRound) && $trRound !== $trBase) {
-        $lTr = $trBase . ' - ' . $trRound;
+    // 4. التجميع النهائي
+    $lTr = $trB;
+    if (!empty($trR) && $trR !== $trB) {
+        $lTr = $trB . ' - ' . $trR;
     }
 
     // الحالة
