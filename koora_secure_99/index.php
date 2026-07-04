@@ -185,23 +185,25 @@ if ($auth) {
                 header("Location: index.php?section=fav_leagues&success=1"); exit;
             }
         }
-        
-        if (isset($_GET['del_map_id'])) {
-            $did = $_GET['del_map_id'];
-            $map = json_decode(@file_get_contents($arMapFile), true);
-            if ($map && isset($map['leagues'][$did])) {
-                unset($map['leagues'][$did]);
-                file_put_contents($arMapFile, json_encode($map, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-                
-                // إزالتها من المفضلة أيضاً
-                $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
-                $favs = !empty($s['fav_leagues']) ? explode(',', $s['fav_leagues']) : [];
-                $favs = array_diff($favs, [$did]);
-                $s['fav_leagues'] = implode(',', array_filter($favs));
-                file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
-            }
-            header("Location: index.php?section=fav_leagues"); exit;
         }
+    }
+    
+    // معالجة طلبات الـ GET المباشرة (مثل الحذف)
+    if (isset($_GET['del_map_id'])) {
+        $did = $_GET['del_map_id'];
+        $map = json_decode(@file_get_contents($arMapFile), true);
+        if ($map && isset($map['leagues'][$did])) {
+            unset($map['leagues'][$did]);
+            file_put_contents($arMapFile, json_encode($map, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+            
+            // إزالتها من المفضلة أيضاً
+            $s = json_decode(@file_get_contents($settingsFile), true) ?: [];
+            $favs = !empty($s['fav_leagues']) ? explode(',', $s['fav_leagues']) : [];
+            $favs = array_diff($favs, [$did]);
+            $s['fav_leagues'] = implode(',', array_filter($favs));
+            file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+        }
+        header("Location: index.php?section=fav_leagues"); exit;
     }
 }
 ?>
