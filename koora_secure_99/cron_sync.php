@@ -82,28 +82,23 @@ function formatMatch($m, $translate) {
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
     // 1. ترجمة اسم البطولة الأساسي
-    // 1. استخراج الأجزاء الإنجليزية الأصلية من الاسم
-    $rawParts = explode('-', str_replace(['–', ' - '], '-', $lName), 2);
-    $engName = trim($rawParts[0]);
-    $engRound = isset($rawParts[1]) ? trim($rawParts[1]) : "";
+    // 1. ترجمة البطولة (الأولوية للـ ID ثم الاسم الإنجليزي)
+    $lNameRaw = str_replace(['–', ' -'], '-', $lName);
+    $lParts = explode('-', $lNameRaw, 2);
+    $lBase = trim($lParts[0]);
+    $lRoundInName = isset($lParts[1]) ? trim($lParts[1]) : "";
 
-    // 2. ترجمة البطولة (الأولوية للـ ID ثم الاسم الإنجليزي)
-    $trLeague = $translate('leagues', (string)$lId, null);
-    if (!$trLeague) $trLeague = $translate('leagues', $engName, $engName);
+    $trBase = $translate('leagues', $lId, $translate('leagues', $lBase, $lBase));
 
-    // 3. تحديد الجولة (من حقل المنفصل أو من الاسم)
-    $apiRound = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
-    $roundToTranslate = !empty($apiRound) ? $apiRound : $engRound;
-    
-    $trRound = "";
-    if (!empty($roundToTranslate) && !in_array($roundToTranslate, ["World Championship", "Regular season"])) {
-        $trRound = $translate('rounds', $roundToTranslate, $roundToTranslate);
-    }
+    // 2. ترجمة الجولة (من حقل المنفصل أو من الاسم)
+    $rField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
+    $rActive = !empty($rField) ? $rField : $lRoundInName;
+    $trRound = (!empty($rActive) && !in_array($rActive, ["World Championship", "Regular season"])) ? $translate('rounds', $rActive, $rActive) : "";
 
-    // 4. التجميع النهائي (دمج البطولة مع الجولة)
-    $lTr = $trLeague;
-    if (!empty($trRound) && $trRound !== $trLeague) {
-        $lTr = $trLeague . ' - ' . $trRound;
+    // 3. التجميع النهائي
+    $lTr = $trBase;
+    if (!empty($trRound) && $trRound !== $trBase) {
+        $lTr = $trBase . ' - ' . $trRound;
     }
 
     // الحالة
