@@ -283,7 +283,9 @@ if ($auth) {
                             foreach($dayM as $m) {
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
-                                 $ts = $m['timestamp'] ?? 0; $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today'); $grouped[$l][] = $m;
+                                 $ts = $m['timestamp'] ?? 0;
+                                 $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today');
+                                 $grouped[$l][] = $m;
                             }
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
@@ -1264,6 +1266,36 @@ if ($auth) {
         }
         function filterMatches() {
             const search = (document.getElementById('cur-search')?.value || '').toLowerCase();
+            const tbody = document.querySelector('#ov-tbody') || document.querySelector('#cur-tbody');
+            if(!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            let counts = {today:0, yesterday:0, tomorrow:0};
+            rows.forEach(r => {
+                if(r.dataset.empty) { r.style.display = 'none'; return; }
+                if(r.classList.contains('league-group-header')) return;
+                if(r.dataset.day) {
+                    if(r.dataset.day === activeDay){
+                        const txt = r.innerText.toLowerCase();
+                        if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; } else { r.style.display = 'none'; }
+                    } else { r.style.display = 'none'; }
+                }
+            });
+            let lastHeader = null; let hasVisible = false;
+            rows.forEach(r => {
+                if(r.classList.contains('league-group-header')) {
+                    if(lastHeader) lastHeader.style.display = hasVisible ? '' : 'none';
+                    lastHeader = r; hasVisible = false;
+                } else if(!r.dataset.empty && r.style.display !== 'none') {
+                    hasVisible = true;
+                }
+            });
+            if(lastHeader) lastHeader.style.display = hasVisible ? '' : 'none';
+            tbody.querySelectorAll('tr[data-empty]').forEach(r => {
+                if(r.dataset.day === activeDay) r.style.display = (counts[activeDay] === 0) ? '' : 'none'; else r.style.display = 'none';
+            });
+        }
+        function _skipped_old_filterMatches() {
+            const search = (document.getElementById('cur-search')?.value || '').toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
             let counts = {today:0, yesterday:0, tomorrow:0};
             
@@ -1400,55 +1432,50 @@ if ($auth) {
 <?php endif; ?>
     <script>
         function refreshDashboardTabs() {
-            // استخدام توقيت المتصفح بدقة
             const now = new Date();
             const getStr = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            
             const todayStr = getStr(now);
             const yest = new Date(); yest.setDate(now.getDate() - 1);
             const yestStr = getStr(yest);
             const tom = new Date(); tom.setDate(now.getDate() + 1);
             const tomStr = getStr(tom);
 
-            let counts = { today: 0, yesterday: 0, tomorrow: 0 };
-            
-            // البحث عن التبويب النشط في القسم الحالي فقط
             const activeTbody = document.querySelector('#ov-tbody') || document.querySelector('#cur-tbody');
             if (!activeTbody) return;
             
-            const tabContainer = activeTbody.closest('.recent-card').querySelector('.day-tabs');
-            const activeTab = tabContainer.querySelector('.day-tab.active').dataset.day;
+            const activeTab = activeTbody.closest('.recent-card').querySelector('.day-tab.active').dataset.day;
+            let count = 0;
+            const rows = Array.from(activeTbody.querySelectorAll('tr'));
 
-            activeTbody.querySelectorAll('.match-row').forEach(row => {
+            rows.forEach(row => {
+                if(row.classList.contains('league-group-header')) return;
+                if(row.dataset.empty) { row.style.display = 'none'; return; }
+
                 const ts = parseInt(row.dataset.ts);
-                const status = row.dataset.status;
                 if (!ts) { row.style.display = 'none'; return; }
-
                 const mDate = new Date(ts * 1000);
                 const mStr = getStr(mDate);
                 
-                let targetDay = '';
-                if (mStr === todayStr) targetDay = 'today';
-                else if (mStr === yestStr) {
-                    targetDay = (status === 'live') ? 'today' : 'yesterday';
-                }
-                else if (mStr === tomStr) targetDay = 'tomorrow';
+                let target = (mStr === todayStr) ? 'today' : (mStr === yestStr ? 'yesterday' : (mStr === tomStr ? 'tomorrow' : ''));
+                row.dataset.day = target;
+                if (target === activeTab) { row.style.display = ''; count++; }
+                else row.style.display = 'none';
+            });
 
-                row.dataset.day = targetDay;
-                if (targetDay) {
-                    if (targetDay === activeTab) counts[activeTab]++;
-                    
-                    // إظهار الصف إذا كان يطابق التبويب المختار
-                    row.style.display = (targetDay === activeTab) ? '' : 'none';
-                } else {
-                    row.style.display = 'none';
+            // إخفاء العناوين الفارغة
+            let lastH = null; let hasV = false;
+            rows.forEach(r => {
+                if(r.classList.contains('league-group-header')) {
+                    if(lastH) lastH.style.display = hasV ? '' : 'none';
+                    lastH = r; hasV = false;
+                } else if(!r.dataset.empty && r.style.display !== 'none') {
+                    hasV = true;
                 }
             });
-            
-            // تحديث رسائل الفراغ
-            activeTbody.querySelectorAll('tr[data-empty="1"]').forEach(emptyRow => {
-                const d = emptyRow.dataset.day;
-                emptyRow.style.display = (counts[d] === 0 && d === activeTab) ? '' : 'none';
+            if(lastH) lastH.style.display = hasV ? '' : 'none';
+
+            activeTbody.querySelectorAll('tr[data-empty="1"]').forEach(er => {
+                er.style.display = (count === 0 && er.dataset.day === activeTab) ? '' : 'none';
             });
         }
         function switchTab(el) {
