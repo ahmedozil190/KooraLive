@@ -81,21 +81,30 @@ function formatMatch($m, $translate) {
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
-    // 1. ترجمة اسم البطولة الأساسي
-    // 1. ترجمة البطولة (الأولوية للـ ID ثم الاسم الإنجليزي)
-    $lNameRaw = str_replace(['–', ' -'], '-', $lName);
-    $lParts = explode('-', $lNameRaw, 2);
-    $lBase = trim($lParts[0]);
-    $lRoundInName = isset($lParts[1]) ? trim($lParts[1]) : "";
+    // 1. تحديد اسم البطولة (ترجمة الـ ID أو الاسم)
+    $trBase = $translate('leagues', (string)$lId, null);
+    if (!$trBase) $trBase = $translate('leagues', $lId, null); // تجربة كرقم
+    if (!$trBase) {
+        $lNameClean = str_replace([' – ', ' - ', '–', '-'], '|', $lName);
+        $parts = explode('|', $lNameClean);
+        $engB = trim($parts[0]);
+        $trBase = $translate('leagues', $engB, $engB);
+    }
 
-    $trBase = $translate('leagues', $lId, $translate('leagues', $lBase, $lBase));
-
-    // 2. ترجمة الجولة (من حقل المنفصل أو من الاسم)
+    // 2. تحديد الجولة (من الاسم أو الحقل)
+    $lNameClean = str_replace([' – ', ' - ', '–'], '-', $lName);
+    $parts = explode('-', $lNameClean, 2);
+    $engR = isset($parts[1]) ? trim($parts[1]) : "";
+    
     $rField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
-    $rActive = !empty($rField) ? $rField : $lRoundInName;
-    $trRound = (!empty($rActive) && !in_array($rActive, ["World Championship", "Regular season"])) ? $translate('rounds', $rActive, $rActive) : "";
+    $activeR = !empty($rField) ? $rField : $engR;
+    
+    $trRound = "";
+    if(!empty($activeR) && !in_array($activeR, ["World Championship", "Regular season", "World Cup"])) {
+        $trRound = $translate('rounds', $activeR, $activeR);
+    }
 
-    // 3. التجميع النهائي
+    // 3. الدمج النهائي
     $lTr = $trBase;
     if (!empty($trRound) && $trRound !== $trBase) {
         $lTr = $trBase . ' - ' . $trRound;
