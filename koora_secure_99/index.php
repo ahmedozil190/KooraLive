@@ -81,11 +81,15 @@ if ($auth) {
                 if ($m['id'] == $mid) {
                     $newStatus = isset($_POST['edit_status']) ? $_POST['edit_status'] : $m['status'];
                     
-                    // إذا تم تغيير الحالة لـ "انتهت"، نقوم بتغيير النصوص المرافقة أيضاً
+                    // إذا تم تغيير الحالة لـ "انتهت" أو "لم تبدأ بعد"، نقوم بتطهير النصوص القديمة
                     if ($newStatus === 'finished') {
                         $m['status'] = 'finished';
                         $m['status_ar'] = 'انتهت المباراة';
                         $m['status_raw'] = 'FT';
+                    } elseif ($newStatus === 'upcoming') {
+                        $m['status'] = 'upcoming';
+                        $m['status_ar'] = 'لم تبدأ بعد';
+                        $m['status_raw'] = 'NS';
                     } else {
                         $m['status'] = $newStatus;
                     }
@@ -180,6 +184,14 @@ if ($auth) {
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         .status-badge.status-final { background: rgba(107, 114, 128, 0.1) !important; color: #6b7280 !important; border: 1px solid rgba(107, 114, 128, 0.2) !important; }
         .status-badge.status-up { background: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; border: 1px solid rgba(99, 102, 241, 0.2) !important; }
+        
+        /* تنسيق أزرار تبديل الحالة */
+        .status-toggle-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .status-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-dim); cursor: pointer; transition: 0.3s; font-weight: 700; text-align: center; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .status-btn i { font-size: 16px; }
+        .status-btn:hover { border-color: #6366f1; background: rgba(99, 102, 241, 0.05); color: var(--text-main); }
+        .status-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .status-btn.active i { color: #fff; }
     </style>
     <script>
         function formatLocalTime(ts) {
@@ -287,10 +299,13 @@ if ($auth) {
                                 $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                                 $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
                                  $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                                 $stTxt = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                                 $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                                  if ($statusType === 'live' && !empty($m['status_raw'])) {
-                                     if (is_numeric($m['status_raw'])) $stTxt = 'مباشر ' . $m['status_raw'] . '\'';
-                                     elseif ($m['status_raw'] === 'Half Time') $stTxt = 'بين الشوطين';
+                                     if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
+                                         $badgeText = 'بين الشوطين';
+                                     } else {
+                                         $badgeText = 'مباشر ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                     }
                                  }
                             ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
@@ -312,7 +327,7 @@ if ($auth) {
                              <td style="font-weight:700; color:var(--text-main);">
                                  <script>document.write(formatLocalTime(<?php echo isset($m['timestamp'])?$m['timestamp']:'null'; ?>));</script>
                              </td>
-                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $stTxt; ?></span></td>
+                             <td><span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
                              <td style="font-size:16px; text-align:center;"><?php echo !empty($m['streamUrl']) && $m['streamUrl'] !== '#' ? '✅' : '❌'; ?></td>
                              <td>
                                  <div style="display:flex; gap:8px;">
@@ -394,8 +409,11 @@ if ($auth) {
                                 $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                                 $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                                 if ($statusType === 'live' && !empty($m['status_raw'])) {
-                                    if (is_numeric($m['status_raw'])) $badgeText = 'مباشر ' . $m['status_raw'] . '\'';
-                                    elseif ($m['status_raw'] === 'Half Time') $badgeText = 'بين الشوطين';
+                                    if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
+                                        $badgeText = 'بين الشوطين';
+                                    } else {
+                                        $badgeText = 'مباشر ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                    }
                                 }
                             ?>
                          <tr class="match-row" data-ts="<?php echo $m['timestamp'] ?? 0; ?>" data-status="<?php echo $statusType; ?>">
@@ -1153,12 +1171,22 @@ if ($auth) {
                     <input type="hidden" name="edit_match_id" id="edit-id">
                     <div style="padding:25px; background:var(--bg-card);">
                         <div style="margin-bottom:15px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">حالة المباراة</label>
-                            <select name="edit_status" id="edit-status" class="form-input" style="width:100%; box-sizing:border-box; cursor:pointer;">
-                                <option value="upcoming">لم تبدأ بعد</option>
-                                <option value="live">جارية الآن</option>
-                                <option value="finished">انتهت المباراة</option>
-                            </select>
+                            <label style="display:block; margin-bottom:10px; font-weight:700; font-size:13px; color:var(--text-main);">حالة المباراة</label>
+                            <input type="hidden" name="edit_status" id="edit-status">
+                            <div class="status-toggle-group">
+                                <div class="status-btn" data-status="upcoming" onclick="setStatus(this)">
+                                    <i class="fa-solid fa-clock"></i>
+                                    <span>قريباً</span>
+                                </div>
+                                <div class="status-btn" data-status="live" onclick="setStatus(this)">
+                                    <i class="fa-solid fa-tower-broadcast"></i>
+                                    <span>مباشر</span>
+                                </div>
+                                <div class="status-btn" data-status="finished" onclick="setStatus(this)">
+                                    <i class="fa-solid fa-check-double"></i>
+                                    <span>انتهت</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div style="margin-bottom:15px;">
@@ -1226,8 +1254,18 @@ if ($auth) {
             document.getElementById('edit-channel').value = m.channel || '';
             document.getElementById('edit-commentator').value = m.commentator || '';
             document.getElementById('edit-stream').value = m.streamUrl || '';
-            document.getElementById('edit-status').value = m.status || 'upcoming';
+            
+            // تحديث حالة الأزرار
+            const status = m.status || 'upcoming';
+            const btn = document.querySelector(`.status-btn[data-status="${status}"]`);
+            if(btn) setStatus(btn);
+
             document.getElementById('edit-modal').style.display = 'flex';
+        }
+        function setStatus(el) {
+            document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('edit-status').value = el.dataset.status;
         }
         function closeEditModal() {
             document.getElementById('edit-modal').style.display = 'none';
