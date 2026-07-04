@@ -1275,8 +1275,8 @@ if ($auth) {
             
             // تحديث حالة الأزرار
             const status = m.status || 'upcoming';
-            const btn = document.querySelector(`.status-btn[data-status="${status}"]`);
-            if(btn) setStatus(btn);
+            const statusBtn = document.querySelector(`.status-btn[data-status="${status}"]`);
+            if(statusBtn) setStatus(statusBtn);
 
             document.getElementById('edit-modal').style.display = 'flex';
         }
