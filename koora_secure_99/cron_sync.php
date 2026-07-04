@@ -81,25 +81,30 @@ function formatMatch($m, $translate) {
     $hTr = $translate('teams', $hId, $translate('countries', $hId, $translate('countries', $hName, $hName)));
     $aTr = $translate('teams', $aId, $translate('countries', $aId, $translate('countries', $aName, $aName)));
     
-    // 1. استخراج البطولة والجولة من الاسم الإنجليزي (كاحتياط)
-    $lNameRaw = str_replace(['–', ' -'], '-', $lName);
-    $lParts = explode('-', $lNameRaw, 2);
-    $engBase = trim($lParts[0]);
-    $engRound = isset($lParts[1]) ? trim($lParts[1]) : "";
+    // 1. استخراج الأجزاء الإنجليزية فوراً (كأصول للترجمة)
+    $cleanLName = str_replace(['–', ' -'], '-', $lName);
+    $nameParts  = explode('-', $cleanLName, 2);
+    $actualEngLeague = trim($nameParts[0]);
+    $actualEngRound  = isset($nameParts[1]) ? trim($nameParts[1]) : "";
 
-    // 2. ترجمة البطولة (الأولوية للـ ID كمفتاح نصي)
-    $trB = $translate('leagues', (string)$lId, null);
-    if (!$trB) $trB = $translate('leagues', $engBase, $engBase);
+    // 2. ترجمة البطولة (الأولوية القصوى للـ ID الرقمي)
+    $leagueTr = $translate('leagues', (string)$lId, null);
+    if (!$leagueTr) $leagueTr = $translate('leagues', $lId, null); 
+    if (!$leagueTr) $leagueTr = $translate('leagues', $actualEngLeague, $actualEngLeague);
 
-    // 3. ترجمة الجولة (من الحقل أو الاسم)
-    $rF = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
-    $rA = !empty($rF) ? $rF : $engRound;
-    $trR = (!empty($rA) && !in_array($rA, ["World Championship", "Regular season", "World Cup"])) ? $translate('rounds', $rA, $rA) : "";
+    // 3. ترجمة الجولة (من حقل الـ API أو من الاسم)
+    $apiRoundField = trim($m['league_round'] ?? ($m['event_round'] ?? ''));
+    $activeRoundName = !empty($apiRoundField) ? $apiRoundField : $actualEngRound;
+    
+    $roundTr = "";
+    if (!empty($activeRoundName) && !in_array($activeRoundName, ["World Championship", "Regular season", "World Cup"])) {
+        $roundTr = $translate('rounds', $activeRoundName, $activeRoundName);
+    }
 
-    // 4. التجميع النهائي
-    $lTr = $trB;
-    if (!empty($trR) && $trR !== $trB) {
-        $lTr = $trB . ' - ' . $trR;
+    // 4. التجميع النهائي القسري
+    $lTr = $leagueTr;
+    if (!empty($roundTr) && $roundTr !== $leagueTr) {
+        $lTr = $leagueTr . ' - ' . $roundTr;
     }
 
     // الحالة
