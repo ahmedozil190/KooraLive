@@ -287,7 +287,10 @@ if ($auth) {
                             }
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
-                            <tr class="league-group-header">
+                            <tr class="league-group-header" <?php 
+                                $leagueDays = array_unique(array_column($leagueMatches, 'day'));
+                                foreach($leagueDays as $ld) echo 'data-day-'.$ld.'="1" '; 
+                            ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
@@ -315,7 +318,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                    <span style="background:var(--bg-main); padding:4px 0; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:110px; min-width:110px; max-width:110px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -395,7 +398,10 @@ if ($auth) {
                         }
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
-                            <tr class="league-group-header">
+                            <tr class="league-group-header" <?php 
+                                $leagueDays = array_unique(array_column($leagueMatches, 'day'));
+                                foreach($leagueDays as $ld) echo 'data-day-'.$ld.'="1" '; 
+                            ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
@@ -423,7 +429,7 @@ if ($auth) {
                                         <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $m['homeTeam']; ?></span>
                                         <img src="<?php echo $m['homeLogo']; ?>" style="width:26px; height:26px; object-fit:contain; flex-shrink:0;">
                                     </div>
-                                    <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                    <span style="background:var(--bg-main); padding:4px 0; border-radius:8px; color:var(--text-main); font-size:13px; font-weight:800; width:110px; min-width:110px; max-width:110px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                         <?php $sc=trim($m['score']??''); echo(empty($sc)||$sc==='-'||strtolower($sc)==='vs')?'VS':$sc; ?>
                                     </span>
                                     <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -816,7 +822,7 @@ if ($auth) {
                                                 <span style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${m.homeTeam}</span>
                                                 <img src="${m.homeLogo}" style="width:25px; height:25px; object-fit:contain; flex-shrink:0;">
                                             </div>
-                                            <span style="background:var(--bg-main); padding:4px 12px; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; min-width:64px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
+                                            <span style="background:var(--bg-main); padding:4px 0; border-radius:8px; color:var(--text-main); font-size:12px; font-weight:800; width:110px; min-width:110px; max-width:110px; text-align:center; border:1px solid var(--border-color); white-space:nowrap; display:inline-block; box-sizing:border-box;">
                                                 ${(!m.score || m.score.trim()==='-' || m.score.toLowerCase()==='vs') ? 'VS' : m.score}
                                             </span>
                                             <div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
@@ -1252,13 +1258,27 @@ if ($auth) {
         }
         function filterMatches() {
             const search = (document.getElementById('cur-search')?.value || '').toLowerCase();
-            const rows = document.querySelectorAll('tbody tr[data-day]');
+            const rows = document.querySelectorAll('tbody tr');
             let counts = {today:0, yesterday:0, tomorrow:0};
+            
             rows.forEach(r => {
-                r.style.display = 'none'; if(r.dataset.empty) return;
-                if(r.dataset.day === activeDay){
-                    const txt = r.innerText.toLowerCase();
-                    if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; }
+                if(r.dataset.empty) { r.style.display = 'none'; return; }
+                
+                // التحكم في رؤوس البطولات
+                if(r.dataset.leagueHeader) {
+                    r.style.display = r.hasAttribute('data-day-' + activeDay) ? '' : 'none';
+                    return;
+                }
+
+                // التحكم في المباريات العادية
+                if(r.dataset.day) {
+                    if(r.dataset.day === activeDay){
+                        const txt = r.innerText.toLowerCase();
+                        if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; }
+                        else { r.style.display = 'none'; }
+                    } else {
+                        r.style.display = 'none';
+                    }
                 }
             });
             document.querySelectorAll('tr[data-empty]').forEach(r => {
