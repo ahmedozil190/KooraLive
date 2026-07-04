@@ -109,13 +109,34 @@ function formatMatch($m, $translate) {
     if($evDate === $yest) $day = 'yesterday';
     elseif($evDate === $tom) $day = 'tomorrow';
 
-    // استخراج النتيجة والأهداف للتطبيق
+    // استخراج النتيجة والأهداف للتطبيق (مع معالجة ذكية لركلات الترجيح)
     $score  = ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs'));
+    
+    // تصحيح النتيجة في حالة ركلات الترجيح لتجنب أخطاء الـ API
+    if ($statusRaw === 'After Pen.' && !empty($m['event_penalty_result'])) {
+        $baseScore = $m['event_ft_result'] ?: '0 - 0'; // النتيجة الأصلية قبل الركلات
+        $penScore  = $m['event_penalty_result'];      // نتيجة الركلات فقط
+        
+        // استخراج أرقام الركلات (نتوقع صيغة "2 - 4")
+        $pHome = "0"; $pAway = "0";
+        if (strpos($penScore, '-') !== false) {
+            $pParts = explode('-', $penScore);
+            $pHome = trim($pParts[0]);
+            $pAway = trim($pParts[1]);
+        }
+        
+        // بناء النتيجة بالشكل المطلوب: (ركلات الفريق الأول) نتيجة المباراة (ركلات الفريق الثاني)
+        $score = "($pHome) $baseScore ($pAway)";
+    }
+
     $hScore = "0"; $aScore = "0";
     if (strpos($score, '-') !== false) {
-        $parts  = explode('-', $score);
-        $hScore = trim($parts[0]);
-        $aScore = trim($parts[1]);
+        // نستخدم النتيجة الأصلية لاستخراج الأهداف (HomeScore - AwayScore)
+        // إذا كانت ركلات ترجيح، النتيجة الأصلية موجودة في event_ft_result
+        $scoreForCalc = ($statusRaw === 'After Pen.') ? ($m['event_ft_result'] ?: '0 - 0') : $score;
+        $parts  = explode('-', $scoreForCalc);
+        $hScore = trim($parts[0] ?? '0');
+        $aScore = trim($parts[1] ?? '0');
     }
 
     return [
