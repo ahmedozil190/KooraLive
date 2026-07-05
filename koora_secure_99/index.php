@@ -1257,7 +1257,7 @@ if ($auth) {
             $start = ($page - 1) * $limit;
             $displayNews = array_slice($allNOriginal, $start, $limit);
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;" <i class="fa-solid fa-plus-circle"></i>إدارة الأخبار</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-newspaper"></i> إدارة الأخبار</h2>
             <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
             <div class="recent-card" style="margin-bottom:30px;">
                 <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
