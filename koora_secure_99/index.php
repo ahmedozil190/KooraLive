@@ -263,7 +263,7 @@ if ($auth) {
             <a href="index.php?section=api_add"  class="nav-item <?php echo $sec=='api_add'?'active':''; ?>"><i class="fa-solid fa-cloud-arrow-down"></i> إضافة مباراة</a>
             <a href="index.php?section=news"     class="nav-item <?php echo $sec=='news'   ?'active':''; ?>"><i class="fa-solid fa-newspaper"></i> أخر الأخبار</a>
             <a href="index.php?section=fav_leagues" class="nav-item <?php echo $sec=='fav_leagues'?'active':''; ?>"><i class="fa-solid fa-star"></i> الدوريات المفضلة</a>
-            <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة API</a>
+            <a href="index.php?section=api_mgr"  class="nav-item <?php echo $sec=='api_mgr'?'active':''; ?>"><i class="fa-solid fa-plug-circle-bolt"></i> إدارة النظام</a>
         </div>
         <div class="sidebar-footer">
             <div id="adm-theme" class="f-icon"><i class="fa-solid fa-moon"></i></div>
@@ -647,14 +647,14 @@ if ($auth) {
             $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
             $c_tom   = count(array_filter($bank, fn($m) => ($m['day']??'') == 'tomorrow'));
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#f59e0b;"></i> إضافة مباريات من الـ API</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#f59e0b;"></i> إضافة مباراة جديدة</h2>
             
             <?php if(!$hasKey): ?>
             <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:20px; border-radius:15px; margin-bottom:30px; display:flex; align-items:center; gap:15px;">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size:24px; color:#ef4444;"></i>
                 <div>
                     <h4 style="margin:0; color:#ef4444; font-weight:800;">مفتاح الـ API غير موجود!</h4>
-                    <p style="margin:5px 0 0; font-size:13px; color:var(--text-sub);">يرجى الانتقال لصفحة <strong>"إدارة API"</strong> وإضافة المفتاح الخاص بك لتتمكن من جلب المباريات.</p>
+                    <p style="margin:5px 0 0; font-size:13px; color:var(--text-sub);">يرجى الانتقال لصفحة <strong>"إدارة النظام"</strong> وإضافة المفتاح الخاص بك لتتمكن من جلب المباريات.</p>
                 </div>
                 <a href="index.php?section=api_mgr" style="margin-right:auto; background:#ef4444; color:#fff; padding:8px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:13px;">انتقل للإعدادات</a>
             </div>
