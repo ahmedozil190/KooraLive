@@ -1071,11 +1071,16 @@ if ($auth) {
             </div>
 
             <div style="background:var(--bg-card); padding:25px; border-radius:20px; border:1px solid var(--border-color); margin-bottom:30px;">
-                <p style="color:var(--text-sub); margin-bottom:20px; font-weight:700;">اختر الدوريات التي تريد جلب مبارياتها فقط من الـ API.</p>
+                <p style="color:var(--text-sub); margin-bottom:20px; font-weight:700;">اختر الدوريات التي تريدها ان تظهرلك فقط</p>
                 <form method="POST">
                     <div id="leagues-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:15px; max-height:550px; overflow-y:auto; padding:10px;">
                         <?php if(empty($allLeagues)): ?>
-                            <div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-dim);">لا توجد بطولات مترجمة في ar_map.json</div>
+                            <div style="grid-column:1/-1; text-align:center; padding:80px 0;">
+                                <div style="font-size:50px; color:var(--text-sub); opacity:0.2; margin-bottom:15px;">
+                                    <i class="fa-solid fa-trophy"></i>
+                                </div>
+                                <div style="color:var(--text-sub); font-weight:700; font-size:15px;">لا توجد بطولات مضافة حالياً</div>
+                            </div>
                         <?php else: ?>
                             <?php foreach($allLeagues as $lid => $lname): $isChecked = in_array($lid, $favs); ?>
                                 <div class="league-card-item <?php echo $isChecked ? 'active' : ''; ?>" style="display:flex; align-items:center; gap:12px; padding:15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; transition:0.2s; position:relative;">
