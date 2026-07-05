@@ -1206,79 +1206,30 @@ if ($auth) {
                     <div class="recent-card" style="margin-top:30px;">
                         <div class="recent-header">
                             <i class="fa-solid fa-rectangle-ad" style="color:#f59e0b;"></i>
-                            <h3 style="margin-right:10px;">إدارة الإعلانات</h3>
+                            <h3 style="margin-right:10px;">إدارة الإعلانات (Start.io)</h3>
                         </div>
                         <div style="padding:25px;">
-                            <!-- اختيار مزود الإعلانات -->
-                            <div style="background:linear-gradient(135deg, #6366f1, #a855f7); padding:20px; border-radius:15px; margin-bottom:25px; color:#fff;">
-                                <h4 style="margin:0 0 15px 0; font-weight:800; font-size:15px;">مزود الإعلانات النشط</h4>
-                                <div style="display:flex; gap:20px;">
-                                    <label style="display:flex; align-items:center; cursor:pointer;">
-                                        <input type="radio" name="ad_provider" value="custom" <?php echo ($apiSettings['ad_provider'] ?? 'custom') == 'custom' ? 'checked' : ''; ?> style="margin-left:8px; accent-color:#fff;">
-                                        إعلانات يدوية (Custom Ads)
-                                    </label>
-                                    <label style="display:flex; align-items:center; cursor:pointer;">
-                                        <input type="radio" name="ad_provider" value="startapp" <?php echo ($apiSettings['ad_provider'] ?? 'custom') == 'startapp' ? 'checked' : ''; ?> style="margin-left:8px; accent-color:#fff;">
-                                        Start.io (StartApp)
-                                    </label>
+                            <div style="background:linear-gradient(135deg, #6366f1, #a855f7); padding:20px; border-radius:15px; color:#fff; margin-bottom:20px;">
+                                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                                    <i class="fa-solid fa-circle-check" style="font-size:20px;"></i>
+                                    <h4 style="margin:0; font-size:16px; font-weight:800;">Start.io مفعل</h4>
                                 </div>
+                                <p style="margin:0; font-size:13px; opacity:0.9;">الإعلانات تظهر تلقائياً عند تشغيل التطبيق وفي أسفل شاشات التفاصيل.</p>
                             </div>
 
-                            <!-- إعدادات StartApp -->
-                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px dashed #6366f1; margin-bottom:20px;">
-                                <h4 style="margin:0 0 15px 0; font-weight:800; font-size:14px; color:#6366f1;">إعدادات Start.io</h4>
-                                <div>
-                                    <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">Start.io App ID</label>
-                                    <input type="text" name="startapp_id" class="form-input" value="<?php echo $apiSettings['startapp_id'] ?? ''; ?>" placeholder="2xxxxxxx">
-                                    <small style="color:var(--text-sub); display:block; margin-top:5px;">هذا الـ ID مطلوب لكي تعمل إعلانات Start.io بشكل صحيح.</small>
-                                </div>
-                            </div>
-
-                            <hr style="border:0; border-top:1px solid var(--border-color); margin:25px 0;">
-
-                            <!-- إعلان الافتتاح الكاستم -->
-                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px solid var(--border-color); margin-bottom:20px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                                    <h4 style="margin:0; font-weight:800; font-size:14px; color:var(--text-main);">١- إعلان افتتاح التطبيق (Popup)</h4>
-                                    <label class="switch">
-                                        <input type="checkbox" name="ad_start_active" <?php echo !empty($apiSettings['ad_start_active']) ? 'checked' : ''; ?>>
-                                        <span class="switch-slider"></span>
-                                    </label>
-                                </div>
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                                    <div>
-                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط صورة الإعلان</label>
-                                        <input type="text" name="ad_start_img" class="form-input" value="<?php echo $apiSettings['ad_start_img'] ?? ''; ?>" placeholder="https://example.com/ad.jpg">
-                                    </div>
-                                    <div>
-                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط التوجيه (عند الضغط)</label>
-                                        <input type="text" name="ad_start_link" class="form-input" value="<?php echo $apiSettings['ad_start_link'] ?? ''; ?>" placeholder="https://t.me/yourchannel">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- البانر السفلي -->
-                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px solid var(--border-color);">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                                    <h4 style="margin:0; font-weight:800; font-size:14px; color:var(--text-main);">٢- البانر السفلي (Banner)</h4>
-                                    <label class="switch">
-                                        <input type="checkbox" name="ad_bottom_active" <?php echo !empty($apiSettings['ad_bottom_active']) ? 'checked' : ''; ?>>
-                                        <span class="switch-slider"></span>
-                                    </label>
-                                </div>
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                                    <div>
-                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط صورة البانر</label>
-                                        <input type="text" name="ad_bottom_img" class="form-input" value="<?php echo $apiSettings['ad_bottom_img'] ?? ''; ?>" placeholder="https://example.com/banner.jpg">
-                                    </div>
-                                    <div>
-                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط التوجيه (عند الضغط)</label>
-                                        <input type="text" name="ad_bottom_link" class="form-input" value="<?php echo $apiSettings['ad_bottom_link'] ?? ''; ?>" placeholder="https://example.com/offer">
-                                    </div>
-                                </div>
+                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px dashed #6366f1;">
+                                <label style="display:block; margin-bottom:8px; font-size:13px; font-weight:700; color:var(--text-main);">Start.io App ID</label>
+                                <input type="text" name="startapp_id" class="form-input" value="<?php echo $apiSettings['startapp_id'] ?? ''; ?>" placeholder="مثال: 208xxxxxxx" style="font-size:15px; letter-spacing:1px;">
+                                <small style="color:var(--text-sub); display:block; margin-top:8px; font-size:12px;">
+                                    <i class="fa-solid fa-circle-info" style="margin-left:4px;"></i>
+                                    احصل على الـ App ID من حسابك في <a href="https://portal.start.io" target="_blank" style="color:#6366f1;">portal.start.io</a>
+                                </small>
                             </div>
                         </div>
                     </div>
+
+
+
 
                     <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:30px; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ كافة الإعدادات
