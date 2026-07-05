@@ -1203,30 +1203,7 @@ if ($auth) {
                         </p>
                     </div>
 
-                    <div class="recent-card" style="margin-top:30px;">
-                        <div class="recent-header">
-                            <i class="fa-solid fa-rectangle-ad" style="color:#f59e0b;"></i>
-                            <h3 style="margin-right:10px;">إدارة الإعلانات (Start.io)</h3>
-                        </div>
-                        <div style="padding:25px;">
-                            <div style="background:linear-gradient(135deg, #6366f1, #a855f7); padding:20px; border-radius:15px; color:#fff; margin-bottom:20px;">
-                                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                                    <i class="fa-solid fa-circle-check" style="font-size:20px;"></i>
-                                    <h4 style="margin:0; font-size:16px; font-weight:800;">Start.io مفعل</h4>
-                                </div>
-                                <p style="margin:0; font-size:13px; opacity:0.9;">الإعلانات تظهر تلقائياً عند تشغيل التطبيق وفي أسفل شاشات التفاصيل.</p>
-                            </div>
 
-                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px dashed #6366f1;">
-                                <label style="display:block; margin-bottom:8px; font-size:13px; font-weight:700; color:var(--text-main);">Start.io App ID</label>
-                                <input type="text" name="startapp_id" class="form-input" value="<?php echo $apiSettings['startapp_id'] ?? ''; ?>" placeholder="مثال: 208xxxxxxx" style="font-size:15px; letter-spacing:1px;">
-                                <small style="color:var(--text-sub); display:block; margin-top:8px; font-size:12px;">
-                                    <i class="fa-solid fa-circle-info" style="margin-left:4px;"></i>
-                                    احصل على الـ App ID من حسابك في <a href="https://portal.start.io" target="_blank" style="color:#6366f1;">portal.start.io</a>
-                                </small>
-                            </div>
-                        </div>
-                    </div>
 
 
 
