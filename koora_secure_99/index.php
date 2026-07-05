@@ -216,8 +216,9 @@ if ($auth) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css?v=2.1">
     <style>
+        .status-badge { display: inline-flex; align-items: center; justify-content: center; width: 140px; padding: 6px 0; border-radius: 8px; font-weight: 800; font-size: 12px; white-space: nowrap; }
         .status-badge.status-live { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; position:relative; }
-        .status-badge.status-live::before { content:''; width:6px; height:6px; background:#10b981; border-radius:50%; margin-left:6px; animation: pulse 1.5s infinite; }
+        .status-badge.status-live::before { content:''; width:6px; height:6px; background:#10b981; border-radius:50%; margin-left:6px; animation: pulse 1.5s infinite; flex-shrink: 0; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         .status-badge.status-final { background: rgba(107, 114, 128, 0.1) !important; color: #6b7280 !important; border: 1px solid rgba(107, 114, 128, 0.2) !important; }
         .status-badge.status-up { background: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; border: 1px solid rgba(99, 102, 241, 0.2) !important; }
@@ -357,7 +358,7 @@ if ($auth) {
                                      if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
                                          $badgeText = 'استراحة';
                                      } else {
-                                         $badgeText = 'جارية الآن - ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                         $badgeText = 'جارية الآن ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
                                      }
                                  }
                             ?>
@@ -878,7 +879,7 @@ if ($auth) {
                                     if (m.status_raw === 'Half Time' || m.status_raw === 'HT') {
                                         stTxt = 'استراحة';
                                     } else {
-                                        stTxt = 'جارية الآن - ' + (m.status_raw || "") + (!isNaN(m.status_raw) ? "'" : "");
+                                        stTxt = 'جارية الآن ' + (m.status_raw || "") + (!isNaN(m.status_raw) ? "'" : "");
                                     }
                                 } else if (m.status === 'finished') {
                                     stTxt = 'انتهت المباراة' + (m.status_raw === 'After Pen.' ? ' - ركلات' : '');
