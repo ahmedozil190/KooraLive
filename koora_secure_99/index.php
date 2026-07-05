@@ -161,6 +161,10 @@ if ($auth) {
             $s['ad_bottom_img']    = trim($_POST['ad_bottom_img']);
             $s['ad_bottom_link']   = trim($_POST['ad_bottom_link']);
 
+            // إعدادات Start.io
+            $s['ad_provider']      = $_POST['ad_provider'] ?? 'custom'; // custom , startapp
+            $s['startapp_id']      = trim($_POST['startapp_id'] ?? '');
+
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             
             // تشغيل المزامنة بشكل آمن عبر رابط خارجي لعدم إبطاء الصفحة أو التسبب في أخطاء
@@ -1205,7 +1209,34 @@ if ($auth) {
                             <h3 style="margin-right:10px;">إدارة الإعلانات</h3>
                         </div>
                         <div style="padding:25px;">
-                            <!-- إعلان الافتتاح -->
+                            <!-- اختيار مزود الإعلانات -->
+                            <div style="background:linear-gradient(135deg, #6366f1, #a855f7); padding:20px; border-radius:15px; margin-bottom:25px; color:#fff;">
+                                <h4 style="margin:0 0 15px 0; font-weight:800; font-size:15px;">مزود الإعلانات النشط</h4>
+                                <div style="display:flex; gap:20px;">
+                                    <label style="display:flex; align-items:center; cursor:pointer;">
+                                        <input type="radio" name="ad_provider" value="custom" <?php echo ($apiSettings['ad_provider'] ?? 'custom') == 'custom' ? 'checked' : ''; ?> style="margin-left:8px; accent-color:#fff;">
+                                        إعلانات يدوية (Custom Ads)
+                                    </label>
+                                    <label style="display:flex; align-items:center; cursor:pointer;">
+                                        <input type="radio" name="ad_provider" value="startapp" <?php echo ($apiSettings['ad_provider'] ?? 'custom') == 'startapp' ? 'checked' : ''; ?> style="margin-left:8px; accent-color:#fff;">
+                                        Start.io (StartApp)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- إعدادات StartApp -->
+                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px dashed #6366f1; margin-bottom:20px;">
+                                <h4 style="margin:0 0 15px 0; font-weight:800; font-size:14px; color:#6366f1;">إعدادات Start.io</h4>
+                                <div>
+                                    <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">Start.io App ID</label>
+                                    <input type="text" name="startapp_id" class="form-input" value="<?php echo $apiSettings['startapp_id'] ?? ''; ?>" placeholder="2xxxxxxx">
+                                    <small style="color:var(--text-sub); display:block; margin-top:5px;">هذا الـ ID مطلوب لكي تعمل إعلانات Start.io بشكل صحيح.</small>
+                                </div>
+                            </div>
+
+                            <hr style="border:0; border-top:1px solid var(--border-color); margin:25px 0;">
+
+                            <!-- إعلان الافتتاح الكاستم -->
                             <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px solid var(--border-color); margin-bottom:20px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                                     <h4 style="margin:0; font-weight:800; font-size:14px; color:var(--text-main);">١- إعلان افتتاح التطبيق (Popup)</h4>
