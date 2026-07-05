@@ -1093,12 +1093,14 @@ if ($auth) {
                                         </div>
                                         <div style="display:flex; justify-content:space-between; align-items:center; flex:1; gap:10px;">
                                             <span style="font-weight:700; font-size:14px; color:var(--text-main);"><?php echo $lname; ?></span>
-                                            <span style="font-size:11px; opacity:0.5; font-weight:800; color:var(--text-sub); background:var(--bg-card); padding:3px 8px; border-radius:6px; border:1px solid var(--border-color); flex-shrink:0;">ID: <?php echo $lid; ?></span>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <span style="font-size:11px; opacity:0.5; font-weight:800; color:var(--text-sub); background:var(--bg-card); padding:3px 8px; border-radius:6px; border:1px solid var(--border-color); flex-shrink:0;">ID: <?php echo $lid; ?></span>
+                                                <a href="index.php?section=fav_leagues&del_map_id=<?php echo $lid; ?>" class="btn-del-league" onclick="return confirm('حذف البطولة نهائياً من القاموس؟')" style="color:#ef4444; font-size:14px;">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     </label>
-                                    <a href="index.php?section=fav_leagues&del_map_id=<?php echo $lid; ?>" class="btn-del-league" onclick="return confirm('حذف البطولة نهائياً من القاموس؟')" style="color:#ef4444; padding:5px;">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </a>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -1114,8 +1116,8 @@ if ($auth) {
             <style>
                 .league-card-item.active { border-color:#6366f1 !important; background:rgba(99,102,241,0.05) !important; }
                 .league-card-item.active .custom-chk { background:#6366f1 !important; border-color:#6366f1 !important; color:#fff !important; }
-                .league-card-item .btn-del-league { opacity: 0; visibility: hidden; transition: 0.3s; }
-                .league-card-item:hover .btn-del-league { opacity: 1; visibility: visible; }
+                .league-card-item .btn-del-league { width: 0; opacity: 0; overflow: hidden; transition: 0.3s ease; display: inline-flex; align-items: center; justify-content: center; }
+                .league-card-item:hover .btn-del-league { width: 35px; opacity: 1; }
                 #leagues-grid::-webkit-scrollbar { width: 6px; }
                 #leagues-grid::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
             </style>
