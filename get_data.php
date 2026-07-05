@@ -71,6 +71,11 @@ if ($action === 'get_matches') {
 } elseif ($action === 'get_news') {
     $n = readJson($newsFile);
     echo json_encode(array_reverse($n), JSON_UNESCAPED_UNICODE);
+} elseif ($action === 'get_settings') {
+    $s = readJson($settingsFile);
+    // إخفاء مفتاح الـ API لزيادة الأمان
+    unset($s['api_key']);
+    echo json_encode($s, JSON_UNESCAPED_UNICODE);
 } else {
     echo json_encode(['error' => 'Invalid action']);
 }
