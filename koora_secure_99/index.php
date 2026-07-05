@@ -811,15 +811,16 @@ if ($auth) {
                         if (!dayMatch) return false;
 
                         if (query) {
-                            const home = (m.homeTeam || "").toLowerCase();
-                            const away = (m.awayTeam || "").toLowerCase();
-                            const engLeague = (m.league || "").toLowerCase();
+                            const q = normalizeArabic(query);
+                            const home = normalizeArabic(m.homeTeam);
+                            const away = normalizeArabic(m.awayTeam);
+                            const engLeague = normalizeArabic(m.league);
                             
                             // البحث في الاسم المترجم أيضاً
                             const lId = String(m.leagueId);
-                            const arLeague = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId].toLowerCase() : "";
+                            const arLeague = (arMap.leagues && arMap.leagues[lId]) ? normalizeArabic(arMap.leagues[lId]) : "";
                             
-                            return home.includes(query) || away.includes(query) || engLeague.includes(query) || arLeague.includes(query);
+                            return home.includes(q) || away.includes(q) || engLeague.includes(q) || arLeague.includes(q);
                         }
                         return true;
                     });
@@ -1042,7 +1043,7 @@ if ($auth) {
             <div id="addLeagueModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
                 <div style="background:var(--bg-card); width:90%; max-width:400px; border-radius:20px; overflow:hidden; border:1px solid var(--border-color); box-shadow:0 30px 60px rgba(0,0,0,0.5);">
                     <div style="background:var(--bg-body); padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0; font-size:17px; font-weight:800; color:var(--text-main);">إضافة بطولة للقاموس</h3>
+                        <h3 style="margin:0; font-size:17px; font-weight:800; color:var(--text-main);">إضافة بطولة جديدة</h3>
                         <div onclick="closeAddLeagueModal()" style="width:32px; height:32px; border-radius:50%; background:rgba(255,0,0,0.1); color:#ff4757; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
                             <i class="fa-solid fa-xmark"></i>
                         </div>
@@ -1126,10 +1127,20 @@ if ($auth) {
                 function openAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'flex'; }
                 function closeAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'none'; }
 
+                function normalizeArabic(text) {
+                    if (!text) return "";
+                    return text.toString().toLowerCase()
+                        .replace(/[أإآ]/g, 'ا')
+                        .replace(/ة/g, 'ه')
+                        .replace(/ى/g, 'ي')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                }
+
                 function filterLeagues() {
-                    const q = document.getElementById('league-search').value.toLowerCase();
+                    const q = normalizeArabic(document.getElementById('league-search').value);
                     document.querySelectorAll('.league-card-item').forEach(item => {
-                        const txt = item.innerText.toLowerCase();
+                        const txt = normalizeArabic(item.innerText);
                         item.style.display = txt.includes(q) ? 'flex' : 'none';
                     });
                 }
