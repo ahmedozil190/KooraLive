@@ -1034,17 +1034,8 @@ if ($auth) {
             $map = json_decode(@file_get_contents($arMapFile), true) ?: [];
             $allLeagues = $map['leagues'] ?? [];
         ?>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px;">
+            <div style="margin-bottom:25px;">
                 <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b; margin-left:10px;"></i>الدوريات المفضلة</h2>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:rgba(99,102,241,0.1); color:#6366f1; border:1px solid #6366f1; border-radius:12px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px;">
-                        <i class="fa-solid fa-plus-circle"></i> إضافة بطولة بالـ ID
-                    </button>
-                    <div class="search-box-api" style="width:300px; position:relative;">
-                        <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--text-dim);"></i>
-                        <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:12px 40px 12px 15px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none;">
-                    </div>
-                </div>
             </div>
 
             <!-- نافذة إضافة بطولة جديدة -->
@@ -1071,7 +1062,18 @@ if ($auth) {
             </div>
 
             <div style="background:var(--bg-card); padding:25px; border-radius:20px; border:1px solid var(--border-color); margin-bottom:30px;">
-                <p style="color:var(--text-sub); margin-bottom:20px; font-weight:700;">اختر الدوريات التي تريدها ان تظهرلك فقط</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px;">
+                    <p style="color:var(--text-sub); margin:0; font-weight:700;">اختر الدوريات التي تريدها ان تظهرلك فقط</p>
+                    <div style="display:flex; gap:12px; align-items:center; margin-right:auto;">
+                        <div class="search-box-api" style="width:250px; position:relative;">
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
+                            <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
+                        </div>
+                        <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(99,102,241,0.2);">
+                            <i class="fa-solid fa-plus-circle"></i> إضافة بطولة بالـ ID
+                        </button>
+                    </div>
+                </div>
                 <form method="POST">
                     <div id="leagues-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:15px; max-height:550px; overflow-y:auto; padding:10px;">
                         <?php if(empty($allLeagues)): ?>
