@@ -273,7 +273,7 @@ if ($auth) {
     <main class="main">
         <div class="toast-container" id="toast-container"></div>
         <?php if($sec == 'main'): ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">نظرة عامة</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-gauge-high" style="color:#6366f1;"></i> نظرة عامة</h2>
             <?php 
                 clearstatcache(true, $matchesFile);
                 $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
@@ -409,7 +409,7 @@ if ($auth) {
             $cur_done = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'finished'; }));
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="font-weight:800;">إدارة المباريات</h2>
+                <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> إدارة المباريات</h2>
             </div>
             <div class="stats-grid">
                 <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي المباريات</p></div>
@@ -647,7 +647,7 @@ if ($auth) {
             $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
             $c_tom   = count(array_filter($bank, fn($m) => ($m['day']??'') == 'tomorrow'));
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;">إضافة مباريات من الـ API</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#f59e0b;"></i> إضافة مباريات من الـ API</h2>
             
             <?php if(!$hasKey): ?>
             <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:20px; border-radius:15px; margin-bottom:30px; display:flex; align-items:center; gap:15px;">
@@ -1257,7 +1257,7 @@ if ($auth) {
             $start = ($page - 1) * $limit;
             $displayNews = array_slice($allNOriginal, $start, $limit);
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-newspaper"></i> إدارة الأخبار</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-newspaper" style="color:#3b82f6; margin-left:8px;"></i>إدارة الأخبار</h2>
             <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
             <div class="recent-card" style="margin-bottom:30px;">
                 <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
