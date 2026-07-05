@@ -305,8 +305,11 @@ if ($auth) {
                         <?php 
                             if(!function_exists('sortMatches')){
                                 function sortMatches($list) {
-                                    usort($list, function($a, $b) {
-                                        $score = ['live' => 0, 'upcoming' => 1, 'finished' => 2];
+                                    $hasUpcoming = false;
+                                    foreach($list as $m) { if(($m['status']??'') !== 'finished') { $hasUpcoming = true; break; } }
+                                    
+                                    usort($list, function($a, $b) use ($hasUpcoming) {
+                                        $score = ['live' => 0, 'upcoming' => 1, 'finished' => $hasUpcoming ? 2 : 1];
                                         $sA = isset($a['status']) ? ($score[$a['status']] ?? 1) : 1;
                                         $sB = isset($b['status']) ? ($score[$b['status']] ?? 1) : 1;
                                         if ($sA != $sB) return $sA - $sB;
@@ -803,9 +806,10 @@ if ($auth) {
                         filtered = filtered.filter(m => favLeaguesIds.includes(String(m.leagueId)));
                     }
 
-                    // نظام الترتيب الذكي
+                    // نظام الترتيب الذكي المطور
+                    const hasUpcoming = filtered.some(m => m.status !== 'finished');
                     filtered.sort((a, b) => {
-                        const score = { 'live': 0, 'upcoming': 1, 'finished': 2 };
+                        const score = { 'live': 0, 'upcoming': 1, 'finished': hasUpcoming ? 2 : 1 };
                         const sA = score[a.status] !== undefined ? score[a.status] : 1;
                         const sB = score[b.status] !== undefined ? score[b.status] : 1;
                         if (sA !== sB) return sA - sB;
