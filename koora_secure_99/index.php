@@ -1036,7 +1036,7 @@ if ($auth) {
             $allLeagues = $map['leagues'] ?? [];
         ?>
             <div style="margin-bottom:25px;">
-                <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b;"></i>الدوريات المفضلة</h2>
+                <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-star" style="color:#f59e0b;"></i> الدوريات المفضلة</h2>
             </div>
 
             <!-- نافذة إضافة بطولة جديدة -->
