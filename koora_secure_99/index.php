@@ -1049,7 +1049,7 @@ if ($auth) {
                     </div>
                     <form method="POST" style="padding:25px;">
                         <div style="margin-bottom:15px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">ID البطولة (من الـ API)</label>
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">ID البطولة</label>
                             <input type="text" name="new_league_id" placeholder="مثال: 28" required style="width:100%; padding:12px; border-radius:10px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); box-sizing:border-box;">
                         </div>
                         <div style="margin-bottom:20px;">
@@ -1070,7 +1070,7 @@ if ($auth) {
                             <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(99,102,241,0.2);">
-                            <i class="fa-solid fa-plus-circle"></i> إضافة بطولة بالـ ID
+                            <i class="fa-solid fa-plus-circle"></i> إضافة بطولة جديدة
                         </button>
                     </div>
                 </div>
