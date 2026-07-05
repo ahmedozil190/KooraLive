@@ -673,10 +673,16 @@ if ($auth) {
                         <i class="fa-solid fa-cloud-bolt"></i> 
                         <h3 style="margin:0;">إضافة مباراة</h3>
                     </div>
-                    <div class="day-tabs" style="margin-bottom:0;">
-                        <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
-                        <div class="day-tab active" data-day="today" onclick="switchApiTab(this)">مباريات اليوم</div>
-                        <div class="day-tab" data-day="tomorrow" onclick="switchApiTab(this)">مباريات الغد</div>
+                    <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                        <div class="search-box-api" style="width:250px; position:relative;">
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
+                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:12px;">
+                        </div>
+                        <div class="day-tabs" style="margin-bottom:0;">
+                            <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
+                            <div class="day-tab active" data-day="today" onclick="switchApiTab(this)">مباريات اليوم</div>
+                            <div class="day-tab" data-day="tomorrow" onclick="switchApiTab(this)">مباريات الغد</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -789,6 +795,7 @@ if ($auth) {
                     const tomorrow = new Date(); tomorrow.setDate(now.getDate() + 1);
                     const tomStr = toYMD(tomorrow);
 
+                    const query = document.getElementById('bank-search').value.toLowerCase();
                     let filtered = apiBank.filter(m => {
                         let mId = String(m.id || m.event_key);
                         if (addedMatchIds.includes(mId)) return false;
@@ -796,10 +803,25 @@ if ($auth) {
                         const mDate = new Date(m.timestamp * 1000);
                         const mStr = toYMD(mDate);
 
-                        if (day === 'today') return mStr === todayStr;
-                        if (day === 'yesterday') return mStr === yestStr;
-                        if (day === 'tomorrow') return mStr === tomStr;
-                        return false;
+                        let dayMatch = false;
+                        if (day === 'today') dayMatch = mStr === todayStr;
+                        else if (day === 'yesterday') dayMatch = mStr === yestStr;
+                        else if (day === 'tomorrow') dayMatch = mStr === tomStr;
+
+                        if (!dayMatch) return false;
+
+                        if (query) {
+                            const home = (m.homeTeam || "").toLowerCase();
+                            const away = (m.awayTeam || "").toLowerCase();
+                            const engLeague = (m.league || "").toLowerCase();
+                            
+                            // البحث في الاسم المترجم أيضاً
+                            const lId = String(m.leagueId);
+                            const arLeague = (arMap.leagues && arMap.leagues[lId]) ? arMap.leagues[lId].toLowerCase() : "";
+                            
+                            return home.includes(query) || away.includes(query) || engLeague.includes(query) || arLeague.includes(query);
+                        }
+                        return true;
                     });
 
                     if (favLeaguesIds.length > 0) {
@@ -920,6 +942,11 @@ if ($auth) {
                         }
                     }
                     tbody.innerHTML = html;
+                }
+
+                function filterBank() {
+                    const activeTab = document.querySelector('.day-tabs .day-tab.active').dataset.day;
+                    renderBank(activeTab);
                 }
 
                 function switchApiTab(el) {
