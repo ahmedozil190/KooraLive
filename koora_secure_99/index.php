@@ -340,7 +340,7 @@ if ($auth) {
                             <?php foreach($leagueMatches as $m): 
                                 $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                                 $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                                 $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                                 $statusMap = array('live'=>'جارية الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
                                  
                                  // دعم الحالات المتقدمة في العرض
                                  $statusRaw = isset($m['status_raw']) ? $m['status_raw'] : '';
@@ -352,12 +352,12 @@ if ($auth) {
                                      }
                                  }
                                  
-                                 $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                                 $badgeText = (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                                  if ($statusType === 'live' && !empty($m['status_raw'])) {
                                      if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
-                                         $badgeText = 'بين الشوطين';
+                                         $badgeText = 'استراحة';
                                      } else {
-                                         $badgeText = 'مباشر ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                         $badgeText = 'جارية الآن - ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
                                      }
                                  }
                             ?>
@@ -468,13 +468,13 @@ if ($auth) {
                             <?php foreach($leagueMatches as $m):
                                 $statusType = isset($m['status']) ? $m['status'] : 'upcoming';
                                 $badgeClass = ($statusType === 'live') ? 'status-live' : (($statusType === 'finished') ? 'status-final' : 'status-up');
-                                $statusMap = array('live'=>'مباشر الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
-                                $badgeText = !empty($m['status_ar']) ? $m['status_ar'] : (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
+                                $statusMap = array('live'=>'جارية الآن','upcoming'=>'لم تبدأ بعد','finished'=>'انتهت المباراة');
+                                $badgeText = (isset($statusMap[$statusType]) ? $statusMap[$statusType] : 'لم تبدأ بعد');
                                 if ($statusType === 'live' && !empty($m['status_raw'])) {
                                     if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
-                                        $badgeText = 'بين الشوطين';
+                                        $badgeText = 'استراحة';
                                     } else {
-                                        $badgeText = 'مباشر ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                        $badgeText = 'جارية الآن - ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
                                     }
                                 }
                             ?>
@@ -873,15 +873,15 @@ if ($auth) {
                                 if(m.status === 'live') stClass = 'status-live';
                                 else if(m.status === 'finished') stClass = 'status-final';
                                 
-                                let stTxt = m.status_ar || 'لم تبدأ بعد';
-                                if (m.status === 'live' && m.status_raw) {
+                                let stTxt = 'لم تبدأ بعد';
+                                if (m.status === 'live') {
                                     if (m.status_raw === 'Half Time' || m.status_raw === 'HT') {
-                                        stTxt = 'بين الشوطين';
+                                        stTxt = 'استراحة';
                                     } else {
-                                        stTxt = 'مباشر ' + m.status_raw + (!isNaN(m.status_raw) ? "'" : "");
+                                        stTxt = 'جارية الآن - ' + (m.status_raw || "") + (!isNaN(m.status_raw) ? "'" : "");
                                     }
-                                } else if (m.status === 'finished' && m.status_raw === 'After Pen.') {
-                                    stTxt = 'انتهت (ركلات)';
+                                } else if (m.status === 'finished') {
+                                    stTxt = 'انتهت المباراة' + (m.status_raw === 'After Pen.' ? ' - ركلات' : '');
                                 }
 
                                 html += `
