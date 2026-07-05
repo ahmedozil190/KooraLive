@@ -151,6 +151,16 @@ if ($auth) {
         if (isset($_POST['save_api_mgr'])) {
             $s = json_decode(@file_get_contents($settingsFile), true) ?: []; 
             $s['api_key'] = trim($_POST['api_key']);
+            
+            // تحديث بيانات الإعلانات
+            $s['ad_start_active']  = isset($_POST['ad_start_active'])  ? 1 : 0;
+            $s['ad_start_img']     = trim($_POST['ad_start_img']);
+            $s['ad_start_link']    = trim($_POST['ad_start_link']);
+            
+            $s['ad_bottom_active'] = isset($_POST['ad_bottom_active']) ? 1 : 0;
+            $s['ad_bottom_img']    = trim($_POST['ad_bottom_img']);
+            $s['ad_bottom_link']   = trim($_POST['ad_bottom_link']);
+
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             
             // تشغيل المزامنة بشكل آمن عبر رابط خارجي لعدم إبطاء الصفحة أو التسبب في أخطاء
@@ -1189,11 +1199,70 @@ if ($auth) {
                         </p>
                     </div>
 
-                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer;">
-                        <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ المفتاح وتفعيل المزامنة
+                    <div class="recent-card" style="margin-top:30px;">
+                        <div class="recent-header">
+                            <i class="fa-solid fa-rectangle-ad" style="color:#f59e0b;"></i>
+                            <h3 style="margin-right:10px;">إدارة الإعلانات</h3>
+                        </div>
+                        <div style="padding:25px;">
+                            <!-- إعلان الافتتاح -->
+                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px solid var(--border-color); margin-bottom:20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                    <h4 style="margin:0; font-weight:800; font-size:14px; color:var(--text-main);">١- إعلان افتتاح التطبيق (Popup)</h4>
+                                    <label class="switch">
+                                        <input type="checkbox" name="ad_start_active" <?php echo !empty($apiSettings['ad_start_active']) ? 'checked' : ''; ?>>
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                    <div>
+                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط صورة الإعلان</label>
+                                        <input type="text" name="ad_start_img" class="form-input" value="<?php echo $apiSettings['ad_start_img'] ?? ''; ?>" placeholder="https://example.com/ad.jpg">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط التوجيه (عند الضغط)</label>
+                                        <input type="text" name="ad_start_link" class="form-input" value="<?php echo $apiSettings['ad_start_link'] ?? ''; ?>" placeholder="https://t.me/yourchannel">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- البانر السفلي -->
+                            <div style="background:var(--bg-body); padding:20px; border-radius:15px; border:1px solid var(--border-color);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                    <h4 style="margin:0; font-weight:800; font-size:14px; color:var(--text-main);">٢- البانر السفلي (Banner)</h4>
+                                    <label class="switch">
+                                        <input type="checkbox" name="ad_bottom_active" <?php echo !empty($apiSettings['ad_bottom_active']) ? 'checked' : ''; ?>>
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                    <div>
+                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط صورة البانر</label>
+                                        <input type="text" name="ad_bottom_img" class="form-input" value="<?php echo $apiSettings['ad_bottom_img'] ?? ''; ?>" placeholder="https://example.com/banner.jpg">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700;">رابط التوجيه (عند الضغط)</label>
+                                        <input type="text" name="ad_bottom_link" class="form-input" value="<?php echo $apiSettings['ad_bottom_link'] ?? ''; ?>" placeholder="https://example.com/offer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:30px; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
+                        <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ كافة الإعدادات
                     </button>
                 </form>
             </div>
+
+            <style>
+                .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+                .switch input { opacity: 0; width: 0; height: 0; }
+                .switch-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.1); transition: .4s; border-radius: 34px; border: 1px solid var(--border-color); }
+                .switch-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 2px; background-color: var(--text-sub); transition: .4s; border-radius: 50%; }
+                input:checked + .switch-slider { background-color: #10b981; border-color: #10b981; }
+                input:checked + .switch-slider:before { transform: translateX(22px); background-color: #fff; }
+            </style>
 
             <script>
             function formatLocalSyncTime() {
