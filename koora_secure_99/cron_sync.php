@@ -13,6 +13,8 @@ $matchesFile  = __DIR__ . '/../data/matches.json';
 $bankFile     = __DIR__ . '/../data/api_fixtures.json';
 $arMapFile    = __DIR__ . '/../ar_map.json';
 
+date_default_timezone_set('Asia/Riyadh');
+
 // تأكد من وجود المجلد للعمل بشكل مستقل
 if (!is_dir(dirname($settingsFile))) mkdir(dirname($settingsFile), 0777, true);
 
@@ -124,12 +126,22 @@ function formatMatch($m, $translate) {
     $evDate = $m['event_date'];
     $ts = strtotime($evDate . ' ' . $m['event_time'] . ' UTC');
     
-    $today = date('Y-m-d');
-    $yest  = date('Y-m-d', strtotime('-1 day'));
-    $tom   = date('Y-m-d', strtotime('+1 day'));
-    $day   = 'today';
-    if($evDate === $yest) $day = 'yesterday';
-    elseif($evDate === $tom) $day = 'tomorrow';
+    // تحديد اليوم بناءً على التاريخ الحالي (توقيت المقارنة الافتراضي)
+    $todayTs = strtotime('today');
+    $yestTs  = strtotime('yesterday');
+    $tomTs   = strtotime('tomorrow');
+    
+    // تحويل الـ Timestamp الخاص بالمباراة لتاريخ نصي للمقارنة
+    $matchDateStr = date('Y-m-d', $ts + (3 * 3600)); // إضافة 3 ساعات لتعديل توقيت الرياض للمقارنة
+    $todayStr = date('Y-m-d');
+    $yestStr  = date('Y-m-d', strtotime('-1 day'));
+    $tomStr   = date('Y-m-d', strtotime('+1 day'));
+
+    $day = 'old'; 
+    if ($matchDateStr === $todayStr) $day = 'today';
+    elseif ($matchDateStr === $yestStr) $day = 'yesterday';
+    elseif ($matchDateStr === $tomStr) $day = 'tomorrow';
+    elseif ($ts > $tomTs) $day = 'future';
 
     // استخراج النتيجة والأهداف للتطبيق (مع معالجة ذكية لركلات الترجيح)
     $score  = ($m['event_final_result'] ?: ($m['event_ft_result'] ?: 'vs'));
@@ -183,9 +195,9 @@ function formatMatch($m, $translate) {
     ];
 }
 
-// 5. التنفيذ: جلب بيانات الـ 3 أيام
+// 5. التنفيذ: جلب بيانات الـ 4 أيام (من أول أمس إلى الغد) لضمان تغطية كافة فروق التوقيت
 cronLog("Syncing matches from API...");
-$from = date('Y-m-d', strtotime('-1 day'));
+$from = date('Y-m-d', strtotime('-2 days'));
 $to   = date('Y-m-d', strtotime('+1 day'));
 
 $res = fetchAPI('Fixtures', ['from' => $from, 'to' => $to]);
