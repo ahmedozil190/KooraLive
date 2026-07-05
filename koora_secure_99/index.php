@@ -1153,7 +1153,7 @@ if ($auth) {
             $syncStatus = (isset($apiSettings['last_cron_sync']) && (time() - $apiSettings['last_cron_sync']) < 300) ? 'نشط الآن' : 'بانتظار المزامنة';
             $statusColor = ($syncStatus == 'نشط الآن') ? '#10b981' : '#f59e0b';
         ?>
-            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i><i class="fa-solid fa-star"></i> إدارة النظام</h2>
+            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة النظام</h2>
             
             <div class="stats-grid" style="margin-bottom:25px;">
                 <div class="stat-card live" style="border-right: 4px solid <?php echo $statusColor; ?>;">
