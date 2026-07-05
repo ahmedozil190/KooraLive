@@ -1049,11 +1049,11 @@ if ($auth) {
                     </div>
                     <form method="POST" style="padding:25px;">
                         <div style="margin-bottom:15px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">ID البطولة</label>
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">معرف البطولة</label>
                             <input type="text" name="new_league_id" placeholder="مثال: 28" required style="width:100%; padding:12px; border-radius:10px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); box-sizing:border-box;">
                         </div>
                         <div style="margin-bottom:20px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">الاسم بالعربي</label>
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">اسم البطولة</label>
                             <input type="text" name="new_league_name" placeholder="مثال: الدوري السعودي" required style="width:100%; padding:12px; border-radius:10px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); box-sizing:border-box;">
                         </div>
                         <button type="submit" name="add_to_map" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">إضافة وحفظ</button>
@@ -1160,11 +1160,11 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header">
                     <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
-                    <h3 style="margin-right:10px;">إعدادات الاتصال بالـ API</h3>
+                    <h3 style="margin-right:10px;">إعدادات الاتصال</h3>
                 </div>
                 <form method="POST" style="padding:25px;">
                     <div class="form-group">
-                        <label>مفتاح API-Football (AllSportsAPI)</label>
+                        <label>مفتاح API</label>
                         <div style="position:relative;">
                             <input type="password" name="api_key" id="api-key-input" class="form-input"
                                 value="<?php echo $apiSettings['api_key'] ?? ''; ?>"
@@ -1174,7 +1174,7 @@ if ($auth) {
                         </div>
                         <p style="font-size:12px; color:var(--text-dim); margin-top:10px;">
                             <i class="fa-solid fa-circle-info" style="margin-left:5px;"></i>
-                            يتم تحديث جميع البيانات (أمس، اليوم، غداً) بشكل آلي تماماً عبر نظام الـ Cron Job.
+                            يتم تحديث جميع البيانات بشكل تلقائي تماماً.
                         </p>
                     </div>
 
