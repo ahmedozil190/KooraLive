@@ -253,6 +253,15 @@ if ($auth) {
                 return d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true});
             } catch(e) { return '--:--'; }
         }
+        function normalizeArabic(text) {
+            if (!text) return "";
+            return text.toString().toLowerCase()
+                .replace(/[أإآ]/g, 'ا')
+                .replace(/ة/g, 'ه')
+                .replace(/ى/g, 'ي')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
     </script>
 </head>
 <body>
@@ -1152,16 +1161,6 @@ if ($auth) {
             <script>
                 function openAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'flex'; }
                 function closeAddLeagueModal() { document.getElementById('addLeagueModal').style.display = 'none'; }
-
-                function normalizeArabic(text) {
-                    if (!text) return "";
-                    return text.toString().toLowerCase()
-                        .replace(/[أإآ]/g, 'ا')
-                        .replace(/ة/g, 'ه')
-                        .replace(/ى/g, 'ي')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                }
 
                 function filterLeagues() {
                     const q = normalizeArabic(document.getElementById('league-search').value);
