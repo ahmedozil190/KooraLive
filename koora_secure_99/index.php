@@ -1691,27 +1691,31 @@ if ($auth) {
 
                 const ts = parseInt(row.dataset.ts);
                 if (!ts) { row.style.display = 'none'; return; }
+                
                 const mDate = new Date(ts * 1000);
                 const mStr = getStr(mDate);
                 const status = row.dataset.status || "";
                 const isLive = (status === 'live');
 
-                let target = '';
-                if (mStr === todayStr) {
-                    target = 'today';
-                } else if (mStr === yestStr) {
-                    // نفس منطق التطبيق: إذا كانت جارية تذهب لليوم، غير ذلك تذهب للأمس
-                    target = isLive ? 'today' : 'yesterday'; 
-                } else if (mStr === tomStr) {
-                    target = 'tomorrow';
-                } else {
-                    // للتواريخ القديمة جداً
-                    target = isLive ? 'today' : 'yesterday';
+                // منطق التطبيق (Flutter) بالحرف الواحد:
+                let shouldShow = false;
+                if (activeTab === 'today') {
+                    // اليوم = (تاريخ اليوم) أو (تاريخ الأمس + جارية الآن)
+                    shouldShow = (mStr === todayStr) || (mStr === yestStr && isLive);
+                } else if (activeTab === 'yesterday') {
+                    // الأمس = (تاريخ الأمس + ليست جارية الآن)
+                    shouldShow = (mStr === yestStr && !isLive);
+                } else if (activeTab === 'tomorrow') {
+                    // الغد = (تاريخ الغد)
+                    shouldShow = (mStr === tomStr);
                 }
                 
-                row.dataset.day = target;
-                if (target === activeTab) { row.style.display = ''; count++; }
-                else row.style.display = 'none';
+                if (shouldShow) {
+                    row.style.display = '';
+                    count++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
 
             // إخفاء العناوين الفارغة
