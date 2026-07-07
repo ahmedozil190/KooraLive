@@ -1647,8 +1647,9 @@ if ($auth) {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
 
-                    // قائمة الجداول المستهدفة بالتحديث
-                    ['ov-tbody', 'cur-tbody', 'api-bank-body'].forEach(id => {
+                    // تحديث محتوى الجداول الأساسية فقط (نظرة عامة وإدارة المباريات)
+                    // حذفنا 'api-bank-body' لكي لا تختفي نتائج البحث من أمامه
+                    ['ov-tbody', 'cur-tbody'].forEach(id => {
                         const newData = doc.getElementById(id);
                         const oldData = document.getElementById(id);
                         if (newData && oldData) {
@@ -1686,27 +1687,15 @@ if ($auth) {
             const rows = Array.from(activeTbody.querySelectorAll('.match-row'));
 
             rows.forEach(row => {
-                const ts = parseInt(row.dataset.ts);
-                if (!ts) return;
+                // الاعتماد الكلي على ما حدده السيرفر في data-day
+                const targetDay = row.dataset.day;
                 
-                const d = new Date(ts * 1000);
-                const mStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                const status = row.dataset.status || "";
-                const isLive = (status === 'live');
-
-                let shouldShow = false;
-                if (activeTab === 'today') {
-                    // اليوم أو مباراة الأمس ما زالت جارية
-                    shouldShow = (mStr === serverToday) || (mStr === serverYesterday && isLive);
-                } else if (activeTab === 'yesterday') {
-                    // الأمس وشرط ألا تكون جارية
-                    shouldShow = (mStr === serverYesterday && !isLive);
-                } else if (activeTab === 'tomorrow') {
-                    shouldShow = (mStr === serverTomorrow);
+                if (targetDay === activeTab) {
+                    row.style.display = '';
+                    count++;
+                } else {
+                    row.style.display = 'none';
                 }
-                
-                row.style.display = shouldShow ? '' : 'none';
-                if (shouldShow) count++;
             });
 
             // إخفاء رؤوس المجموعات الفارغة (البطولات)
