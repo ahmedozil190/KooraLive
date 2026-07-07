@@ -1600,10 +1600,9 @@ if ($auth) {
             });
         }
         window.onload = () => {
-            formatLocalDates();
+            if (typeof formatLocalDates === 'function') formatLocalDates();
             const url = new URL(window.location.href);
             
-            // استعادة اليوم المختار من الرابط
             const urlDay = url.searchParams.get('day');
             if(urlDay) {
                 const tab = document.querySelector(`.day-tab[data-day="${urlDay}"]`);
@@ -1615,12 +1614,49 @@ if ($auth) {
             if(url.searchParams.has('error') && url.searchParams.get('error') == 'empty') showToast('لا يمكن إضافة بيانات فارغة!', 'error');
             if(url.searchParams.has('cleaned')) showToast(`تم تنظيف ${url.searchParams.get('cleaned')} صورة`, 'success');
             
-            // تنظيف الرابط لمنع تكرار الرسائل عند التحديث
             if (url.searchParams.has('success') || url.searchParams.has('cleaned')) {
                 const cleanUrl = url.protocol + "//" + url.host + url.pathname + (url.searchParams.has('section') ? '?section=' + url.searchParams.get('section') : '');
                 window.history.replaceState({path: cleanUrl}, '', cleanUrl);
             }
+
+            // تشغيل نظام التحديث التلقائي الصامت للبيانات كل 60 ثانية
+            startAdminAutoRefresh();
         };
+
+        async function startAdminAutoRefresh() {
+            setInterval(async () => {
+                // تجنب التحديث إذا كان الأدمن يقوم بالتعديل حالياً
+                const isModalOpen = (document.getElementById('edit-modal') && document.getElementById('edit-modal').style.display === 'flex') ||
+                                    (document.getElementById('addApiModal') && document.getElementById('addApiModal').style.display === 'flex') ||
+                                    document.querySelector('.modal-overlay.open');
+                
+                if (isModalOpen) return;
+
+                try {
+                    const response = await fetch(window.location.href);
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // قائمة الجداول المستهدفة بالتحديث
+                    ['ov-tbody', 'cur-tbody', 'api-bank-body'].forEach(id => {
+                        const newData = doc.getElementById(id);
+                        const oldData = document.getElementById(id);
+                        if (newData && oldData) {
+                            oldData.innerHTML = newData.innerHTML;
+                        }
+                    });
+
+                    // إعادة تنسيق الأوقات والتبويبات بعد جلب البيانات الجديدة
+                    if (typeof refreshDashboardTabs === 'function') refreshDashboardTabs();
+                    if (typeof formatLocalDates === 'function') formatLocalDates();
+                    if (typeof formatLocalSyncTime === 'function') formatLocalSyncTime();
+
+                } catch (e) {
+                    console.error("Auto-refresh failed", e);
+                }
+            }, 60000);
+        }
     </script>
 <?php endif; ?>
     <script>
