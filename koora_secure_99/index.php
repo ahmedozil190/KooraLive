@@ -1669,67 +1669,61 @@ if ($auth) {
     </script>
 <?php endif; ?>
     <script>
-        function refreshDashboardTabs() {
-            const now = new Date();
-            const getStr = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            const todayStr = getStr(now);
-            const yest = new Date(); yest.setDate(now.getDate() - 1);
-            const yestStr = getStr(yest);
-            const tom = new Date(); tom.setDate(now.getDate() + 1);
-            const tomStr = getStr(tom);
+        // تعريف تواريخ اليوم والأمس من السيرفر مباشرة لتجنب تضارب التوقيت
+        const serverToday = '<?php echo date('Y-m-d'); ?>';
+        const serverYesterday = '<?php echo date('Y-m-d', strtotime('yesterday')); ?>';
+        const serverTomorrow = '<?php echo date('Y-m-d', strtotime('tomorrow')); ?>';
 
+        function refreshDashboardTabs() {
             const activeTbody = document.querySelector('#ov-tbody') || document.querySelector('#cur-tbody');
             if (!activeTbody) return;
             
-            const activeTab = activeTbody.closest('.recent-card').querySelector('.day-tab.active').dataset.day;
+            const activeTabWrapper = activeTbody.closest('.recent-card') || activeTbody.closest('.card');
+            const activeTabEl = activeTabWrapper ? activeTabWrapper.querySelector('.day-tab.active') : null;
+            const activeTab = activeTabEl ? activeTabEl.dataset.day : 'today';
+            
             let count = 0;
-            const rows = Array.from(activeTbody.querySelectorAll('tr'));
+            const rows = Array.from(activeTbody.querySelectorAll('.match-row'));
 
             rows.forEach(row => {
-                if(row.classList.contains('league-group-header')) return;
-                if(row.dataset.empty) { row.style.display = 'none'; return; }
-
                 const ts = parseInt(row.dataset.ts);
-                if (!ts) { row.style.display = 'none'; return; }
+                if (!ts) return;
                 
-                const mDate = new Date(ts * 1000);
-                const mStr = getStr(mDate);
+                const d = new Date(ts * 1000);
+                const mStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                 const status = row.dataset.status || "";
                 const isLive = (status === 'live');
 
-                // منطق التطبيق (Flutter) بالحرف الواحد:
                 let shouldShow = false;
                 if (activeTab === 'today') {
-                    // اليوم = (تاريخ اليوم) أو (تاريخ الأمس + جارية الآن)
-                    shouldShow = (mStr === todayStr) || (mStr === yestStr && isLive);
+                    // اليوم أو مباراة الأمس ما زالت جارية
+                    shouldShow = (mStr === serverToday) || (mStr === serverYesterday && isLive);
                 } else if (activeTab === 'yesterday') {
-                    // الأمس = (تاريخ الأمس + ليست جارية الآن)
-                    shouldShow = (mStr === yestStr && !isLive);
+                    // الأمس وشرط ألا تكون جارية
+                    shouldShow = (mStr === serverYesterday && !isLive);
                 } else if (activeTab === 'tomorrow') {
-                    // الغد = (تاريخ الغد)
-                    shouldShow = (mStr === tomStr);
+                    shouldShow = (mStr === serverTomorrow);
                 }
                 
-                if (shouldShow) {
-                    row.style.display = '';
-                    count++;
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = shouldShow ? '' : 'none';
+                if (shouldShow) count++;
             });
 
-            // إخفاء العناوين الفارغة
-            let lastH = null; let hasV = false;
-            rows.forEach(r => {
-                if(r.classList.contains('league-group-header')) {
-                    if(lastH) lastH.style.display = hasV ? '' : 'none';
-                    lastH = r; hasV = false;
-                } else if(!r.dataset.empty && r.style.display !== 'none') {
-                    hasV = true;
+            // إخفاء رؤوس المجموعات الفارغة (البطولات)
+            let lastHeader = null;
+            let headerHasVisibleMatches = false;
+            Array.from(activeTbody.children).forEach(node => {
+                if(node.classList.contains('league-group-header')) {
+                    if(lastHeader) lastHeader.style.display = headerHasVisibleMatches ? '' : 'none';
+                    lastHeader = node;
+                    headerHasVisibleMatches = false;
+                } else if(node.classList.contains('match-row') && node.style.display !== 'none') {
+                    headerHasVisibleMatches = true;
                 }
             });
-            if(lastH) lastH.style.display = hasV ? '' : 'none';
+            if(lastHeader) lastHeader.style.display = headerHasVisibleMatches ? '' : 'none';
 
+            // إظهار رسالة "لا توجد مباريات"
             activeTbody.querySelectorAll('tr[data-empty="1"]').forEach(er => {
                 er.style.display = (count === 0 && er.dataset.day === activeTab) ? '' : 'none';
             });
