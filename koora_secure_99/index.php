@@ -348,8 +348,13 @@ if ($auth) {
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
                                  $ts = $m['timestamp'] ?? 0;
-                                 $isFinished = (isset($m['status']) && $m['status'] === 'finished');
-                                 if ($ts < strtotime('today')) {
+                                 $status = $m['status'] ?? '';
+                                 $isFinished = ($status === 'finished');
+                                 $isLive = ($status === 'live');
+
+                                 if ($isLive) {
+                                     $m['mDay'] = 'today'; // أي مباراة جارية تظل في اليوم
+                                 } elseif ($ts < strtotime('today')) {
                                      $m['mDay'] = $isFinished ? 'yesterday' : 'today';
                                  } elseif ($ts >= strtotime('tomorrow')) {
                                      $m['mDay'] = 'tomorrow';
@@ -476,15 +481,20 @@ if ($auth) {
                         $dayM = sortMatches($allM);
                         $grouped = [];
                         foreach($dayM as $m) {
-                            $ts = $m['timestamp'] ?? 0;
-                            $isFinished = (isset($m['status']) && $m['status'] === 'finished');
-                            if ($ts < strtotime('today')) {
-                                $mDay = $isFinished ? 'yesterday' : 'today';
-                            } elseif ($ts >= strtotime('tomorrow')) {
-                                $mDay = 'tomorrow';
-                            } else {
-                                $mDay = 'today';
-                            }
+                             $ts = $m['timestamp'] ?? 0;
+                             $status = $m['status'] ?? '';
+                             $isFinished = ($status === 'finished');
+                             $isLive = ($status === 'live');
+
+                             if ($isLive) {
+                                 $mDay = 'today';
+                             } elseif ($ts < strtotime('today')) {
+                                 $mDay = $isFinished ? 'yesterday' : 'today';
+                             } elseif ($ts >= strtotime('tomorrow')) {
+                                 $mDay = 'tomorrow';
+                             } else {
+                                 $mDay = 'today';
+                             }
                             $m['mDay'] = $mDay; 
 
                             $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
@@ -1685,17 +1695,22 @@ if ($auth) {
                 const mDate = new Date(ts * 1000);
                 const mStr = getStr(mDate);
                 
-                // المنطق الذكي: التحقق من الحالة قبل النقل لتبويب الأمس
-                const status = row.querySelector('.status-badge')?.innerText || "";
-                const isFinished = status.includes('انتهت') || row.querySelector('.status-final');
+                // المنطق القاطع: أي مباراة جارية تذهب لتبويب اليوم فوراً
+                const status = row.dataset.status || "";
+                const isFinished = (status === 'finished');
+                const isLive = (status === 'live');
 
                 let target = '';
-                if (mStr === todayStr) {
+                if (isLive) {
+                    target = 'today';
+                } else if (mStr === todayStr) {
                     target = 'today';
                 } else if (mStr === yestStr) {
-                    target = isFinished ? 'yesterday' : 'today'; // لو لم تنتهِ، ابقِها في اليوم
+                    target = isFinished ? 'yesterday' : 'today'; 
                 } else if (mStr === tomStr) {
                     target = 'tomorrow';
+                } else {
+                    target = isFinished ? 'yesterday' : 'today';
                 }
                 
                 row.dataset.day = target;
