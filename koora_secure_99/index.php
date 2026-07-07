@@ -1685,7 +1685,19 @@ if ($auth) {
                 const mDate = new Date(ts * 1000);
                 const mStr = getStr(mDate);
                 
-                let target = (mStr === todayStr) ? 'today' : (mStr === yestStr ? 'yesterday' : (mStr === tomStr ? 'tomorrow' : ''));
+                // المنطق الذكي: التحقق من الحالة قبل النقل لتبويب الأمس
+                const status = row.querySelector('.status-badge')?.innerText || "";
+                const isFinished = status.includes('انتهت') || row.querySelector('.status-final');
+
+                let target = '';
+                if (mStr === todayStr) {
+                    target = 'today';
+                } else if (mStr === yestStr) {
+                    target = isFinished ? 'yesterday' : 'today'; // لو لم تنتهِ، ابقِها في اليوم
+                } else if (mStr === tomStr) {
+                    target = 'tomorrow';
+                }
+                
                 row.dataset.day = target;
                 if (target === activeTab) { row.style.display = ''; count++; }
                 else row.style.display = 'none';
