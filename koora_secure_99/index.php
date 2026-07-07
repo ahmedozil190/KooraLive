@@ -349,13 +349,12 @@ if ($auth) {
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
                                  $ts = $m['timestamp'] ?? 0;
                                  $status = $m['status'] ?? '';
-                                 $isFinished = ($status === 'finished');
                                  $isLive = ($status === 'live');
 
-                                 if ($isLive) {
-                                     $m['mDay'] = 'today'; // أي مباراة جارية تظل في اليوم
-                                 } elseif ($ts < strtotime('today')) {
-                                     $m['mDay'] = $isFinished ? 'yesterday' : 'today';
+                                 // محاكاة منطق التطبيق بالضبط
+                                 if ($ts < strtotime('today')) {
+                                     // لو من الأمس: تذهب للأمس فقط إذا لم تكن "جارية"
+                                     $m['mDay'] = ($isLive) ? 'today' : 'yesterday';
                                  } elseif ($ts >= strtotime('tomorrow')) {
                                      $m['mDay'] = 'tomorrow';
                                  } else {
@@ -1694,23 +1693,20 @@ if ($auth) {
                 if (!ts) { row.style.display = 'none'; return; }
                 const mDate = new Date(ts * 1000);
                 const mStr = getStr(mDate);
-                
-                // المنطق القاطع: أي مباراة جارية تذهب لتبويب اليوم فوراً
                 const status = row.dataset.status || "";
-                const isFinished = (status === 'finished');
                 const isLive = (status === 'live');
 
                 let target = '';
-                if (isLive) {
-                    target = 'today';
-                } else if (mStr === todayStr) {
+                if (mStr === todayStr) {
                     target = 'today';
                 } else if (mStr === yestStr) {
-                    target = isFinished ? 'yesterday' : 'today'; 
+                    // نفس منطق التطبيق: إذا كانت جارية تذهب لليوم، غير ذلك تذهب للأمس
+                    target = isLive ? 'today' : 'yesterday'; 
                 } else if (mStr === tomStr) {
                     target = 'tomorrow';
                 } else {
-                    target = isFinished ? 'yesterday' : 'today';
+                    // للتواريخ القديمة جداً
+                    target = isLive ? 'today' : 'yesterday';
                 }
                 
                 row.dataset.day = target;
