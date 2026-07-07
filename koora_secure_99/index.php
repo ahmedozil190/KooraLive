@@ -339,7 +339,14 @@ if ($auth) {
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
                                  $ts = $m['timestamp'] ?? 0;
-                                 $m['mDay'] = ($ts < strtotime('today')) ? 'yesterday' : (($ts >= strtotime('tomorrow')) ? 'tomorrow' : 'today');
+                                 $isFinished = (isset($m['status']) && $m['status'] === 'finished');
+                                 if ($ts < strtotime('today')) {
+                                     $m['mDay'] = $isFinished ? 'yesterday' : 'today';
+                                 } elseif ($ts >= strtotime('tomorrow')) {
+                                     $m['mDay'] = 'tomorrow';
+                                 } else {
+                                     $m['mDay'] = 'today';
+                                 }
                                  $grouped[$l][] = $m;
                             }
                         ?>
@@ -461,9 +468,14 @@ if ($auth) {
                         $grouped = [];
                         foreach($dayM as $m) {
                             $ts = $m['timestamp'] ?? 0;
-                            $mDay = 'today';
-                            if($ts < strtotime('today')) $mDay = 'yesterday';
-                            elseif($ts >= strtotime('tomorrow')) $mDay = 'tomorrow';
+                            $isFinished = (isset($m['status']) && $m['status'] === 'finished');
+                            if ($ts < strtotime('today')) {
+                                $mDay = $isFinished ? 'yesterday' : 'today';
+                            } elseif ($ts >= strtotime('tomorrow')) {
+                                $mDay = 'tomorrow';
+                            } else {
+                                $mDay = 'today';
+                            }
                             $m['mDay'] = $mDay; 
 
                             $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
