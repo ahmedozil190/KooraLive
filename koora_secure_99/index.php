@@ -1655,6 +1655,16 @@ if ($auth) {
                         const oldData = document.getElementById(id);
                         if (newData && oldData) {
                             oldData.innerHTML = newData.innerHTML;
+
+                            // تنسيق أوقات الخلايا يدوياً لأن innerHTML لا تشغل الـ script
+                            oldData.querySelectorAll('td script').forEach(scr => {
+                                const match = scr.innerText.match(/formatLocalTime\(([^)]+)\)/);
+                                if (match) {
+                                    const ts = match[1].trim();
+                                    const formatted = formatLocalTime(ts === 'null' ? null : parseInt(ts));
+                                    scr.parentElement.innerHTML = formatted;
+                                }
+                            });
                         }
                     });
 
