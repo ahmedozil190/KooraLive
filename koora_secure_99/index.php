@@ -522,7 +522,7 @@ if ($auth) {
                                     if ($m['status_raw'] === 'Half Time' || $m['status_raw'] === 'HT') {
                                         $badgeText = 'استراحة';
                                     } else {
-                                        $badgeText = 'جارية الآن - ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
+                                        $badgeText = 'جارية الآن ' . $m['status_raw'] . (is_numeric($m['status_raw']) ? "'" : "");
                                     }
                                 }
                             ?>
