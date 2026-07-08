@@ -802,9 +802,10 @@ if ($auth) {
                 
                 window.addEventListener('DOMContentLoaded', () => {
                     if (apiBank && apiBank.length > 0) {
-                        renderBank('today');
+                         renderBank('today');
                     }
                     loadBank(); 
+                    setInterval(loadBank, 15000);
                 });
 
                 async function loadBank() {
@@ -1657,6 +1658,13 @@ if ($auth) {
                         }
                     });
 
+                    // تحديث مربعات الإحصائيات (Stats Cards)
+                    const newStats = doc.querySelector('.stats-grid');
+                    const oldStats = document.querySelector('.stats-grid');
+                    if (newStats && oldStats) {
+                        oldStats.innerHTML = newStats.innerHTML;
+                    }
+
                     // إعادة تنسيق الأوقات والتبويبات بعد جلب البيانات الجديدة
                     if (typeof refreshDashboardTabs === 'function') refreshDashboardTabs();
                     if (typeof formatLocalDates === 'function') formatLocalDates();
@@ -1665,7 +1673,7 @@ if ($auth) {
                 } catch (e) {
                     console.error("Auto-refresh failed", e);
                 }
-            }, 60000);
+            }, 15000);
         }
     </script>
 <?php endif; ?>
