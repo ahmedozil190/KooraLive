@@ -165,6 +165,10 @@ if ($auth) {
             $s['ad_provider']      = $_POST['ad_provider'] ?? 'custom'; // custom , startapp
             $s['startapp_id']      = trim($_POST['startapp_id'] ?? '');
 
+            // التحديث الإجباري للتطبيق
+            $s['min_version']      = trim($_POST['min_version'] ?? '1');
+            $s['apk_update_url']   = trim($_POST['apk_update_url'] ?? '');
+
             file_put_contents($settingsFile, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             
             // تشغيل المزامنة بشكل آمن عبر رابط خارجي لعدم إبطاء الصفحة أو التسبب في أخطاء
@@ -1224,10 +1228,20 @@ if ($auth) {
                         </p>
                     </div>
 
-
-
-
-
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">النسخة المطلوبة للتطبيق (min_version)</label>
+                            <input type="number" name="min_version" class="form-input" 
+                                value="<?php echo $apiSettings['min_version'] ?? '1'; ?>" 
+                                placeholder="مثال: 3" required style="width:100%; box-sizing:border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط تحديث التطبيق (apk_update_url)</label>
+                            <input type="text" name="apk_update_url" class="form-input" 
+                                value="<?php echo $apiSettings['apk_update_url'] ?? ''; ?>" 
+                                placeholder="مثال: https://mywebsite.com/app.apk" required style="width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
 
                     <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:30px; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ كافة الإعدادات
