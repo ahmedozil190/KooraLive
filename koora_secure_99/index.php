@@ -1230,13 +1230,13 @@ if ($auth) {
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">النسخة المطلوبة للتطبيق (min_version)</label>
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">النسخة المطلوبة للتطبيق</label>
                             <input type="number" name="min_version" class="form-input" 
                                 value="<?php echo $apiSettings['min_version'] ?? '1'; ?>" 
                                 placeholder="مثال: 3" required style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط تحديث التطبيق (apk_update_url)</label>
+                            <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px; color:var(--text-main);">رابط تحديث التطبيق</label>
                             <input type="text" name="apk_update_url" class="form-input" 
                                 value="<?php echo $apiSettings['apk_update_url'] ?? ''; ?>" 
                                 placeholder="مثال: https://mywebsite.com/app.apk" required style="width:100%; box-sizing:border-box;">
