@@ -1210,7 +1210,7 @@ if ($auth) {
             <div class="recent-card">
                 <div class="recent-header">
                     <i class="fa-solid fa-gears" style="color:#6366f1;"></i>
-                    <h3 style="margin-right:10px;">الإعدادات العامة</h3>
+                    <h3>الإعدادات العامة</h3>
                 </div>
                 <form method="POST" style="padding:25px;">
                     <div class="form-group">
