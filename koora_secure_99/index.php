@@ -1222,10 +1222,6 @@ if ($auth) {
                                 style="padding-left:45px;">
                             <i class="fa-solid fa-eye" onclick="toggleApiKey()" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-sub);"></i>
                         </div>
-                        <p style="font-size:12px; color:var(--text-dim); margin-top:10px;">
-                            <i class="fa-solid fa-circle-info" style="margin-left:5px;"></i>
-                            يتم تحديث جميع البيانات بشكل تلقائي تماماً.
-                        </p>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
