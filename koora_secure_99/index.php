@@ -304,17 +304,27 @@ if ($auth) {
             <?php 
                 clearstatcache(true, $matchesFile);
                 $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
-                $total = count($matches); $live = 0; $wait = 0; $done = 0;
+                $total = count($matches); $today_cnt = 0; $yest_cnt = 0; $tom_cnt = 0;
                 foreach($matches as $m) {
-                    $s = isset($m['status']) ? $m['status'] : '';
-                    if($s == 'live') $live++; elseif($s == 'finished') $done++; else $wait++;
+                    $ts = $m['timestamp'] ?? 0;
+                    $status = $m['status'] ?? '';
+                    $isLive = ($status === 'live');
+                    if ($isLive) {
+                        $today_cnt++;
+                    } elseif ($ts < strtotime('today')) {
+                        $yest_cnt++;
+                    } elseif ($ts >= strtotime('tomorrow')) {
+                        $tom_cnt++;
+                    } else {
+                        $today_cnt++;
+                    }
                 }
             ?>
             <div class="stats-grid">
-                <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $total; ?></h3><p>إجمالي المباريات</p></div>
-                <div class="stat-card live"><i class="fa-solid fa-tower-broadcast"></i><h3><?php echo $live; ?></h3><p>مباريات جارية</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-clock"></i><h3><?php echo $wait; ?></h3><p>بانتظار البداية</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-check-double"></i><h3><?php echo $done; ?></h3><p>مباريات منتهية</p></div>
+                <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $total; ?></h3><p>إجمالي المباريات</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-calendar-check"></i><h3><?php echo $today_cnt; ?></h3><p>مباريات اليوم</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-calendar-minus"></i><h3><?php echo $yest_cnt; ?></h3><p>مباريات الأمس</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-calendar-plus"></i><h3><?php echo $tom_cnt; ?></h3><p>مباريات الغد</p></div>
             </div>
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
@@ -442,18 +452,31 @@ if ($auth) {
             </div>
         <?php elseif($sec == 'current'):
             $allM = json_decode(@file_get_contents($matchesFile), true) ?: [];
-            $cur_total = count($allM); $cur_live = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'live'; }));
-            $cur_wait = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'upcoming'; }));
-            $cur_done = count(array_filter($allM, function($m) { return (isset($m['status'])?$m['status']:'') === 'finished'; }));
+            $cur_total = count($allM);
+            $cur_today = 0; $cur_yest = 0; $cur_tom = 0;
+            foreach($allM as $m) {
+                $ts = $m['timestamp'] ?? 0;
+                $status = $m['status'] ?? '';
+                $isLive = ($status === 'live');
+                if ($isLive) {
+                    $cur_today++;
+                } elseif ($ts < strtotime('today')) {
+                    $cur_yest++;
+                } elseif ($ts >= strtotime('tomorrow')) {
+                    $cur_tom++;
+                } else {
+                    $cur_today++;
+                }
+            }
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
                 <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> إدارة المباريات</h2>
             </div>
             <div class="stats-grid">
-                <div class="stat-card total"><i class="fa-solid fa-futbol"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي المباريات</p></div>
-                <div class="stat-card live"><i class="fa-solid fa-tower-broadcast"></i><h3><?php echo $cur_live; ?></h3><p>مباريات جارية</p></div>
-                <div class="stat-card waiting"><i class="fa-solid fa-clock"></i><h3><?php echo $cur_wait; ?></h3><p>بانتظار البداية</p></div>
-                <div class="stat-card finished"><i class="fa-solid fa-check-double"></i><h3><?php echo $cur_done; ?></h3><p>مباريات منتهية</p></div>
+                <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي المباريات</p></div>
+                <div class="stat-card live"><i class="fa-solid fa-calendar-check"></i><h3><?php echo $cur_today; ?></h3><p>مباريات اليوم</p></div>
+                <div class="stat-card waiting"><i class="fa-solid fa-calendar-minus"></i><h3><?php echo $cur_yest; ?></h3><p>مباريات الأمس</p></div>
+                <div class="stat-card finished"><i class="fa-solid fa-calendar-plus"></i><h3><?php echo $cur_tom; ?></h3><p>مباريات الغد</p></div>
             </div>
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
