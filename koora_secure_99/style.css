@@ -21,6 +21,7 @@
     --bg-main: #f3f4f6;
     --bg-nav: #ffffff;
     --bg-card: #ffffff;
+    --bg-card-raised: #ffffff;
     --border-color: rgba(0, 0, 0, 0.08);
     --bg-input: rgba(0, 0, 0, 0.04);
     --text-main: #111827;
@@ -38,7 +39,7 @@ body { background-color: var(--bg-main); color: var(--text-main); display: flex;
 
 /* Login Box */
 .login-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-main); }
-.login-box { background: var(--bg-card-raised); border: 1px solid var(--border-color); border-radius: 24px; padding: 48px 40px; width: 420px; max-width: 95vw; box-shadow: 0 24px 64px rgba(0,0,0,0.8); }
+.login-box { background: var(--bg-card-raised); border: 1px solid var(--border-color); border-radius: 24px; padding: 48px 40px; width: 420px; max-width: 95vw; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 .login-box .login-icon { text-align: center; margin-bottom: 20px; }
 .login-box .login-icon i { font-size: 52px; color: #6366f1; }
 .login-box h2 { text-align: center; font-weight: 800; font-size: 22px; margin-bottom: 32px; color: var(--text-main); }
