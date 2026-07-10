@@ -392,8 +392,18 @@ if ($auth) {
                             ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
-                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
+                                            <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:8px; margin-right:auto; direction:ltr;">
+                                            <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:3px 10px; border-radius:30px; font-size:11px; font-weight:800;"><?php echo count($leagueMatches); ?> مباريات</span>
+                                            <?php 
+                                                $firstM = $leagueMatches[0];
+                                                $lid = $firstM['leagueId'] ?? $firstM['league_key'] ?? '-';
+                                            ?>
+                                            <span style="background:var(--bg-main); color:var(--text-sub); border:1px solid var(--border-color); padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700;">ID: <?php echo $lid; ?></span>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -543,8 +553,18 @@ if ($auth) {
                             ?> data-league-header="1">
                                 <td colspan="5" style="background:var(--bg-body); padding:10px 25px; border-bottom:1px solid var(--border-color);">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
-                                        <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:13px;"></i>
+                                            <span style="font-weight:800; font-size:14px; color:var(--text-main);"><?php echo htmlspecialchars($leagueName); ?></span>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:8px; margin-right:auto; direction:ltr;">
+                                            <span style="background:rgba(99,102,241,0.1); color:#6366f1; padding:3px 10px; border-radius:30px; font-size:11px; font-weight:800;"><?php echo count($leagueMatches); ?> مباريات</span>
+                                            <?php 
+                                                $firstM = $leagueMatches[0];
+                                                $lid = $firstM['leagueId'] ?? $firstM['league_key'] ?? '-';
+                                            ?>
+                                            <span style="background:var(--bg-main); color:var(--text-sub); border:1px solid var(--border-color); padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700;">ID: <?php echo $lid; ?></span>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -877,6 +897,8 @@ if ($auth) {
 
                     const query = document.getElementById('bank-search').value.toLowerCase();
                     let filtered = apiBank.filter(m => {
+                        // استبعاد المباريات الفارغة أو غير الصحيحة
+                        if (!m || !m.homeTeam || !m.awayTeam || m.homeTeam === 'null' || m.awayTeam === 'null') return false;
                         let mId = String(m.id || m.event_key);
                         if (addedMatchIds.includes(mId)) return false;
                         
