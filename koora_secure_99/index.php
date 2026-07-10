@@ -767,15 +767,15 @@ if ($auth) {
             </div>
 
             <div class="recent-card">
-                <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div class="recent-header" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <i class="fa-solid fa-cloud-bolt"></i> 
+                        <i class="fa-solid fa-cloud-bolt" style="color:#6366f1;"></i> 
                         <h3 style="margin:0;">إضافة مباراة</h3>
                     </div>
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-top:10px;">
-                        <div class="search-box-api" style="flex: 1; min-width: 280px; position:relative;">
-                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
-                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:12px 40px 12px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
+                    <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                        <div class="search-box-api" style="width:250px; position:relative;">
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
+                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <div class="day-tabs" style="margin-bottom:0; flex-shrink:0;">
                             <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
