@@ -790,7 +790,10 @@ if ($auth) {
                         <thead><tr><th>المباراة</th><th>الوقت</th><th>الحالة</th><th>التحكم</th></tr></thead>
                         <tbody id="api-bank-body">
                             <?php if(empty($bank)): ?>
-                                <tr><td colspan="4" style="text-align:center; padding:40px 0; color:var(--text-dim);">جاري جلب البيانات من الـ API...</td></tr>
+                                <tr data-empty="1"><td colspan="4" style="text-align:center; padding:55px 0;">
+                                    <div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                                    <div style="font-weight:700; color:var(--text-sub);">جاري جلب البيانات من الـ API...</div>
+                                </td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -868,8 +871,8 @@ if ($auth) {
                         const r = await fetch('api.php?action=get_bank&t=' + Date.now());
                         const data = await r.json();
                         if (data.error) {
-                            document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0;">
-                                <div style="font-size:45px; color:var(--text-sub); opacity:0.3; margin-bottom:15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            document.getElementById('api-bank-body').innerHTML = `<tr data-empty="1"><td colspan="4" style="text-align:center; padding:55px 0;">
+                                <div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 <div style="font-weight:700; color:var(--text-sub);">${data.error}</div>
                             </td></tr>`;
                             return;
@@ -879,7 +882,10 @@ if ($auth) {
                         renderBank(activeTab);
                     } catch(e) { 
                         console.error(e); 
-                        document.getElementById('api-bank-body').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px 0; color:#ef4444;">حدث خطأ في الاتصال بالـ API</td></tr>`;
+                        document.getElementById('api-bank-body').innerHTML = `<tr data-empty="1"><td colspan="4" style="text-align:center; padding:55px 0;">
+                            <div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div style="font-weight:700; color:var(--text-sub);">حدث خطأ في الاتصال بالـ API</div>
+                        </td></tr>`;
                     }
                 }
 

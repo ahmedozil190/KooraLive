@@ -1,10 +1,10 @@
 :root {
-    --bg-main: #070707;
-    --bg-nav: #101010;
-    --bg-card: #101010;
-    --bg-card-raised: #141414;
-    --border-color: #1b1b1b;
-    --bg-input: rgba(255, 255, 255, 0.03);
+    --bg-main: #121212;
+    --bg-nav: #1c1c1e;
+    --bg-card: #1c1c1e;
+    --bg-card-raised: #252528;
+    --border-color: #2c2c2e;
+    --bg-input: rgba(255, 255, 255, 0.05);
     --color-primary: #6366f1;
     --color-primary-hover: #4f46e5;
     --color-accent: #ef4444;
