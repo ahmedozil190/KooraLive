@@ -775,7 +775,7 @@ if ($auth) {
                     <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
                         <div class="search-box-api" style="width:250px; position:relative;">
                             <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
-                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
+                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <div class="day-tabs" style="margin-bottom:0; flex-shrink:0;">
                             <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
@@ -1176,7 +1176,7 @@ if ($auth) {
                     <div style="display:flex; gap:12px; align-items:center; margin-right:auto;">
                         <div class="search-box-api" style="width:250px; position:relative;">
                             <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
-                            <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
+                            <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px;">
                             <i class="fa-solid fa-plus-circle"></i> إضافة بطولة جديدة
@@ -1251,7 +1251,9 @@ if ($auth) {
             $syncStatus = (isset($apiSettings['last_cron_sync']) && (time() - $apiSettings['last_cron_sync']) < 300) ? 'نشط الآن' : 'بانتظار المزامنة';
             $statusColor = ($syncStatus == 'نشط الآن') ? '#10b981' : '#f59e0b';
         ?>
-            <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة النظام</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة النظام</h2>
+            </div>
             
             <div class="stats-grid" style="margin-bottom:25px;">
                 <div class="stat-card" style="border-bottom-color: <?php echo $statusColor; ?>;">
