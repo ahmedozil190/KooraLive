@@ -774,8 +774,8 @@ if ($auth) {
                     </div>
                     <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
                         <div class="search-box-api" style="width:250px; position:relative;">
-                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
-                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-main); opacity:0.7; font-size:13px;"></i>
+                            <input type="text" id="bank-search" placeholder="ابحث عن فريق أو دوري..." oninput="filterBank()" style="width:100%; padding:12px 35px 12px 15px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <div class="day-tabs" style="margin-bottom:0; flex-shrink:0;">
                             <div class="day-tab" data-day="yesterday" onclick="switchApiTab(this)">مباريات الأمس</div>
@@ -1175,7 +1175,7 @@ if ($auth) {
                     <p style="color:var(--text-sub); margin:0; font-weight:700;">اختر الدوريات التي تريدها ان تظهرلك فقط</p>
                     <div style="display:flex; gap:12px; align-items:center; margin-right:auto;">
                         <div class="search-box-api" style="width:250px; position:relative;">
-                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-main); opacity:0.7; font-size:13px;"></i>
                             <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
                         <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px;">
