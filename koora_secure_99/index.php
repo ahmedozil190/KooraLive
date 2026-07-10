@@ -270,15 +270,23 @@ if ($auth) {
 </head>
 <body>
 <?php if (!$auth): ?>
-    <div style="flex:1; display:flex; align-items:center; justify-content:center;">
-        <form method="POST" style="background:var(--card); padding:40px; border-radius:20px; border:1px solid var(--border); width:380px;">
-            <div style="text-align:center; margin-bottom: 20px;">
-                <i class="fa-solid fa-gauge-high" style="font-size: 50px; color: #6366f1;"></i>
+    <div class="login-wrap">
+        <form method="POST" class="login-box">
+            <div class="login-icon">
+                <i class="fa-solid fa-gauge-high"></i>
             </div>
-            <h2 style="text-align:center; font-weight:800; margin-bottom:30px;">دخول النظام</h2>
-            <input type="text" name="user" style="width:100%; padding:14px; background:var(--bg-main); border:1px solid var(--border-color); color:var(--text-main); border-radius:10px; margin-bottom:15px; box-sizing:border-box;" placeholder="اسم المستخدم" required>
-            <input type="password" name="pass" style="width:100%; padding:14px; background:var(--bg-main); border:1px solid var(--border-color); color:var(--text-main); border-radius:10px; margin-bottom:25px; box-sizing:border-box;" placeholder="كلمة المرور" required>
-            <button type="submit" name="login" style="width:100%; padding:14px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer;">دخول</button>
+            <h2>دخول النظام</h2>
+            <div class="form-group">
+                <label>اسم المستخدم</label>
+                <input type="text" name="user" class="form-input" placeholder="admin" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" name="pass" class="form-input" placeholder="••••••••" required>
+            </div>
+            <button type="submit" name="login" class="btn-login">
+                <i class="fa-solid fa-right-to-bracket" style="margin-left:8px;"></i>دخول
+            </button>
         </form>
     </div>
 <?php else: ?>
