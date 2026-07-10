@@ -76,7 +76,7 @@ body { background-color: var(--bg-main); color: var(--text-main); display: flex;
 table { width: 100%; border-collapse: collapse; }
 th { padding: 18px 20px; color: var(--text-sub); font-size: 13px; font-weight: 800; text-align: right; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02); }
 td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); font-weight: 600; }
-tr:hover td { background: rgba(99, 102, 241, 0.04); }
+tr:not([data-empty]):hover td { background: rgba(99, 102, 241, 0.04); }
 
 .status-live { color: var(--color-success); font-weight: 800; }
 

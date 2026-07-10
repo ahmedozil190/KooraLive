@@ -1150,7 +1150,7 @@ if ($auth) {
                             <i class="fa-solid fa-magnifying-glass" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:13px;"></i>
                             <input type="text" id="league-search" placeholder="ابحث عن دوري..." oninput="filterLeagues()" style="width:100%; padding:10px 35px 10px 15px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; color:var(--text-main); font-weight:700; outline:none; font-size:13px; box-sizing:border-box;">
                         </div>
-                        <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(99,102,241,0.2);">
+                        <button onclick="openAddLeagueModal()" style="padding:10px 18px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px;">
                             <i class="fa-solid fa-plus-circle"></i> إضافة بطولة جديدة
                         </button>
                     </div>
@@ -1187,7 +1187,7 @@ if ($auth) {
                         <?php endif; ?>
                     </div>
                     <div style="margin-top:25px; border-top:1px solid var(--border-color); padding-top:20px; display:flex; justify-content:flex-end;">
-                        <button type="submit" name="save_fav_leagues" style="padding:15px 45px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.2); display:flex; align-items:center; gap:10px;">
+                        <button type="submit" name="save_fav_leagues" style="padding:15px 45px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:10px;">
                             <i class="fa-solid fa-save"></i> حفظ الإعدادات
                         </button>
                     </div>
@@ -1270,7 +1270,7 @@ if ($auth) {
                         </div>
                     </div>
 
-                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:30px; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
+                    <button type="submit" name="save_api_mgr" class="p-btn" style="width:100%; height:55px; background:#6366f1; color:#fff; border-radius:12px; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:30px;">
                         <i class="fa-solid fa-floppy-disk" style="margin-left:8px;"></i> حفظ كافة الإعدادات
                     </button>
                 </form>
@@ -1347,7 +1347,7 @@ if ($auth) {
             $start = ($page - 1) * $limit;
             $displayNews = array_slice($allNOriginal, $start, $limit);
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-newspaper" style="color:#3b82f6; margin-left:8px;"></i>إدارة الأخبار</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-newspaper" style="color:#3b82f6; margin-left:8px;"></i>أخر الأخبار</h2>
             <!-- استمارة إضافة خبر (في الأعلى كما كانت) -->
             <div class="recent-card" style="margin-bottom:30px;">
                 <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); font-size:17px; font-weight:800; display:flex; align-items:center; gap:10px;">
@@ -1374,7 +1374,7 @@ if ($auth) {
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-newspaper" style="color:#6366f1;"></i><h3>قائمة الأخبار</h3></div>
                     <form method="POST" onsubmit="return confirm('هل أنت متأكد من تنظيف كافة الصور غير المستخدمة في الموقع؟')">
-                        <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف كافة الصور</button>
+                        <button type="submit" name="clean_imgs" style="padding:10px 20px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer;"><i class="fa-solid fa-broom" style="margin-left:6px;"></i> تنظيف كافة الصور</button>
                     </form>
                 </div>
                 <div class="table-res" style="border-top:1px solid var(--border-color);">
