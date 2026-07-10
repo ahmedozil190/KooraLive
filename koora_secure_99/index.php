@@ -478,7 +478,7 @@ if ($auth) {
             }
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> إدارة المباريات</h2>
+                <h2 style="font-weight:800; margin:0;"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> المباريات الحالية</h2>
             </div>
             <div class="stats-grid">
                 <div class="stat-card total"><i class="fa-solid fa-database"></i><h3><?php echo $cur_total; ?></h3><p>إجمالي المباريات</p></div>
@@ -726,7 +726,7 @@ if ($auth) {
             $c_yest  = count(array_filter($bank, fn($m) => ($m['day']??'') == 'yesterday'));
             $c_tom   = count(array_filter($bank, fn($m) => ($m['day']??'') == 'tomorrow'));
         ?>
-            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#f59e0b;"></i> إضافة مباراة جديدة</h2>
+            <h2 style="font-weight:800; margin-bottom:25px;"><i class="fa-solid fa-cloud-arrow-down" style="color:#f59e0b;"></i> إضافة مباراة</h2>
             
             <?php if(!$hasKey): ?>
             <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:20px; border-radius:15px; margin-bottom:30px; display:flex; align-items:center; gap:15px;">
@@ -953,7 +953,7 @@ if ($auth) {
 
                     let html = '';
                     if (filtered.length === 0) {
-                        html = `<tr><td colspan="4" style="text-align:center; padding:50px 0;">
+                        html = `<tr data-empty="1"><td colspan="4" style="text-align:center; padding:50px 0;">
                             <div style="font-size:40px; color:var(--text-sub); opacity:0.3; margin-bottom:10px;"><i class="fa-solid fa-folder-open"></i></div>
                             <div style="font-weight:700; color:var(--text-sub);">لا توجد مباريات متاحة للإضافة في هذا اليوم</div>
                         </td></tr>`;
