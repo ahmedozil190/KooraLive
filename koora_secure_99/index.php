@@ -1254,7 +1254,7 @@ if ($auth) {
             <h2 style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-plug-circle-bolt" style="color:#10b981;"></i> إدارة النظام</h2>
             
             <div class="stats-grid" style="margin-bottom:25px;">
-                <div class="stat-card live" style="border-right: 4px solid <?php echo $statusColor; ?>;">
+                <div class="stat-card" style="border-bottom-color: <?php echo $statusColor; ?>;">
                     <i class="fa-solid fa-circle-check" style="color:<?php echo $statusColor; ?>;"></i>
                     <h3 style="font-size:16px;"><?php echo $syncStatus; ?></h3>
                     <p>حالة التحديث التلقائي</p>
