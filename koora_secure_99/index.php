@@ -336,7 +336,7 @@ if ($auth) {
             </div>
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-futbol"></i><h3>آخر المباريات المضافة</h3></div>
+                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-futbol" style="color:#6366f1;"></i><h3>آخر المباريات المضافة</h3></div>
                     <div class="day-tabs" style="margin-bottom:0;">
                         <div class="day-tab" data-day="yesterday" onclick="switchDay(this)">مباريات الأمس</div>
                         <div class="day-tab active" data-day="today" onclick="switchDay(this)">مباريات اليوم</div>
@@ -498,7 +498,7 @@ if ($auth) {
             </div>
             <div class="recent-card">
                 <div class="recent-header" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-list-check"></i><h3>المباريات الحالية</h3></div>
+                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-list-check" style="color:#6366f1;"></i><h3>المباريات الحالية</h3></div>
                     <div class="day-tabs" style="margin-bottom:0;">
                         <div class="day-tab" data-day="yesterday" onclick="switchTab(this)">مباريات الأمس</div>
                         <div class="day-tab active" data-day="today" onclick="switchTab(this)">مباريات اليوم</div>
