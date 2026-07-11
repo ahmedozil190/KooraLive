@@ -8,8 +8,6 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 
-date_default_timezone_set('Asia/Riyadh');
-
 // ========== مسارات الملفات (المجلد الرئيسي) ==========
 $baseDir      = __DIR__ . '/data/';
 $matchesFile  = $baseDir . 'matches.json';
