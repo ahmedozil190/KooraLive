@@ -76,6 +76,34 @@ if ($action === 'get_matches') {
     // إخفاء مفتاح الـ API لزيادة الأمان
     unset($s['api_key']);
     echo json_encode($s, JSON_UNESCAPED_UNICODE);
+} elseif ($action === 'get_match_details') {
+    $matchId = $_GET['match_id'] ?? '';
+    if (empty($matchId) || empty($apiKey)) {
+        echo json_encode(['error' => 'Missing match_id or API key']);
+        exit;
+    }
+    $url = "https://apiv2.allsportsapi.com/football/?met=Fixtures&matchId={$matchId}&APIkey={$apiKey}&timezone=UTC";
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT        => 15,
+    ]);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    $data = json_decode($response, true);
+    if (!$data || !isset($data['result'][0])) {
+        echo json_encode(['error' => 'No data found']);
+        exit;
+    }
+    $match = $data['result'][0];
+    echo json_encode([
+        'home_formation'  => $match['event_home_formation'] ?? '',
+        'away_formation'  => $match['event_away_formation'] ?? '',
+        'goalscorers'     => $match['goalscorers'] ?? [],
+        'lineups'         => $match['lineups'] ?? [],
+        'statistics'      => $match['statistics'] ?? [],
+    ], JSON_UNESCAPED_UNICODE);
 } else {
     echo json_encode(['error' => 'Invalid action']);
 }
