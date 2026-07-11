@@ -1544,15 +1544,44 @@ if ($auth) {
             if(!tbody) return;
             const rows = Array.from(tbody.querySelectorAll('tr'));
             let counts = {today:0, yesterday:0, tomorrow:0};
+            
+            const toYMD = (d) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            const now = new Date();
+            const todayStr = toYMD(now);
+            const yesterdayStr = toYMD(new Date(now.getTime() - 86400000));
+            const tomorrowStr  = toYMD(new Date(now.getTime() + 86400000));
+
             rows.forEach(r => {
                 if(r.dataset.empty) { r.style.display = 'none'; return; }
                 if(r.classList.contains('league-group-header')) return;
-                if(r.dataset.day) {
-                    if(r.dataset.day === activeDay){
-                        const txt = r.innerText.toLowerCase();
-                        if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; } else { r.style.display = 'none'; }
-                    } else { r.style.display = 'none'; }
+                
+                const ts = parseInt(r.dataset.ts);
+                const status = r.dataset.status || 'upcoming';
+                let calculatedDay = 'today';
+                
+                if (ts > 0) {
+                    const matchDate = new Date(ts * 1000);
+                    const matchStr = toYMD(matchDate);
+                    
+                    if (matchStr === todayStr) {
+                        calculatedDay = 'today';
+                    } else if (matchStr === yesterdayStr) {
+                        calculatedDay = (status === 'live') ? 'today' : 'yesterday';
+                    } else if (matchStr === tomorrowStr) {
+                        calculatedDay = 'tomorrow';
+                    } else if (matchDate < now) {
+                        calculatedDay = 'yesterday';
+                    } else {
+                        calculatedDay = 'tomorrow';
+                    }
                 }
+                
+                r.dataset.day = calculatedDay;
+
+                if(r.dataset.day === activeDay){
+                    const txt = r.innerText.toLowerCase();
+                    if(!search || txt.includes(search)){ r.style.display = ''; counts[activeDay]++; } else { r.style.display = 'none'; }
+                } else { r.style.display = 'none'; }
             });
             let lastHeader = null; let hasVisible = false;
             rows.forEach(r => {
@@ -1772,14 +1801,42 @@ if ($auth) {
             const activeTabEl = activeTabWrapper ? activeTabWrapper.querySelector('.day-tab.active') : null;
             const activeTab = activeTabEl ? activeTabEl.dataset.day : 'today';
             
+            // حساب الأيام الثلاثة بتوقيت جهاز المستخدم (المتصفح المحلي) لضمان دقة كاملة
+            const toYMD = (d) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            const now = new Date();
+            const todayStr = toYMD(now);
+            const yesterdayStr = toYMD(new Date(now.getTime() - 86400000));
+            const tomorrowStr  = toYMD(new Date(now.getTime() + 86400000));
+            
             let count = 0;
             const rows = Array.from(activeTbody.querySelectorAll('.match-row'));
 
             rows.forEach(row => {
-                // الاعتماد الكلي على ما حدده السيرفر في data-day
-                const targetDay = row.dataset.day;
+                const ts = parseInt(row.dataset.ts);
+                const status = row.dataset.status || 'upcoming';
+                let calculatedDay = 'today';
                 
-                if (targetDay === activeTab) {
+                if (ts > 0) {
+                    const matchDate = new Date(ts * 1000);
+                    const matchStr = toYMD(matchDate);
+                    
+                    if (matchStr === todayStr) {
+                        calculatedDay = 'today';
+                    } else if (matchStr === yesterdayStr) {
+                        calculatedDay = (status === 'live') ? 'today' : 'yesterday';
+                    } else if (matchStr === tomorrowStr) {
+                        calculatedDay = 'tomorrow';
+                    } else if (matchDate < now) {
+                        calculatedDay = 'yesterday';
+                    } else {
+                        calculatedDay = 'tomorrow';
+                    }
+                }
+                
+                // تحديث سمة mDay للسطر
+                row.dataset.day = calculatedDay;
+                
+                if (calculatedDay === activeTab) {
                     row.style.display = '';
                     count++;
                 } else {
