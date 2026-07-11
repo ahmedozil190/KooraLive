@@ -314,18 +314,10 @@ if ($auth) {
                 $matches = json_decode(@file_get_contents($matchesFile), true) ?: [];
                 $total = count($matches); $today_cnt = 0; $yest_cnt = 0; $tom_cnt = 0;
                 foreach($matches as $m) {
-                    $ts = $m['timestamp'] ?? 0;
-                    $status = $m['status'] ?? '';
-                    $isLive = ($status === 'live');
-                    if ($isLive) {
-                        $today_cnt++;
-                    } elseif ($ts < strtotime('today')) {
-                        $yest_cnt++;
-                    } elseif ($ts >= strtotime('tomorrow')) {
-                        $tom_cnt++;
-                    } else {
-                        $today_cnt++;
-                    }
+                    $d = ($m['status'] ?? '') === 'live' ? 'today' : ($m['day'] ?? 'today');
+                    if ($d === 'yesterday') $yest_cnt++;
+                    elseif ($d === 'tomorrow') $tom_cnt++;
+                    else $today_cnt++;
                 }
             ?>
             <div class="stats-grid">
@@ -369,20 +361,10 @@ if ($auth) {
                             foreach($dayM as $m) {
                                 $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                                 if(!isset($grouped[$l])) $grouped[$l] = [];
-                                 $ts = $m['timestamp'] ?? 0;
-                                 $status = $m['status'] ?? '';
-                                 $isLive = ($status === 'live');
-
-                                 // محاكاة منطق التطبيق بالضبط
-                                 if ($ts < strtotime('today')) {
-                                     // لو من الأمس: تذهب للأمس فقط إذا لم تكن "جارية"
-                                     $m['mDay'] = ($isLive) ? 'today' : 'yesterday';
-                                 } elseif ($ts >= strtotime('tomorrow')) {
-                                     $m['mDay'] = 'tomorrow';
-                                 } else {
-                                     $m['mDay'] = 'today';
-                                 }
-                                 $grouped[$l][] = $m;
+                                $status = $m['status'] ?? '';
+                                // استخدام حقل day المخزون مباشرة - تم حسابه بشكل صحيح عند الإضافة
+                                $m['mDay'] = ($status === 'live') ? 'today' : ($m['day'] ?? 'today');
+                                $grouped[$l][] = $m;
                             }
                         ?>
                         <?php foreach($grouped as $leagueName => $leagueMatches): ?>
@@ -473,18 +455,10 @@ if ($auth) {
             $cur_total = count($allM);
             $cur_today = 0; $cur_yest = 0; $cur_tom = 0;
             foreach($allM as $m) {
-                $ts = $m['timestamp'] ?? 0;
-                $status = $m['status'] ?? '';
-                $isLive = ($status === 'live');
-                if ($isLive) {
-                    $cur_today++;
-                } elseif ($ts < strtotime('today')) {
-                    $cur_yest++;
-                } elseif ($ts >= strtotime('tomorrow')) {
-                    $cur_tom++;
-                } else {
-                    $cur_today++;
-                }
+                $d = ($m['status'] ?? '') === 'live' ? 'today' : ($m['day'] ?? 'today');
+                if ($d === 'yesterday') $cur_yest++;
+                elseif ($d === 'tomorrow') $cur_tom++;
+                else $cur_today++;
             }
         ?>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
@@ -525,21 +499,9 @@ if ($auth) {
                         $dayM = sortMatches($allM);
                         $grouped = [];
                         foreach($dayM as $m) {
-                             $ts = $m['timestamp'] ?? 0;
                              $status = $m['status'] ?? '';
-                             $isFinished = ($status === 'finished');
-                             $isLive = ($status === 'live');
-
-                             if ($isLive) {
-                                 $mDay = 'today';
-                             } elseif ($ts < strtotime('today')) {
-                                 $mDay = $isFinished ? 'yesterday' : 'today';
-                             } elseif ($ts >= strtotime('tomorrow')) {
-                                 $mDay = 'tomorrow';
-                             } else {
-                                 $mDay = 'today';
-                             }
-                            $m['mDay'] = $mDay; 
+                             // استخدام حقل day المخزون - لا حاجة لأي حسابات
+                             $m['mDay'] = ($status === 'live') ? 'today' : ($m['day'] ?? 'today');
 
                             $l = !empty($m['league']) ? $m['league'] : 'بطولات أخرى';
                             if(!isset($grouped[$l])) $grouped[$l] = [];
